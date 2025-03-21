@@ -1,58 +1,34 @@
-using PlayerDirectory;
+using System;
 using UnityEngine;
 
 namespace Entities
 {
     public class Enemy : MonoBehaviour, IEnemy
     {
-        public float health;
-        public float speed;
-        public float attackCooldown;
-        public float attackDamage;
-        public float attackRange;
-        private float lastAttackTime;
-        public Player target;
-        private void Update()
-        {
-            GameObject player = GameObject.FindWithTag("Player");
-            if (player && Vector2.Distance(transform.position, player.transform.position) <= attackRange)
-            {
-                if (CanAttack())
-                {
-                    Attack(target);
-                    lastAttackTime = Time.time;
-                }
-            }
-        }
-        
-        public void Attack(Player player)
-        {
-            player.TakeDamage(attackDamage);
-        }
+        public EnemyData data;
+
+        public Action<Enemy> OnDeath { get; set; }
 
         public void TakeDamage(float damage)
         {
-            health -= damage;
-            if (health <= 0)
+            data.health -= damage;
+            if (data.health <= 0)
             {
-                Die();
+                OnDeath?.Invoke(this);
+                FindObjectOfType<EnemyManager>().HandleEnemyDeath(this);
             }
         }
 
         public void Move(Vector2 direction)
         {
-            transform.Translate(direction * speed * Time.deltaTime);
+            // Just executes movement - logic comes from manager
+            transform.Translate(direction * (data.speed * Time.deltaTime));
         }
 
-        private void Die()
+        // Reset state when reactivated from pool
+        public void ResetEnemy(EnemyData defaultData)
         {
-            gameObject.SetActive(false);
-            FindAnyObjectByType<EnemyPool>().ReturnEnemy(gameObject);
-        }
-        
-        private bool CanAttack()
-        {
-            return Time.time >= lastAttackTime + attackCooldown;
+            data = defaultData;
         }
     }
 }
