@@ -9,6 +9,8 @@ namespace PlayerDirectory
         public float speed;
         public float damage;
         public float attackSpeed;
+        public float specialAttackSpeed;
+        public float defenseSpeed;
         public float range;
         public float jumpHeight;
         public float defense;
