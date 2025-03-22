@@ -44,6 +44,8 @@ namespace Entities
                 player = playerObj.GetComponent<Player>();
                 playerTransform = playerObj.transform;
             }
+
+            SpawnEnemiesAroundPlayer(3);
         }
 
         private void InitializePools()

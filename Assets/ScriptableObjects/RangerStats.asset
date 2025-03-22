@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f50efe29df74ab44dae2b81fe899a96f, type: 3}
+  m_Name: RangerStats
+  m_EditorClassIdentifier: 
+  health: 50
+  speed: 2
+  damage: 23
+  attackSpeed: 0.8
+  specialAttackSpeed: 3
+  defenseSpeed: 1.5
+  range: 15
+  jumpHeight: 3
+  defense: 0.8
+  criticalChance: 23
+  criticalDamage: 115
+  knockback: 0
+  knockbackResistance: 0
+  slowResistance: 0

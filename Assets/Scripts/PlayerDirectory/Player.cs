@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PlayerDirectory
 {
-    public class Player
+    public class Player : MonoBehaviour
     {
         public PlayerStats playerStats;
         public IClass playerClass;
