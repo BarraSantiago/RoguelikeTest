@@ -12,17 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f50efe29df74ab44dae2b81fe899a96f, type: 3}
   m_Name: RangerStats
   m_EditorClassIdentifier: 
-  health: 50
+  health: 100
   speed: 2
-  damage: 23
+  damage: 15
   attackSpeed: 0.8
   specialAttackSpeed: 3
+  projectileSpeed: 2
   defenseSpeed: 1.5
-  range: 15
+  range: 7
   jumpHeight: 3
   defense: 0.8
   criticalChance: 23
   criticalDamage: 115
+  area: 0
   knockback: 0
   knockbackResistance: 0
   slowResistance: 0

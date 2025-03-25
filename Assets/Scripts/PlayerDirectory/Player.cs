@@ -1,6 +1,7 @@
 using System;
 using Classes;
 using Classes.RangerClass;
+using Classes.WarriorClass;
 using UnityEngine;
 
 namespace PlayerDirectory
@@ -25,7 +26,7 @@ namespace PlayerDirectory
             {
                 arrowPool = gameObject.AddComponent<ArrowPool>()
             };
-            playerClass = ranger;
+            playerClass = new Warrior();
         }
 
         private void Update()
@@ -52,11 +53,6 @@ namespace PlayerDirectory
         public void BasicAttack()
         {
             if (!CanAttack()) return;
-            var dir = new Direction()
-            {
-                position = transform.position,
-                direction = transform.right
-            };
             playerClass.BasicAttack(playerStats, direction);
             lastAttackTime = Time.time;
         }
