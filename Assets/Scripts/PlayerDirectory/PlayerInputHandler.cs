@@ -6,6 +6,7 @@ namespace PlayerDirectory
     public class PlayerInputHandler : MonoBehaviour
     {
         private Player player;
+        private Vector2 moveDirection;
 
         private void Awake()
         {
@@ -38,8 +39,15 @@ namespace PlayerDirectory
 
         public void OnMove(InputAction.CallbackContext context)
         {
-            Vector2 direction = context.ReadValue<Vector2>();
-            player.Move(direction);
+            moveDirection = context.ReadValue<Vector2>();
+        }
+        
+        private void Update()
+        {
+            if (moveDirection != Vector2.zero)
+            {
+                player.Move(moveDirection);
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using Classes;
 using UnityEngine;
 
@@ -11,6 +12,15 @@ namespace PlayerDirectory
         private float lastSpecialAttackTime;
         private float lastDefenseTime;
 
+
+        private void Awake()
+        {
+            Ranger ranger = new Ranger
+            {
+                arrowPool = gameObject.AddComponent<ArrowPool>()
+            };
+            playerClass = ranger;
+        }
 
         public Player(PlayerStats playerStats, IClass playerClass)
         {
@@ -70,7 +80,7 @@ namespace PlayerDirectory
         
         public void Move(Vector2 direction)
         {
-            transform.Translate(direction * playerStats.speed * Time.deltaTime);
+            transform.Translate(direction * (playerStats.speed * Time.deltaTime));
         }
     }
 }
