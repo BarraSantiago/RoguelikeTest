@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Entities;
 using UnityEngine;
 
@@ -8,43 +9,48 @@ namespace Classes.RangerClass
     {
         public float damage;
         public bool isPiercing;
-        public float piercingDuration = 2f;
+        private Vector2 startPosition;
+        public float range;
+        private HashSet<Enemy> hitEnemies = new HashSet<Enemy>();
 
 
         private void OnEnable()
         {
-            if (isPiercing)
+            startPosition = transform.position;
+        }
+        
+        private void Update()
+        {
+            if (Vector2.Distance(startPosition, transform.position) >= range)
             {
-                StartCoroutine(DeactivateAfterTime(piercingDuration));
+                ReturnToPool();
             }
         }
-
+        
         private void OnTriggerEnter2D(Collider2D other)
         {
-            Debug.Log("Arrow hit something");
-            // Handle collision with enemies
-            if (other.CompareTag("Enemy"))
-            {
-                // Apply damage to the enemy
-                other.GetComponent<Enemy>().TakeDamage(damage);
+            if (!other.CompareTag("Enemy")) return;
 
-                // If the arrow is not piercing, return it to the pool
-                if (!isPiercing)
-                {
-                    ReturnToPool();
-                }
+            Enemy enemy = other.GetComponent<Enemy>();
+            if (hitEnemies.Contains(enemy)) return;
+
+            hitEnemies.Add(enemy);
+            enemy.TakeDamage(damage);
+
+            if (isPiercing)
+            {
+                damage *= 0.9f; // Reduce damage by 20% after each hit
+            }
+            else
+            {
+                ReturnToPool();
             }
         }
 
-        private IEnumerator DeactivateAfterTime(float time)
-        {
-            yield return new WaitForSeconds(time);
-            ReturnToPool();
-        }
 
         private void ReturnToPool()
         {
-            // Return the arrow to the pool
+            hitEnemies.Clear();
             gameObject.SetActive(false);
             FindAnyObjectByType<ArrowPool>().ReturnArrow(gameObject);
         }

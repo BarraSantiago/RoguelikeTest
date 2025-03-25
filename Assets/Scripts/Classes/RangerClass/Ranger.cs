@@ -13,9 +13,10 @@ namespace Classes
         {
             GameObject arrow = arrowPool.GetArrow();
             arrow.GetComponent<Arrow>().damage = playerStats.damage;
+            arrow.GetComponent<Arrow>().range = playerStats.range;
             
             arrow.transform.position = direction.position;
-            arrow.GetComponent<Rigidbody2D>().AddForce(direction.direction * playerStats.projectileSpeed);
+            arrow.GetComponent<Rigidbody2D>().linearVelocity = direction.direction.normalized * playerStats.projectileSpeed;
         }
 
         // Piercing arrow attack
@@ -24,9 +25,10 @@ namespace Classes
             GameObject piercingArrow = arrowPool.GetArrow();
             piercingArrow.GetComponent<Arrow>().damage = playerStats.damage * 1.5f; // Increased damage
             piercingArrow.GetComponent<Arrow>().isPiercing = true;
-            
+            piercingArrow.GetComponent<Arrow>().range = playerStats.range;
+
             piercingArrow.transform.position = direction.position;
-            piercingArrow.GetComponent<Rigidbody2D>().AddForce(direction.direction * playerStats.projectileSpeed);
+            piercingArrow.GetComponent<Rigidbody2D>().linearVelocity = direction.direction.normalized * playerStats.projectileSpeed;
         }
 
         // Dodge roll
