@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f50efe29df74ab44dae2b81fe899a96f, type: 3}
   m_Name: WarriorStats
   m_EditorClassIdentifier: 
-  health: -2142
+  health: 150
   speed: 1.5
   damage: 20
   attackSpeed: 0.8

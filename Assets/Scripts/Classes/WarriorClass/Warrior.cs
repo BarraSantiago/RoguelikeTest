@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Entities;
 using PlayerDirectory;
 using UnityEngine;
@@ -28,7 +27,7 @@ namespace Classes.WarriorClass
             foreach (var hitCollider in hitColliders)
             {
                 if (!hitCollider.CompareTag("Enemy")) continue;
-                hitCollider.GetComponent<Enemy>().TakeDamage(playerStats.damage * 1.5f); // Increased damage
+                hitCollider.GetComponent<Enemy>().TakeDamage(playerStats.damage * 1.5f);
             }
         }
 

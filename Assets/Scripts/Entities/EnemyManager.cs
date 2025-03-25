@@ -17,17 +17,10 @@ namespace Entities
         public float spawnRadius = 10f;
         public int maxEnemies = 20;
 
-        // Player reference
         private Player player;
         private Transform playerTransform;
-
-        // Enemy pools by type
         private Dictionary<int, Queue<GameObject>> enemyPools = new Dictionary<int, Queue<GameObject>>();
-
-        // Default data templates
         private Dictionary<int, EnemyData> enemyDataTemplates = new Dictionary<int, EnemyData>();
-
-        // Active enemies list
         private List<Enemy> activeEnemies = new List<Enemy>();
 
         private void Awake()

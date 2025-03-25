@@ -1,8 +1,7 @@
-using Classes.RangerClass;
 using PlayerDirectory;
 using UnityEngine;
 
-namespace Classes
+namespace Classes.RangerClass
 {
     public class Ranger : IClass
     {

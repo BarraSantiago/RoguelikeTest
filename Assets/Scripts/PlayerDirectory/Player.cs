@@ -11,14 +11,22 @@ namespace PlayerDirectory
         public Vector2 position;
         public Vector2 direction;
     }
+    
+    public enum Classes
+    {
+        Warrior,
+        Ranger
+    }
     public class Player : MonoBehaviour
     {
+        [SerializeField] private Classes playerClassType;
         public PlayerStats playerStats;
         public IClass playerClass;
         private float lastAttackTime;
         private float lastSpecialAttackTime;
         private float lastDefenseTime;
         private Direction direction;
+        private float currentHp = 100;
         
         private void Awake()
         {
@@ -26,7 +34,20 @@ namespace PlayerDirectory
             {
                 arrowPool = gameObject.AddComponent<ArrowPool>()
             };
-            playerClass = new Warrior();
+            switch (playerClassType)
+            {
+                case Classes.Warrior:
+                    playerClass = new Warrior();
+                    break;
+                case Classes.Ranger:
+                    playerClass = ranger;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            playerStats = Resources.Load<PlayerStats>("scriptableObjects/" + playerClassType.ToString() + "Stats");
+            
+            currentHp = playerStats.health;
         }
 
         private void Update()
@@ -88,7 +109,12 @@ namespace PlayerDirectory
 
         public void TakeDamage(float attackDamage)
         {
-            playerStats.health -= attackDamage * playerStats.defense;
+            currentHp -= attackDamage * playerStats.defense;
+
+            if (currentHp <= 0)
+            {
+                // TODO Death
+            }
         }
         
         public void Move(Vector2 direction)
