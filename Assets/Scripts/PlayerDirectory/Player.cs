@@ -67,5 +67,10 @@ namespace PlayerDirectory
         {
             playerStats.health -= attackDamage * playerStats.defense;
         }
+        
+        public void Move(Vector2 direction)
+        {
+            transform.Translate(direction * playerStats.speed * Time.deltaTime);
+        }
     }
 }
