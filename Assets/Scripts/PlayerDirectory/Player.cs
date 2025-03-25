@@ -1,9 +1,15 @@
 using System;
 using Classes;
+using Classes.RangerClass;
 using UnityEngine;
 
 namespace PlayerDirectory
 {
+    public struct Direction
+    {
+        public Vector2 position;
+        public Vector2 direction;
+    }
     public class Player : MonoBehaviour
     {
         public PlayerStats playerStats;
@@ -11,8 +17,8 @@ namespace PlayerDirectory
         private float lastAttackTime;
         private float lastSpecialAttackTime;
         private float lastDefenseTime;
-
-
+        private Direction direction;
+        
         private void Awake()
         {
             Ranger ranger = new Ranger
@@ -20,6 +26,18 @@ namespace PlayerDirectory
                 arrowPool = gameObject.AddComponent<ArrowPool>()
             };
             playerClass = ranger;
+        }
+
+        private void Update()
+        {
+            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 newDirection = (mousePosition - transform.position).normalized;
+            direction = new Direction()
+            {
+                position = transform.position,
+                direction = newDirection
+            };
+            
         }
 
         public Player(PlayerStats playerStats, IClass playerClass)
@@ -33,29 +51,28 @@ namespace PlayerDirectory
 
         public void BasicAttack()
         {
-            if (CanAttack())
+            if (!CanAttack()) return;
+            var dir = new Direction()
             {
-                playerClass.BasicAttack(playerStats);
-                lastAttackTime = Time.time;
-            }
+                position = transform.position,
+                direction = transform.right
+            };
+            playerClass.BasicAttack(playerStats, direction);
+            lastAttackTime = Time.time;
         }
 
         public void SpecialAttack()
         {
-            if (CanSpecialAttack())
-            {
-                playerClass.SpecialAttack(playerStats);
-                lastSpecialAttackTime = Time.time;
-            }
+            if (!CanSpecialAttack()) return;
+            playerClass.SpecialAttack(playerStats, direction);
+            lastSpecialAttackTime = Time.time;
         }
 
         public void Defense()
         {
-            if (CanDefense())
-            {
-                playerClass.Defense(playerStats);
-                lastDefenseTime = Time.time;
-            }
+            if (!CanDefense()) return;
+            playerClass.Defense(playerStats, direction);
+            lastDefenseTime = Time.time;
         }
 
         private bool CanAttack()

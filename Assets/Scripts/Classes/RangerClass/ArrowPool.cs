@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Classes
+namespace Classes.RangerClass
 {
     public class ArrowPool : MonoBehaviour
     {
@@ -9,9 +9,14 @@ namespace Classes
         public int poolSize = 10;
         private Queue<GameObject> arrowPool;
 
-        void Awake()
+        private void Awake()
         {
             arrowPool = new Queue<GameObject>();
+            if (!arrowPrefab)
+            {
+                arrowPrefab = Resources.Load<GameObject>("Prefabs/Arrow");
+            }
+            if(!arrowPrefab) return;
             for (int i = 0; i < poolSize; i++)
             {
                 GameObject arrow = Instantiate(arrowPrefab);
