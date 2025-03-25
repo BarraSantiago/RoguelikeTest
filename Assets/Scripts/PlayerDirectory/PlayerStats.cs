@@ -17,6 +17,7 @@ namespace PlayerDirectory
         public float defense;
         public float criticalChance;
         public float criticalDamage;
+        public float area;
         public float knockback;
         public float knockbackResistance;
         public float slowResistance;

@@ -4,7 +4,8 @@ namespace Entities
 {
     public interface IEnemy
     {
-        void TakeDamage(float damage);
-        void Move(Vector2 direction);
+        public void TakeDamage(float damage);
+        public void Move(Vector2 direction);
+        public void Knockback(Vector2 direction, float knockback);
     }
 }

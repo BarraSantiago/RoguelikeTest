@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 namespace Entities
@@ -6,23 +7,69 @@ namespace Entities
     public class Enemy : MonoBehaviour, IEnemy
     {
         public EnemyData data;
-
+        private SpriteRenderer spriteRenderer;
+        private Color originalColor;
         public Action<Enemy> OnDeath { get; set; }
+        public int frameImmunity = 10;
+        public bool inmmune = false;
+        private Rigidbody2D rigidbody;
+        private bool canMove = true;
+        private void Awake()
+        {
+            spriteRenderer = GetComponent<SpriteRenderer>();
+            originalColor = spriteRenderer.color;
+            rigidbody = GetComponent<Rigidbody2D>();
+        }
 
         public void TakeDamage(float damage)
         {
+            if(inmmune) return;
             data.health -= damage;
+            StartCoroutine(FlashRed());
+
             if (data.health <= 0)
             {
                 OnDeath?.Invoke(this);
                 FindObjectOfType<EnemyManager>().HandleEnemyDeath(this);
             }
         }
+        
+        private IEnumerator FlashRed()
+        {
+            inmmune = true;
+            spriteRenderer.color = Color.red;
+            for (int i = 0; i < frameImmunity; i++)
+            {
+                yield return null; // Wait for one frame
+            }
+
+            inmmune = false;
+            spriteRenderer.color = originalColor;
+        }
 
         public void Move(Vector2 direction)
         {
+            if(!canMove) return;
             // Just executes movement - logic comes from manager
-            transform.Translate(direction * (data.speed * Time.deltaTime));
+            rigidbody.MovePosition(rigidbody.position + direction * (data.speed * Time.deltaTime));
+        }
+
+        public void Knockback(Vector2 direction, float knockback)
+        {
+            StopAllCoroutines();
+            rigidbody.AddForce(direction * knockback, ForceMode2D.Impulse);
+            StartCoroutine(ContinueMoving());
+        }
+
+        private IEnumerator ContinueMoving()
+        {
+            canMove = false;
+            for (int i = 0; i < frameImmunity; i++)
+            {
+                yield return null;
+            }
+            rigidbody.linearVelocity = Vector2.zero;
+            canMove = true;
         }
 
         // Reset state when reactivated from pool
