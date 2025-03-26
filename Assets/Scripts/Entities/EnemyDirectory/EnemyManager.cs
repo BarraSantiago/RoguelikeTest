@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Entities.XpDirectory;
 using PlayerDirectory;
 using UnityEngine;
 
@@ -26,6 +27,8 @@ namespace Entities.EnemyDirectory
         private void Awake()
         {
             InitializePools();
+            Enemy.enemyManager = this;
+            Enemy.experiencePool = FindFirstObjectByType<ExperiencePool>();
         }
 
         private void Start()
