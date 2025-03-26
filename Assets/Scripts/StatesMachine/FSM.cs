@@ -1,17 +1,19 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NeuralNetworkLib.Agents;
 
-namespace NeuralNetworkLib.Agents
+namespace StatesMachine
 {
-    public class FSM<EnumState, EnumFlag>
-        where EnumState : Enum
-        where EnumFlag : Enum
+    public class Fsm<TEnumState, TEnumFlag>
+        where TEnumState : Enum
+        where TEnumFlag : Enum
     {
         public Action<int> OnStateChange;
-        private const int UNNASIGNED_TRANSITION = -1;
-        private readonly Dictionary<int, Func<object[]>> _behaviourOnEnterParameters;
+        private const int UnassignedTransition = -1;
+        private readonly Dictionary<int, Func<object[]>?> _behaviourOnEnterParameters;
         private readonly Dictionary<int, Func<object[]>> _behaviourOnExitParameters;
         private readonly Dictionary<int, State> _behaviours;
         private readonly Dictionary<int, Func<object[]>> _behaviourTickParameters;
@@ -36,7 +38,6 @@ namespace NeuralNetworkLib.Agents
 
         private readonly object _fsmLock = new object();
         private bool _isTransitioning = false;
-        // Queue any transition requests that occur while a transition is in progress.
         private Queue<TransitionRequest> _queuedTransitions = new Queue<TransitionRequest>();
 
         private struct TransitionRequest
@@ -55,10 +56,11 @@ namespace NeuralNetworkLib.Agents
             }
         }
 
-        public FSM()
+        public Fsm(Action<int> onStateChange)
         {
-            int states = Enum.GetValues(typeof(EnumState)).Length;
-            int flags = Enum.GetValues(typeof(EnumFlag)).Length;
+            OnStateChange = onStateChange;
+            int states = Enum.GetValues(typeof(TEnumState)).Length;
+            int flags = Enum.GetValues(typeof(TEnumFlag)).Length;
             _behaviours = new Dictionary<int, State>();
             _transitions = new (int, Action?)[states, flags];
 
@@ -66,7 +68,7 @@ namespace NeuralNetworkLib.Agents
             {
                 for (int j = 0; j < flags; j++)
                 {
-                    _transitions[i, j] = (UNNASIGNED_TRANSITION, null);
+                    _transitions[i, j] = (UnassignedTransition, null);
                 }
             }
 
@@ -154,7 +156,7 @@ namespace NeuralNetworkLib.Agents
             }
         }
 
-        public void AddBehaviour<T>(EnumState stateIndexEnum,
+        public void AddBehaviour<T>(TEnumState stateIndexEnum,
             Func<object[]>? onTickParameters = null,
             Func<object[]>? onEnterParameters = null,
             Func<object[]>? onExitParameters = null)
@@ -169,9 +171,9 @@ namespace NeuralNetworkLib.Agents
                 State newBehaviour = new T();
                 newBehaviour.OnFlag += Transition;
                 _behaviours.Add(stateIndex, newBehaviour);
-                _behaviourTickParameters.Add(stateIndex, onTickParameters);
+                if (onTickParameters != null) _behaviourTickParameters.Add(stateIndex, onTickParameters);
                 _behaviourOnEnterParameters.Add(stateIndex, onEnterParameters);
-                _behaviourOnExitParameters.Add(stateIndex, onExitParameters);
+                if (onExitParameters != null) _behaviourOnExitParameters.Add(stateIndex, onExitParameters);
             }
         }
 
@@ -219,8 +221,8 @@ namespace NeuralNetworkLib.Agents
             {
                 currentState = CurrentState;
             }
-            (int destinationInState, Action onTransition) transition = _transitions[currentState, flagInt];
-            if (transition.destinationInState == UNNASIGNED_TRANSITION)
+            (int destinationInState, Action? onTransition) transition = _transitions[currentState, flagInt];
+            if (transition.destinationInState == UnassignedTransition)
                 return;
 
             // Execute exit behaviours for the current state.
@@ -269,7 +271,7 @@ namespace NeuralNetworkLib.Agents
             ExecuteBehaviour(exitBehaviours, true);
 
             int forcedState = Convert.ToInt32(state);
-            if (forcedState == UNNASIGNED_TRANSITION)
+            if (forcedState == UnassignedTransition)
                 return;
 
             // Change state.

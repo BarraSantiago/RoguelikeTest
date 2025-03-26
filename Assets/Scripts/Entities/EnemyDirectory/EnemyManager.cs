@@ -103,20 +103,15 @@ namespace Entities.EnemyDirectory
 
         public void HandleEnemyDeath(Enemy enemy)
         {
-            if (activeEnemies.Contains(enemy))
-            {
-                activeEnemies.Remove(enemy);
+            if (!activeEnemies.Contains(enemy)) return;
+            activeEnemies.Remove(enemy);
 
-                // Find enemy type and return to pool
-                for (int i = 0; i < enemyPrefabs.Length; i++)
-                {
-                    if (enemy.gameObject.name.Contains(enemyPrefabs[i].name))
-                    {
-                        enemy.gameObject.SetActive(false);
-                        enemyPools[i].Enqueue(enemy.gameObject);
-                        break;
-                    }
-                }
+            for (int i = 0; i < enemyPrefabs.Length; i++)
+            {
+                if (!enemy.gameObject.name.Contains(enemyPrefabs[i].name)) continue;
+                enemy.gameObject.SetActive(false);
+                enemyPools[i].Enqueue(enemy.gameObject);
+                break;
             }
         }
 
@@ -135,11 +130,9 @@ namespace Entities.EnemyDirectory
 
                 if (distanceToPlayer <= enemy.data.attackRange)
                 {
-                    if (Time.time >= enemy.data.lastAttackTime + enemy.data.attackCooldown)
-                    {
-                        player.TakeDamage(enemy.data.attackDamage);
-                        enemy.data.lastAttackTime = Time.time;
-                    }
+                    if (!(Time.time >= enemy.data.lastAttackTime + enemy.data.attackCooldown)) continue;
+                    player.TakeDamage(enemy.data.attackDamage);
+                    enemy.data.lastAttackTime = Time.time;
                 }
                 else
                 {
@@ -149,7 +142,6 @@ namespace Entities.EnemyDirectory
             }
         }
 
-        // Utility method to spawn enemies around player
         public void SpawnEnemiesAroundPlayer(int count)
         {
             if (!playerTransform) return;

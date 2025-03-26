@@ -13,7 +13,7 @@ namespace Entities.EnemyDirectory
         public Action<Enemy> OnDeath { get; set; }
         public int frameImmunity = 10;
         public bool inmmune = false;
-        private Rigidbody2D rigidbody;
+        private new Rigidbody2D rigidbody;
         private bool canMove = true;
         public float experienceValue = 10f;
         public static EnemyManager enemyManager;
