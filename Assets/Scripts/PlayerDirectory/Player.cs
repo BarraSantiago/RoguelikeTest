@@ -27,7 +27,10 @@ namespace PlayerDirectory
         private float lastDefenseTime;
         private Direction direction;
         private float currentHp = 100;
-        
+        public float currentExperience = 0f;
+        public float experienceToNextLevel = 100f;
+        public int level = 1;
+
         private void Awake()
         {
             Ranger ranger = new Ranger
@@ -116,7 +119,18 @@ namespace PlayerDirectory
                 // TODO Death
             }
         }
-        
+
+        public void GainExperience(float amount)
+        {
+            currentExperience += amount;
+
+            if (currentExperience < experienceToNextLevel) return;
+            level++;
+            currentExperience -= experienceToNextLevel;
+            experienceToNextLevel *= 1.2f; 
+                
+            // TODO Make lvl up
+        }
         public void Move(Vector2 direction)
         {
             transform.Translate(direction * (playerStats.speed * Time.deltaTime));

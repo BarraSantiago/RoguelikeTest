@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Entities;
+using Entities.EnemyDirectory;
 using UnityEngine;
 
 namespace Classes.RangerClass
