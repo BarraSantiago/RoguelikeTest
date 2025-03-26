@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Entities
+namespace Entities.EnemyDirectory
 {
     public class EnemyFactory
     {

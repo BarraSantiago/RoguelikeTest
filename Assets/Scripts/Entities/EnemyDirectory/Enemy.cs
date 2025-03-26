@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
+using Entities.XpDirectory;
 using UnityEngine;
 
-namespace Entities
+namespace Entities.EnemyDirectory
 {
     public class Enemy : MonoBehaviour, IEnemy
     {
@@ -14,6 +15,9 @@ namespace Entities
         public bool inmmune = false;
         private Rigidbody2D rigidbody;
         private bool canMove = true;
+        public float experienceValue = 10f;
+        public static EnemyManager enemyManager;
+        public static ExperiencePool experiencePool;
         private void Awake()
         {
             spriteRenderer = GetComponent<SpriteRenderer>();
@@ -29,8 +33,7 @@ namespace Entities
 
             if (data.health <= 0)
             {
-                OnDeath?.Invoke(this);
-                FindObjectOfType<EnemyManager>().HandleEnemyDeath(this);
+                Die();
             }
         }
         
@@ -50,7 +53,6 @@ namespace Entities
         public void Move(Vector2 direction)
         {
             if(!canMove) return;
-            // Just executes movement - logic comes from manager
             rigidbody.MovePosition(rigidbody.position + direction * (data.speed * Time.deltaTime));
         }
 
@@ -59,6 +61,13 @@ namespace Entities
             StopAllCoroutines();
             rigidbody.AddForce(direction * knockback, ForceMode2D.Impulse);
             StartCoroutine(ContinueMoving());
+        }
+
+        public void Die()
+        {
+            OnDeath?.Invoke(this);
+            enemyManager.HandleEnemyDeath(this);
+            experiencePool.SpawnExperienceDrop(transform.position, experienceValue);
         }
 
         private IEnumerator ContinueMoving()
@@ -72,7 +81,6 @@ namespace Entities
             canMove = true;
         }
 
-        // Reset state when reactivated from pool
         public void ResetEnemy(EnemyData defaultData)
         {
             data = defaultData;

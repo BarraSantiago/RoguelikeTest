@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using PlayerDirectory;
 using UnityEngine;
 
-namespace Entities
+namespace Entities.EnemyDirectory
 {
     public class EnemyManager : MonoBehaviour
     {
@@ -38,20 +38,17 @@ namespace Entities
                 playerTransform = playerObj.transform;
             }
 
-            SpawnEnemiesAroundPlayer(3);
+            SpawnEnemiesAroundPlayer(10);
         }
 
         private void InitializePools()
         {
-            // Create pools for each enemy type
             for (int i = 0; i < enemyPrefabs.Length; i++)
             {
-                // Extract template data
                 Enemy prefabEnemy = enemyPrefabs[i].GetComponent<Enemy>();
                 enemyDataTemplates[i] = prefabEnemy.data;
                 prefabEnemy.OnDeath += HandleEnemyDeath;
 
-                // Create initial pool
                 Queue<GameObject> pool = new Queue<GameObject>();
                 for (int j = 0; j < initialPoolSize; j++)
                 {
@@ -84,7 +81,6 @@ namespace Entities
                 enemyObj = pool.Dequeue();
                 enemyObj.transform.position = position;
 
-                // Reset data to template
                 Enemy enemy = enemyObj.GetComponent<Enemy>();
                 enemy.ResetEnemy(enemyDataTemplates[enemyType]);
 
@@ -123,7 +119,6 @@ namespace Entities
 
         private void Update()
         {
-            // Process all enemy behaviors centrally
             UpdateEnemyBehaviors();
         }
 
@@ -135,17 +130,14 @@ namespace Entities
             {
                 float distanceToPlayer = Vector2.Distance(enemy.transform.position, playerTransform.position);
 
-                // Attack behavior
                 if (distanceToPlayer <= enemy.data.attackRange)
                 {
                     if (Time.time >= enemy.data.lastAttackTime + enemy.data.attackCooldown)
                     {
-                        // Execute attack
                         player.TakeDamage(enemy.data.attackDamage);
                         enemy.data.lastAttackTime = Time.time;
                     }
                 }
-                // Movement behavior
                 else
                 {
                     Vector2 direction = (playerTransform.position - enemy.transform.position).normalized;
@@ -157,7 +149,7 @@ namespace Entities
         // Utility method to spawn enemies around player
         public void SpawnEnemiesAroundPlayer(int count)
         {
-            if (playerTransform == null) return;
+            if (!playerTransform) return;
 
             for (int i = 0; i < count; i++)
             {

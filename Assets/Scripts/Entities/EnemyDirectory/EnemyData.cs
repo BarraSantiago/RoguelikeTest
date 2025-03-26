@@ -1,6 +1,4 @@
-using UnityEngine;
-
-namespace Entities
+namespace Entities.EnemyDirectory
 {
     [System.Serializable]
     public struct EnemyData

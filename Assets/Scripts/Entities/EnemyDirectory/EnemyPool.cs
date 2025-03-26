@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-    using UnityEngine;
-    
-    namespace Entities
+using UnityEngine;
+
+namespace Entities.EnemyDirectory
     {
         public class EnemyPool : MonoBehaviour
         {
