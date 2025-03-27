@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Classes;
 using Classes.RangerClass;
 using Classes.WarriorClass;
+using PowerUps;
 using UnityEngine;
 
 namespace PlayerDirectory
@@ -23,6 +25,7 @@ namespace PlayerDirectory
         [SerializeField] private Classes playerClassType;
         public PlayerStats playerStats;
         public PlayerStatsModifier statsMod;
+        public List<PowerUp> powerUps;
         private IClass playerClass;
         private float lastAttackTime;
         private float lastSpecialAttackTime;
@@ -51,7 +54,7 @@ namespace PlayerDirectory
                     throw new ArgumentOutOfRangeException();
             }
 
-            playerStats = Resources.Load<PlayerStats>("scriptableObjects/" + playerClassType.ToString() + "Stats");
+            playerStats = Resources.Load<PlayerStats>("scriptableObjects/ClassesStats/" + playerClassType.ToString() + "Stats");
 
             currentHp = playerStats.health;
         }
@@ -65,6 +68,11 @@ namespace PlayerDirectory
                 position = transform.position,
                 direction = newDirection
             };
+
+            foreach (PowerUp powerUp in powerUps)
+            {
+                powerUp.Activate(this);
+            }
         }
 
         public Player(PlayerStats playerStats, IClass playerClass)

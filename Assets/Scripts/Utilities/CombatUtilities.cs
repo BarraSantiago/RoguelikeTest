@@ -31,7 +31,7 @@ namespace Utilities
             });
         }
 
-        public static void DamageEnemies(Enemy[] enemies, PlayerStats playerStats, PlayerStatsModifier statsMod)
+        public static void DamageEnemies(Enemy[] enemies, Stats playerStats, StatsModifier statsMod)
         {
             foreach (Enemy enemy in enemies)
             {
@@ -65,21 +65,21 @@ namespace Utilities
                 if (dist < closestDist)
                 {
                     closestDist = dist;
-                    closest = enemy.GetComponent<Enemy>();
+                    closest = enemy;
                 }
             }
 
             return closest;
         }
 
-        public static float CalculateDamage(PlayerStats playerStats, PlayerStatsModifier statsMod,
+        public static float CalculateDamage(Stats playerStats, StatsModifier statsMod,
             float extraMod = 1.0f)
         {
             return playerStats.damage * statsMod.damageMod * (IsCriticalHit(playerStats, statsMod)
                 ? playerStats.criticalDamage * statsMod.criticalDamageMod : 1) * extraMod;
         }
 
-        public static bool IsCriticalHit(PlayerStats playerStats, PlayerStatsModifier statsMod)
+        public static bool IsCriticalHit(Stats playerStats, StatsModifier statsMod)
         {
             return Random.value < playerStats.criticalChance * statsMod.criticalChanceMod;
         }

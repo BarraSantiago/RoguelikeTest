@@ -12,19 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f50efe29df74ab44dae2b81fe899a96f, type: 3}
   m_Name: WarriorStats
   m_EditorClassIdentifier: 
-  health: 150
-  speed: 1.5
   damage: 20
   attackSpeed: 0.8
-  specialAttackSpeed: 3
   projectileSpeed: 2
-  defenseSpeed: 1.5
   range: 1.5
-  jumpHeight: 3
-  defense: 0.8
-  criticalChance: 23
-  criticalDamage: 115
+  criticalChance: 0.3
+  criticalDamage: 2
   area: 30
+  health: 150
+  speed: 1.5
+  specialAttackSpeed: 3
+  defenseSpeed: 1.5
+  defense: 0.8
   knockback: 15
   knockbackResistance: 0
   slowResistance: 0

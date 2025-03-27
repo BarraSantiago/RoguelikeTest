@@ -1,8 +1,9 @@
+using System;
 using UnityEngine;
 
 namespace PlayerDirectory
 {
-    [CreateAssetMenu(fileName = "StatsModifier", menuName = "Scriptable Objects/Stats")]
+    [CreateAssetMenu(fileName = "StatsModifier", menuName = "Scriptable Objects/StatsModifiers")][Serializable]
     public class StatsModifier : ScriptableObject
     {
         public float damageMod = 1;
@@ -15,14 +16,4 @@ namespace PlayerDirectory
         
     }
 
-    [CreateAssetMenu(fileName = "PlayerStatsModifier", menuName = "Scriptable Objects/Stats")]
-    public class PlayerStatsModifier : StatsModifier
-    {
-        public float speedMod = 1;
-        public float sAttackSpeedMod = 1;
-        public float defenseSpeedMod = 1;
-        public float defenseMod = 1;
-        public float knockbackMod = 1;
-        public float slowResistanceMod = 1;
-    }
 }
