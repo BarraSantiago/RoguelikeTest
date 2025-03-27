@@ -1,29 +1,34 @@
 using Entities.EnemyDirectory;
 using PlayerDirectory;
+using Utilities;
 
 namespace Classes.WarriorClass
 {
-    public class Warrior : PlayerClass
+    public class Warrior : IClass
     {
-        public override void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Direction direction)
+        public void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Direction direction)
         {
-            Enemy[] enemies = GetEnemiesInCone(direction.position, direction.direction,
+            Enemy[] enemies = CombatUtilities.GetEnemiesInCone(direction.position, direction.direction,
                 playerStats.range * statsMod.rangeMod, playerStats.area * statsMod.areaMod);
 
-            KnockbackEnemies(enemies, direction.position, playerStats.knockback * 0.2f * statsMod.knockbackMod);
-            DamageEnemies(enemies, playerStats, statsMod);
+            CombatUtilities.KnockbackEnemies(enemies, direction.position,
+                playerStats.knockback * 0.2f * statsMod.knockbackMod);
+            CombatUtilities.DamageEnemies(enemies, playerStats, statsMod);
         }
 
-        public override void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Direction direction)
+        public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Direction direction)
         {
-            Enemy[] enemies = GetEnemiesInRadius(direction.position, playerStats.range * statsMod.rangeMod);
-            DamageEnemies(enemies, playerStats, statsMod);
+            Enemy[] enemies =
+                CombatUtilities.GetEnemiesInRadius(direction.position, playerStats.range * statsMod.rangeMod);
+            CombatUtilities.DamageEnemies(enemies, playerStats, statsMod);
         }
 
-        public override void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Direction direction)
+        public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Direction direction)
         {
-            Enemy[] enemies = GetEnemiesInRadius(direction.position, playerStats.range * statsMod.rangeMod);
-            KnockbackEnemies(enemies, direction.position, playerStats.knockback * statsMod.knockbackMod);
+            Enemy[] enemies =
+                CombatUtilities.GetEnemiesInRadius(direction.position, playerStats.range * statsMod.rangeMod);
+            CombatUtilities.KnockbackEnemies(enemies, direction.position,
+                playerStats.knockback * statsMod.knockbackMod);
         }
     }
 }
