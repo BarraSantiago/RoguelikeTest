@@ -11,17 +11,19 @@ namespace PlayerDirectory
         public Vector2 position;
         public Vector2 direction;
     }
-    
+
     public enum Classes
     {
         Warrior,
         Ranger
     }
+
     public class Player : MonoBehaviour
     {
         [SerializeField] private Classes playerClassType;
         public PlayerStats playerStats;
-        public IClass playerClass;
+        public PlayerStatsModifier statsMod;
+        private IClass playerClass;
         private float lastAttackTime;
         private float lastSpecialAttackTime;
         private float lastDefenseTime;
@@ -48,8 +50,9 @@ namespace PlayerDirectory
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
             playerStats = Resources.Load<PlayerStats>("scriptableObjects/" + playerClassType.ToString() + "Stats");
-            
+
             currentHp = playerStats.health;
         }
 
@@ -62,7 +65,6 @@ namespace PlayerDirectory
                 position = transform.position,
                 direction = newDirection
             };
-            
         }
 
         public Player(PlayerStats playerStats, IClass playerClass)
@@ -77,37 +79,37 @@ namespace PlayerDirectory
         public void BasicAttack()
         {
             if (!CanAttack()) return;
-            playerClass.BasicAttack(playerStats, direction);
+            playerClass.BasicAttack(playerStats, statsMod, direction);
             lastAttackTime = Time.time;
         }
 
         public void SpecialAttack()
         {
             if (!CanSpecialAttack()) return;
-            playerClass.SpecialAttack(playerStats, direction);
+            playerClass.SpecialAttack(playerStats, statsMod, direction);
             lastSpecialAttackTime = Time.time;
         }
 
         public void Defense()
         {
             if (!CanDefense()) return;
-            playerClass.Defense(playerStats, direction);
+            playerClass.Defense(playerStats, statsMod, direction);
             lastDefenseTime = Time.time;
         }
 
         private bool CanAttack()
         {
-            return Time.time >= lastAttackTime + playerStats.attackSpeed;
+            return Time.time >= lastAttackTime + playerStats.attackSpeed * statsMod.attackSpeedMod;
         }
 
         private bool CanSpecialAttack()
         {
-            return Time.time >= lastSpecialAttackTime + playerStats.specialAttackSpeed;
+            return Time.time >= lastSpecialAttackTime + playerStats.specialAttackSpeed * statsMod.sAttackSpeedMod;
         }
 
         private bool CanDefense()
         {
-            return Time.time >= lastDefenseTime + playerStats.defenseSpeed;
+            return Time.time >= lastDefenseTime + playerStats.defenseSpeed * statsMod.defenseSpeedMod;
         }
 
         public void TakeDamage(float attackDamage)
@@ -127,10 +129,11 @@ namespace PlayerDirectory
             if (currentExperience < experienceToNextLevel) return;
             level++;
             currentExperience -= experienceToNextLevel;
-            experienceToNextLevel *= 1.2f; 
-                
+            experienceToNextLevel *= 1.2f;
+
             // TODO Make lvl up
         }
+
         public void Move(Vector2 direction)
         {
             transform.Translate(direction * (playerStats.speed * Time.deltaTime));

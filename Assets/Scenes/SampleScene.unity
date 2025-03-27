@@ -302,7 +302,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefabs:
   - {fileID: 5368918075769435158, guid: 59e76100b67528045a19fc8aeb742bc8, type: 3}
-  initialPoolSize: 10
+  initialPoolSize: 50
   enemyContainer: {fileID: 0}
   spawnRadius: 10
   maxEnemies: 20
