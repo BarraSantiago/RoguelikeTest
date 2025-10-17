@@ -4,18 +4,18 @@ namespace Entities.EnemyDirectory
 {
     public class EnemyFactory
     {
-        private EnemyPool enemyPool;
+        private EnemyPool _enemyPool;
 
         public EnemyFactory(EnemyPool enemyPool)
         {
-            this.enemyPool = enemyPool;
+            this._enemyPool = enemyPool;
         }
 
         public IEnemy CreateEnemy(Vector3 position)
         {
-            GameObject enemyObject = enemyPool.GetEnemy();
-            enemyObject.transform.position = position;
-            return enemyObject.GetComponent<IEnemy>();
+            IEnemy enemyObject = _enemyPool.Get();
+            enemyObject.SetPosition(position);
+            return enemyObject;
         }
     }
 }

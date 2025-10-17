@@ -10,10 +10,10 @@ namespace Entities.XpDirectory
         public float moveSpeed = 5f;
         public float accelerationRate = 0.5f;
         
-        private bool isAttracting = false;
-        private float currentSpeed;
-        public static Player player;
-        private ExperiencePool pool;
+        private bool _isAttracting = false;
+        private float _currentSpeed;
+        public static Player Player;
+        private ExperiencePool _pool;
         
      
         
@@ -21,29 +21,29 @@ namespace Entities.XpDirectory
         {
             transform.position = position;
             experienceAmount = expAmount;
-            pool = expPool;
-            isAttracting = false;
-            currentSpeed = moveSpeed;
+            _pool = expPool;
+            _isAttracting = false;
+            _currentSpeed = moveSpeed;
             gameObject.SetActive(true);
         }
         
         private void Update()
         {
-            if (!player) return;
+            if (!Player) return;
             
-            float distance = Vector3.Distance(transform.position, player.transform.position);
+            float distance = Vector3.Distance(transform.position, Player.transform.position);
             
             // Start attracting when within radius
             if (distance <= attractRadius)
             {
-                isAttracting = true;
+                _isAttracting = true;
             }
 
-            if (!isAttracting) return;
+            if (!_isAttracting) return;
             
-            Vector3 direction = (player.transform.position - transform.position).normalized;
-            currentSpeed += accelerationRate * Time.deltaTime;
-            transform.position += direction * (currentSpeed * Time.deltaTime);
+            Vector3 direction = (Player.transform.position - transform.position).normalized;
+            _currentSpeed += accelerationRate * Time.deltaTime;
+            transform.position += direction * (_currentSpeed * Time.deltaTime);
         }
         
         private void OnTriggerEnter2D(Collider2D other)
@@ -63,7 +63,7 @@ namespace Entities.XpDirectory
         private void ReturnToPool()
         {
             gameObject.SetActive(false);
-            pool.ReturnExperienceDrop(this);
+            _pool.Return(this);
         }
     }
 }
