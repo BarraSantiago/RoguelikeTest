@@ -23,31 +23,34 @@ namespace PlayerDirectory
     public class Player : MonoBehaviour
     {
         [SerializeField] private Classes playerClassType;
+        
         public PlayerStats playerStats;
         public PlayerStatsModifier statsMod;
         public List<PowerUp> powerUps;
+        public float currentExperience = 0f;
+        public float experienceToNextLevel = 100f;
+        public int level = 1;
+        
         private IClass playerClass;
         private float lastAttackTime;
         private float lastSpecialAttackTime;
         private float lastDefenseTime;
         private Direction direction;
         private float currentHp = 100;
-        public float currentExperience = 0f;
-        public float experienceToNextLevel = 100f;
-        public int level = 1;
-
+        
         private void Awake()
         {
-            Ranger ranger = new Ranger
-            {
-                arrowPool = gameObject.AddComponent<ArrowPool>()
-            };
+            
             switch (playerClassType)
             {
                 case Classes.Warrior:
                     playerClass = new Warrior();
                     break;
                 case Classes.Ranger:
+                    Ranger ranger = new Ranger
+                    {
+                        arrowPool = gameObject.AddComponent<ArrowPool>()
+                    };
                     playerClass = ranger;
                     break;
                 default:
