@@ -7,35 +7,35 @@ namespace Classes.RangerClass
     public class Ranger : IClass
 
     {
-        public ArrowPool arrowPool;
+        public ArrowPool ArrowPool;
 
         // Normal arrow attack
-        public void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Direction direction)
+        public void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
-            GameObject arrow = arrowPool.GetArrow();
+            GameObject arrow = ArrowPool.GetArrow();
             arrow.GetComponent<Arrow>().damage = CombatUtilities.CalculateDamage(playerStats, statsMod);
             arrow.GetComponent<Arrow>().range = playerStats.range * statsMod.rangeMod;
 
-            arrow.transform.position = direction.position;
+            arrow.transform.position = vec.Position;
             arrow.GetComponent<Rigidbody2D>().linearVelocity =
-                direction.direction.normalized * playerStats.projectileSpeed * statsMod.projectileSpeedMod;
+                vec.Direction.normalized * playerStats.projectileSpeed * statsMod.projectileSpeedMod;
         }
 
         // Piercing arrow attack
-        public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Direction direction)
+        public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
-            GameObject piercingArrow = arrowPool.GetArrow();
+            GameObject piercingArrow = ArrowPool.GetArrow();
             piercingArrow.GetComponent<Arrow>().damage = CombatUtilities.CalculateDamage(playerStats, statsMod, 1.4f);
             piercingArrow.GetComponent<Arrow>().isPiercing = true;
             piercingArrow.GetComponent<Arrow>().range = playerStats.range * statsMod.rangeMod;
 
-            piercingArrow.transform.position = direction.position;
+            piercingArrow.transform.position = vec.Position;
             piercingArrow.GetComponent<Rigidbody2D>().linearVelocity =
-                direction.direction.normalized * playerStats.projectileSpeed;
+                vec.Direction.normalized * playerStats.projectileSpeed;
         }
 
         // Dodge roll
-        public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Direction direction)
+        public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
             GameObject player = GameObject.FindWithTag("Player");
             Vector2 dodgeDirection = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;

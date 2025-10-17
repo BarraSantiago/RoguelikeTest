@@ -5,19 +5,19 @@ namespace PlayerDirectory
 {
     public class PlayerInputHandler : MonoBehaviour
     {
-        private Player player;
-        private Vector2 moveDirection;
+        private Player _player;
+        private Vector2 _moveDirection;
 
         private void Awake()
         {
-            player = GetComponent<Player>();
+            _player = GetComponent<Player>();
         }
 
         public void OnAttack(InputAction.CallbackContext context)
         {
             if (context.performed)
             {
-                player.BasicAttack();
+                _player.BasicAttack();
             }
         }
 
@@ -25,7 +25,7 @@ namespace PlayerDirectory
         {
             if (context.performed)
             {
-                player.SpecialAttack();
+                _player.SpecialAttack();
             }
         }
 
@@ -33,20 +33,20 @@ namespace PlayerDirectory
         {
             if (context.performed)
             {
-                player.Defense();
+                _player.Defense();
             }
         }
 
         public void OnMove(InputAction.CallbackContext context)
         {
-            moveDirection = context.ReadValue<Vector2>();
+            _moveDirection = context.ReadValue<Vector2>();
         }
         
         private void Update()
         {
-            if (moveDirection != Vector2.zero)
+            if (_moveDirection != Vector2.zero)
             {
-                player.Move(moveDirection);
+                _player.Move(_moveDirection);
             }
         }
     }

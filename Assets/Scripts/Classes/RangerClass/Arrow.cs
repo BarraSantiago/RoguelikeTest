@@ -8,19 +8,19 @@ namespace Classes.RangerClass
     {
         public float damage;
         public bool isPiercing;
-        private Vector2 startPosition;
+        private Vector2 _startPosition;
         public float range;
-        private HashSet<Enemy> hitEnemies = new HashSet<Enemy>();
+        private HashSet<Enemy> _hitEnemies = new();
 
 
         private void OnEnable()
         {
-            startPosition = transform.position;
+            _startPosition = transform.position;
         }
         
         private void Update()
         {
-            if (Vector2.Distance(startPosition, transform.position) >= range)
+            if (Vector2.Distance(_startPosition, transform.position) >= range)
             {
                 ReturnToPool();
             }
@@ -31,9 +31,9 @@ namespace Classes.RangerClass
             if (!other.CompareTag("Enemy")) return;
 
             Enemy enemy = other.GetComponent<Enemy>();
-            if (hitEnemies.Contains(enemy)) return;
+            if (_hitEnemies.Contains(enemy)) return;
 
-            hitEnemies.Add(enemy);
+            _hitEnemies.Add(enemy);
             enemy.TakeDamage(damage);
 
             if (isPiercing)
@@ -49,7 +49,7 @@ namespace Classes.RangerClass
 
         private void ReturnToPool()
         {
-            hitEnemies.Clear();
+            _hitEnemies.Clear();
             gameObject.SetActive(false);
             FindAnyObjectByType<ArrowPool>().ReturnArrow(gameObject);
         }

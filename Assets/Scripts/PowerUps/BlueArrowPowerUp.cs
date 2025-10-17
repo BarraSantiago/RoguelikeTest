@@ -12,18 +12,18 @@ namespace PowerUps
         [SerializeField] private float detectionRadius = 10f;
         [SerializeField] private Color arrowColor = Color.blue;
         
-        private ArrowPool arrowPool;
+        private ArrowPool _arrowPool;
 
         public override void OnPickup(Player player)
         {
             base.OnPickup(player);
             if (player.gameObject.GetComponent<ArrowPool>())
             {
-                arrowPool = player.gameObject.GetComponent<ArrowPool>();
+                _arrowPool = player.gameObject.GetComponent<ArrowPool>();
                 return;
             }
 
-            arrowPool = player.gameObject.AddComponent<ArrowPool>();
+            _arrowPool = player.gameObject.AddComponent<ArrowPool>();
         }
 
         public override void Activate(Player player)
@@ -33,9 +33,9 @@ namespace PowerUps
             Enemy closestEnemy = CombatUtilities.GetClosestEnemy(player.transform.position, detectionRadius);
             if (!closestEnemy) return;
 
-            if (!arrowPool) return;
+            if (!_arrowPool) return;
 
-            GameObject arrowObj = arrowPool.GetArrow();
+            GameObject arrowObj = _arrowPool.GetArrow();
 
             Arrow arrow = arrowObj.GetComponent<Arrow>();
             arrow.damage = CombatUtilities.CalculateDamage(PowerUpStats, PowerUpStatsMod);

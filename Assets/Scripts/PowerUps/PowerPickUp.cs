@@ -11,15 +11,15 @@ namespace PowerUps
         [SerializeField] private float bobSpeed = 1f;
         [SerializeField] private AudioClip pickupSound;
         
-        private IPowerUp powerUp;
-        private Vector3 startPosition;
+        private IPowerUp _powerUp;
+        private Vector3 _startPosition;
         
         private void Start()
         {
-            powerUp = powerUpObject as IPowerUp;
-            startPosition = transform.position;
+            _powerUp = powerUpObject as IPowerUp;
+            _startPosition = transform.position;
             
-            if (powerUp == null)
+            if (_powerUp == null)
             {
                 Debug.LogError("PowerUpPickup: The assigned powerUpObject does not implement IPowerUp!");
             }
@@ -29,7 +29,7 @@ namespace PowerUps
         {
             transform.Rotate(Vector3.forward, spinSpeed * Time.deltaTime);
             
-            float newY = startPosition.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
+            float newY = _startPosition.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
             transform.position = new Vector3(transform.position.x, newY, transform.position.z);
         }
         
@@ -40,7 +40,7 @@ namespace PowerUps
             Player player = other.GetComponent<Player>();
             if (!player) return;
             
-            powerUp.OnPickup(player);
+            _powerUp.OnPickup(player);
             
             if (pickupSound)
             {

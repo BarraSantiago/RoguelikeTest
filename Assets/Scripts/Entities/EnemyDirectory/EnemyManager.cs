@@ -18,17 +18,17 @@ namespace Entities.EnemyDirectory
         public float spawnRadius = 10f;
         public int maxEnemies = 20;
 
-        private Player player;
-        private Transform playerTransform;
-        private Dictionary<int, Queue<GameObject>> enemyPools = new Dictionary<int, Queue<GameObject>>();
-        private Dictionary<int, EnemyData> enemyDataTemplates = new Dictionary<int, EnemyData>();
-        private List<Enemy> activeEnemies = new List<Enemy>();
+        private Player _player;
+        private Transform _playerTransform;
+        private Dictionary<int, Queue<GameObject>> _enemyPools = new();
+        private Dictionary<int, EnemyData> _enemyDataTemplates = new();
+        private List<Enemy> _activeEnemies = new();
 
         private void Awake()
         {
             InitializePools();
-            Enemy.enemyManager = this;
-            Enemy.experiencePool = FindFirstObjectByType<ExperiencePool>();
+            Enemy.EnemyManager = this;
+            Enemy.ExperiencePool = FindFirstObjectByType<ExperiencePool>();
         }
 
         private void Start()
@@ -37,8 +37,8 @@ namespace Entities.EnemyDirectory
             GameObject playerObj = GameObject.FindWithTag("Player");
             if (playerObj)
             {
-                player = playerObj.GetComponent<Player>();
-                playerTransform = playerObj.transform;
+                _player = playerObj.GetComponent<Player>();
+                _playerTransform = playerObj.transform;
             }
 
             SpawnEnemiesAroundPlayer(10);
@@ -49,7 +49,7 @@ namespace Entities.EnemyDirectory
             for (int i = 0; i < enemyPrefabs.Length; i++)
             {
                 Enemy prefabEnemy = enemyPrefabs[i].GetComponent<Enemy>();
-                enemyDataTemplates[i] = prefabEnemy.data;
+                _enemyDataTemplates[i] = prefabEnemy.data;
                 prefabEnemy.OnDeath += HandleEnemyDeath;
 
                 Queue<GameObject> pool = new Queue<GameObject>();
@@ -60,24 +60,24 @@ namespace Entities.EnemyDirectory
                     pool.Enqueue(enemy);
                 }
 
-                enemyPools[i] = pool;
+                _enemyPools[i] = pool;
             }
         }
 
         private GameObject CreateNewEnemy(int enemyType)
         {
             GameObject enemy = Instantiate(enemyPrefabs[enemyType], enemyContainer);
-            enemy.GetComponent<Enemy>().data = enemyDataTemplates[enemyType];
+            enemy.GetComponent<Enemy>().data = _enemyDataTemplates[enemyType];
             return enemy;
         }
 
         public Enemy SpawnEnemy(int enemyType, Vector3 position)
         {
-            if (activeEnemies.Count >= maxEnemies)
+            if (_activeEnemies.Count >= maxEnemies)
                 return null;
 
             GameObject enemyObj;
-            Queue<GameObject> pool = enemyPools[enemyType];
+            Queue<GameObject> pool = _enemyPools[enemyType];
 
             if (pool.Count > 0)
             {
@@ -85,7 +85,7 @@ namespace Entities.EnemyDirectory
                 enemyObj.transform.position = position;
 
                 Enemy enemy = enemyObj.GetComponent<Enemy>();
-                enemy.ResetEnemy(enemyDataTemplates[enemyType]);
+                enemy.ResetEnemy(_enemyDataTemplates[enemyType]);
 
                 enemyObj.SetActive(true);
             }
@@ -96,21 +96,21 @@ namespace Entities.EnemyDirectory
             }
 
             Enemy enemyComponent = enemyObj.GetComponent<Enemy>();
-            activeEnemies.Add(enemyComponent);
+            _activeEnemies.Add(enemyComponent);
 
             return enemyComponent;
         }
 
         public void HandleEnemyDeath(Enemy enemy)
         {
-            if (!activeEnemies.Contains(enemy)) return;
-            activeEnemies.Remove(enemy);
+            if (!_activeEnemies.Contains(enemy)) return;
+            _activeEnemies.Remove(enemy);
 
             for (int i = 0; i < enemyPrefabs.Length; i++)
             {
                 if (!enemy.gameObject.name.Contains(enemyPrefabs[i].name)) continue;
                 enemy.gameObject.SetActive(false);
-                enemyPools[i].Enqueue(enemy.gameObject);
+                _enemyPools[i].Enqueue(enemy.gameObject);
                 break;
             }
         }
@@ -122,21 +122,21 @@ namespace Entities.EnemyDirectory
 
         private void UpdateEnemyBehaviors()
         {
-            if (!playerTransform) return;
+            if (!_playerTransform) return;
 
-            foreach (Enemy enemy in activeEnemies)
+            foreach (Enemy enemy in _activeEnemies)
             {
-                float distanceToPlayer = Vector2.Distance(enemy.transform.position, playerTransform.position);
+                float distanceToPlayer = Vector2.Distance(enemy.transform.position, _playerTransform.position);
 
                 if (distanceToPlayer <= enemy.data.attackRange)
                 {
                     if (!(Time.time >= enemy.data.lastAttackTime + enemy.data.attackCooldown)) continue;
-                    player.TakeDamage(enemy.data.attackDamage);
+                    _player.TakeDamage(enemy.data.attackDamage);
                     enemy.data.lastAttackTime = Time.time;
                 }
                 else
                 {
-                    Vector2 direction = (playerTransform.position - enemy.transform.position).normalized;
+                    Vector2 direction = (_playerTransform.position - enemy.transform.position).normalized;
                     enemy.Move(direction);
                 }
             }
@@ -144,13 +144,13 @@ namespace Entities.EnemyDirectory
 
         public void SpawnEnemiesAroundPlayer(int count)
         {
-            if (!playerTransform) return;
+            if (!_playerTransform) return;
 
             for (int i = 0; i < count; i++)
             {
                 int randomType = Random.Range(0, enemyPrefabs.Length);
                 Vector2 randomDirection = Random.insideUnitCircle.normalized;
-                Vector3 spawnPos = playerTransform.position +
+                Vector3 spawnPos = _playerTransform.position +
                                    new Vector3(randomDirection.x, randomDirection.y, 0) * spawnRadius;
 
                 SpawnEnemy(randomType, spawnPos);

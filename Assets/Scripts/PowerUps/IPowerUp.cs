@@ -1,7 +1,6 @@
 using System;
 using PlayerDirectory;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace PowerUps
 {
@@ -18,7 +17,7 @@ namespace PowerUps
         [SerializeField] protected StatsModifier powerUpStatsMod;
         [SerializeField] protected Stats powerUpStats;
         
-        private float lastAttackTime;
+        private float _lastAttackTime;
 
         public Stats PowerUpStats 
         { 
@@ -34,18 +33,18 @@ namespace PowerUps
         public virtual void OnPickup(Player player)
         {
             player.powerUps.Add(this);
-            lastAttackTime = Time.time;
+            _lastAttackTime = Time.time;
         }
 
         public virtual void Activate(Player player)
         {
             if(!CanActivate()) return;
-            lastAttackTime = Time.time;
+            _lastAttackTime = Time.time;
         }
 
         public virtual bool CanActivate()
         {
-            return Time.time >= lastAttackTime + PowerUpStats.attackSpeed;
+            return Time.time >= _lastAttackTime + PowerUpStats.attackSpeed;
         }
     }
 }

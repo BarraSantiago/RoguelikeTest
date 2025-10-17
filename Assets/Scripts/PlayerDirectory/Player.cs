@@ -8,10 +8,10 @@ using UnityEngine;
 
 namespace PlayerDirectory
 {
-    public struct Direction
+    public struct Vec
     {
-        public Vector2 position;
-        public Vector2 direction;
+        public Vector2 Position;
+        public Vector2 Direction;
     }
 
     public enum Classes
@@ -31,12 +31,12 @@ namespace PlayerDirectory
         public float experienceToNextLevel = 100f;
         public int level = 1;
         
-        private IClass playerClass;
-        private float lastAttackTime;
-        private float lastSpecialAttackTime;
-        private float lastDefenseTime;
-        private Direction direction;
-        private float currentHp = 100;
+        private IClass _playerClass;
+        private float _lastAttackTime;
+        private float _lastSpecialAttackTime;
+        private float _lastDefenseTime;
+        private Vec _vec;
+        private float _currentHp = 100;
         
         private void Awake()
         {
@@ -44,14 +44,14 @@ namespace PlayerDirectory
             switch (playerClassType)
             {
                 case Classes.Warrior:
-                    playerClass = new Warrior();
+                    _playerClass = new Warrior();
                     break;
                 case Classes.Ranger:
                     Ranger ranger = new Ranger
                     {
-                        arrowPool = gameObject.AddComponent<ArrowPool>()
+                        ArrowPool = gameObject.AddComponent<ArrowPool>()
                     };
-                    playerClass = ranger;
+                    _playerClass = ranger;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -59,17 +59,17 @@ namespace PlayerDirectory
 
             playerStats = Resources.Load<PlayerStats>("scriptableObjects/ClassesStats/" + playerClassType.ToString() + "Stats");
 
-            currentHp = playerStats.health;
+            _currentHp = playerStats.health;
         }
 
         private void Update()
         {
             Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2 newDirection = (mousePosition - transform.position).normalized;
-            direction = new Direction()
+            _vec = new Vec()
             {
-                position = transform.position,
-                direction = newDirection
+                Position = transform.position,
+                Direction = newDirection
             };
 
             foreach (PowerUp powerUp in powerUps)
@@ -81,53 +81,53 @@ namespace PlayerDirectory
         public Player(PlayerStats playerStats, IClass playerClass)
         {
             this.playerStats = playerStats;
-            this.playerClass = playerClass;
-            lastAttackTime = -playerStats.attackSpeed;
-            lastSpecialAttackTime = -playerStats.specialAttackSpeed;
-            lastDefenseTime = -playerStats.defenseSpeed;
+            this._playerClass = playerClass;
+            _lastAttackTime = -playerStats.attackSpeed;
+            _lastSpecialAttackTime = -playerStats.specialAttackSpeed;
+            _lastDefenseTime = -playerStats.defenseSpeed;
         }
 
         public void BasicAttack()
         {
             if (!CanAttack()) return;
-            playerClass.BasicAttack(playerStats, statsMod, direction);
-            lastAttackTime = Time.time;
+            _playerClass.BasicAttack(playerStats, statsMod, _vec);
+            _lastAttackTime = Time.time;
         }
 
         public void SpecialAttack()
         {
             if (!CanSpecialAttack()) return;
-            playerClass.SpecialAttack(playerStats, statsMod, direction);
-            lastSpecialAttackTime = Time.time;
+            _playerClass.SpecialAttack(playerStats, statsMod, _vec);
+            _lastSpecialAttackTime = Time.time;
         }
 
         public void Defense()
         {
             if (!CanDefense()) return;
-            playerClass.Defense(playerStats, statsMod, direction);
-            lastDefenseTime = Time.time;
+            _playerClass.Defense(playerStats, statsMod, _vec);
+            _lastDefenseTime = Time.time;
         }
 
         private bool CanAttack()
         {
-            return Time.time >= lastAttackTime + playerStats.attackSpeed * statsMod.attackSpeedMod;
+            return Time.time >= _lastAttackTime + playerStats.attackSpeed * statsMod.attackSpeedMod;
         }
 
         private bool CanSpecialAttack()
         {
-            return Time.time >= lastSpecialAttackTime + playerStats.specialAttackSpeed * statsMod.sAttackSpeedMod;
+            return Time.time >= _lastSpecialAttackTime + playerStats.specialAttackSpeed * statsMod.sAttackSpeedMod;
         }
 
         private bool CanDefense()
         {
-            return Time.time >= lastDefenseTime + playerStats.defenseSpeed * statsMod.defenseSpeedMod;
+            return Time.time >= _lastDefenseTime + playerStats.defenseSpeed * statsMod.defenseSpeedMod;
         }
 
         public void TakeDamage(float attackDamage)
         {
-            currentHp -= attackDamage * playerStats.defense;
+            _currentHp -= attackDamage * playerStats.defense;
 
-            if (currentHp <= 0)
+            if (_currentHp <= 0)
             {
                 // TODO Death
             }

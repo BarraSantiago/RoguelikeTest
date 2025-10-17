@@ -7,11 +7,11 @@ namespace Classes.RangerClass
     {
         public GameObject arrowPrefab;
         public int poolSize = 10;
-        private Queue<GameObject> arrowPool;
+        private Queue<GameObject> _arrowPool;
 
         private void Awake()
         {
-            arrowPool = new Queue<GameObject>();
+            _arrowPool = new Queue<GameObject>();
             if (!arrowPrefab)
             {
                 arrowPrefab = Resources.Load<GameObject>("Prefabs/Arrow");
@@ -21,15 +21,15 @@ namespace Classes.RangerClass
             {
                 GameObject arrow = Instantiate(arrowPrefab);
                 arrow.SetActive(false);
-                arrowPool.Enqueue(arrow);
+                _arrowPool.Enqueue(arrow);
             }
         }
 
         public GameObject GetArrow()
         {
-            if (arrowPool.Count > 0)
+            if (_arrowPool.Count > 0)
             {
-                GameObject arrow = arrowPool.Dequeue();
+                GameObject arrow = _arrowPool.Dequeue();
                 arrow.SetActive(true);
                 return arrow;
             }
@@ -43,7 +43,7 @@ namespace Classes.RangerClass
         public void ReturnArrow(GameObject arrow)
         {
             arrow.SetActive(false);
-            arrowPool.Enqueue(arrow);
+            _arrowPool.Enqueue(arrow);
         }
     }
 }

@@ -31,14 +31,14 @@ namespace StatesMachine
 
         private int _currentState;
         
-        private readonly ParallelOptions parallelOptions = new ParallelOptions
+        private readonly ParallelOptions _parallelOptions = new()
         {
             MaxDegreeOfParallelism = 5
         };
 
-        private readonly object _fsmLock = new object();
+        private readonly object _fsmLock = new();
         private bool _isTransitioning = false;
-        private Queue<TransitionRequest> _queuedTransitions = new Queue<TransitionRequest>();
+        private Queue<TransitionRequest> _queuedTransitions = new();
 
         private struct TransitionRequest
         {
@@ -458,7 +458,7 @@ namespace StatesMachine
             {
                 // For multiple actions, convert to an array and use Parallel.For.
                 Action[] actionsArray = actions.ToArray();
-                Parallel.For(0, actionsArray.Length, parallelOptions, i =>
+                Parallel.For(0, actionsArray.Length, _parallelOptions, i =>
                 {
                     actionsArray[i]?.Invoke();
                 });
