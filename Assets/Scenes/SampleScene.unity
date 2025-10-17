@@ -436,6 +436,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &861575950
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 861575952}
+  - component: {fileID: 861575951}
+  m_Layer: 0
+  m_Name: VFXManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &861575951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861575950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd81b1a3be914f7a8af8a5180e4c205e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  warriorBasicVFX: {fileID: 2464408884321332722, guid: 8dc1f95b1be9bbe4889da1cab8af4714, type: 3}
+  warriorSpecialVFX: {fileID: 8819700824904800591, guid: 128f8a659b1e64e49b23be701538759e, type: 3}
+  warriorDefenseVFX: {fileID: 4318526132756344824, guid: 2257e256fbbf8e64c9c222f947f852ba, type: 3}
+--- !u!4 &861575952
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861575950}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.5679622, y: 0.0062453896, z: -0.04032309}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1599351148
 GameObject:
   m_ObjectHideFlags: 0
@@ -473,6 +520,7 @@ MonoBehaviour:
   playerClassType: 0
   playerStats: {fileID: 11400000, guid: a10f8742b8fd1dd48924812d30b695ea, type: 2}
   statsMod: {fileID: 11400000, guid: 3603d0a72eeee9e49a3d85d85b579745, type: 2}
+  powerUps: []
   currentExperience: 0
   experienceToNextLevel: 0
   level: 0
@@ -851,3 +899,4 @@ SceneRoots:
   - {fileID: 1599351151}
   - {fileID: 858107341}
   - {fileID: 2306490697969622436}
+  - {fileID: 861575952}
