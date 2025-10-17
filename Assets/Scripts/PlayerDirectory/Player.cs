@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using Classes;
 using Classes.RangerClass;
 using Classes.WarriorClass;
+using PlayerDirectory.LevelingSystem;
 using PowerUps;
 using UnityEngine;
+using View.UI.Leveling;
 
 namespace PlayerDirectory
 {
@@ -27,17 +29,17 @@ namespace PlayerDirectory
         public PlayerStats playerStats;
         public PlayerStatsModifier statsMod;
         public List<PowerUp> powerUps;
-        public float currentExperience = 0f;
-        public float experienceToNextLevel = 100f;
-        public int level = 1;
+        public LevelSystem levelSystem = new LevelSystem();
         
+        private LevelUpManager _levelUpManager;
         private IClass _playerClass;
         private float _lastAttackTime;
         private float _lastSpecialAttackTime;
         private float _lastDefenseTime;
         private Vec _vec;
         private float _currentHp = 100;
-        
+        private LevelUpUI _levelUpUI;
+
         private void Awake()
         {
             
@@ -60,6 +62,9 @@ namespace PlayerDirectory
             playerStats = Resources.Load<PlayerStats>("scriptableObjects/ClassesStats/" + playerClassType.ToString() + "Stats");
 
             _currentHp = playerStats.health;
+            _levelUpManager = FindFirstObjectByType<LevelUpManager>();
+            _levelUpUI = FindFirstObjectByType<LevelUpUI>();
+
         }
 
         private void Update()
@@ -78,7 +83,7 @@ namespace PlayerDirectory
             }
         }
 
-        public Player(PlayerStats playerStats, IClass playerClass)
+        public Player(PlayerStats playerStats, IClass playerClass, float currentExperience)
         {
             this.playerStats = playerStats;
             this._playerClass = playerClass;
@@ -135,16 +140,20 @@ namespace PlayerDirectory
 
         public void GainExperience(float amount)
         {
-            currentExperience += amount;
+            bool leveledUp = levelSystem.AddExperience(amount);
 
-            if (currentExperience < experienceToNextLevel) return;
-            level++;
-            currentExperience -= experienceToNextLevel;
-            experienceToNextLevel *= 1.2f;
-
-            // TODO Make lvl up
+            if (leveledUp)
+            {
+                OnLevelUp();
+            }
         }
 
+        private void OnLevelUp()
+        {
+            List<object> choices = _levelUpManager.GenerateLevelUpChoices(this);
+            _levelUpUI.ShowLevelUpChoices(this, choices);
+        }
+        
         public void Move(Vector2 direction)
         {
             transform.Translate(direction * (playerStats.speed * Time.deltaTime));
