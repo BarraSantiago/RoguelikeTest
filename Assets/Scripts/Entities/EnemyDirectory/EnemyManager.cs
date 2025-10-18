@@ -17,7 +17,9 @@ namespace Entities.EnemyDirectory
         [Header("Spawn Settings")] 
         public float spawnRadius = 10f;
         public int maxEnemies = 20;
-
+        public int ActiveEnemyCount => _activeEnemies.Count;
+        public Transform PlayerTransform => _playerTransform;
+        
         private Player _player;
         private Transform _playerTransform;
         private Dictionary<int, Queue<GameObject>> _enemyPools = new();

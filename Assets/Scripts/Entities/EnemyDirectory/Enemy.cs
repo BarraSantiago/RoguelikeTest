@@ -19,9 +19,9 @@ namespace Entities.EnemyDirectory
         public float experienceValue = 10f;
         public static EnemyManager EnemyManager;
         public static ExperiencePool ExperiencePool;
-
+        
+        private EnemyType _enemyType = EnemyType.Normal;
         private static readonly Dictionary<Collider2D, Enemy> ColliderToEnemy = new();
-
         private Collider2D _collider;
 
         private void Awake()
@@ -106,6 +106,25 @@ namespace Entities.EnemyDirectory
         public static Enemy GetFromCollider(Collider2D collider)
         {
             return ColliderToEnemy.TryGetValue(collider, out Enemy enemy) ? enemy : null;
+        }
+        
+        public void SetEnemyType(EnemyType enemyType)
+        {
+            _enemyType = enemyType;
+            ApplyVisualEffects();
+        }
+        
+        private void ApplyVisualEffects()
+        {
+            switch (_enemyType)
+            {
+                case EnemyType.Elite:
+                    _spriteRenderer.color = new Color(1f, 0.8f, 0f); // Golden tint
+                    break;
+                case EnemyType.Boss:
+                    _spriteRenderer.color = new Color(0.8f, 0f, 0f); // Red tint
+                    break;
+            }
         }
 
         private void OnDestroy()

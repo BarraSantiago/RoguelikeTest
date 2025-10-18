@@ -81,6 +81,11 @@ namespace PlayerDirectory
             {
                 powerUp.Activate(this);
             }
+            
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                GainExperience(100f);
+            }
         }
 
         public Player(PlayerStats playerStats, IClass playerClass, float currentExperience)

@@ -2,6 +2,12 @@ using UnityEngine;
 
 namespace Entities.EnemyDirectory
 {
+    public enum EnemyType
+    {
+        Normal,
+        Elite,
+        Boss
+    }
     public interface IEnemy
     {
         public void SetPosition(Vector3 position);
