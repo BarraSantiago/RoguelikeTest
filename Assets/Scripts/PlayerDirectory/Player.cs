@@ -39,7 +39,7 @@ namespace PlayerDirectory
         private Vec _vec;
         private float _currentHp = 100;
         private LevelUpUI _levelUpUI;
-
+        private Camera _mainCamera;
         private void Awake()
         {
             
@@ -64,12 +64,12 @@ namespace PlayerDirectory
             _currentHp = playerStats.health;
             _levelUpManager = FindFirstObjectByType<LevelUpManager>();
             _levelUpUI = FindFirstObjectByType<LevelUpUI>();
-
+            _mainCamera = Camera.main;
         }
 
         private void Update()
         {
-            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector2 newDirection = (mousePosition - transform.position).normalized;
             _vec = new Vec()
             {
@@ -88,7 +88,7 @@ namespace PlayerDirectory
             }
         }
 
-        public Player(PlayerStats playerStats, IClass playerClass, float currentExperience)
+        public Player(PlayerStats playerStats, IClass playerClass)
         {
             this.playerStats = playerStats;
             this._playerClass = playerClass;

@@ -175,7 +175,7 @@ namespace Entities.EnemyDirectory
             int enemyPrefabIndex = GetEnemyPrefabIndex(enemyType);
 
             Enemy enemy = _enemyManager.SpawnEnemy(enemyPrefabIndex, spawnPosition);
-            if (enemy == null) return;
+            if (!enemy) return;
 
             ApplyScaling(enemy, scaling, enemyType);
         }
