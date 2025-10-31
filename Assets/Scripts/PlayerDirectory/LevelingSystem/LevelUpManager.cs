@@ -35,37 +35,37 @@ namespace PlayerDirectory
         {
             _availableStatUpgrades = new List<StatUpgradeOption>
             {
-                new StatUpgradeOption
+                new()
                 {
                     name = "Increased Damage",
                     description = "+20% Damage",
                     applyUpgrade = player => player.statsMod.damageMod *= 1.2f
                 },
-                new StatUpgradeOption
+                new()
                 {
                     name = "Attack Speed",
                     description = "+15% Attack Speed",
                     applyUpgrade = player => player.statsMod.attackSpeedMod *= 0.85f
                 },
-                new StatUpgradeOption
+                new()
                 {
                     name = "Increased Range",
                     description = "+25% Range",
                     applyUpgrade = player => player.statsMod.rangeMod *= 1.25f
                 },
-                new StatUpgradeOption
+                new()
                 {
                     name = "Critical Chance",
                     description = "+5% Critical Chance",
                     applyUpgrade = player => player.playerStats.criticalChance += 0.05f
                 },
-                new StatUpgradeOption
+                new()
                 {
                     name = "Movement Speed",
                     description = "+15% Speed",
                     applyUpgrade = player => player.playerStats.speed *= 1.15f
                 },
-                new StatUpgradeOption
+                new()
                 {
                     name = "Max Health",
                     description = "+20% Health",
