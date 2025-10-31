@@ -6,7 +6,7 @@ namespace View.UI.Menus
     public class PauseManager : MonoBehaviour
     {
         [SerializeField] private GameObject pauseMenuUI;
-        [SerializeField] private string menuSceneName = "MainMenu";
+        [SerializeField] private string sceneName = "MainMenu";
         
         private bool _isPaused;
         
@@ -52,10 +52,10 @@ namespace View.UI.Menus
             }
         }
 
-        public void ReturnToMenu()
+        public void ChangeScene()
         {
             Time.timeScale = 1f;
-            SceneManager.LoadScene(menuSceneName);
+            SceneManager.LoadScene(sceneName);
         }
 
         public void QuitGame()

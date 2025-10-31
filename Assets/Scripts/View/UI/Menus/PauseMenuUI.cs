@@ -50,7 +50,7 @@ namespace View.UI.Menus
 
         public void OnMenuClicked()
         {
-            pauseManager?.ReturnToMenu();
+            pauseManager?.ChangeScene();
         }
 
         public void OnQuitClicked()
