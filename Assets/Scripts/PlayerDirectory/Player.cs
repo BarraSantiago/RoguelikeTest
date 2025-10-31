@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using Classes;
 using Classes.RangerClass;
 using Classes.WarriorClass;
+using Entities.EnemyDirectory;
 using PlayerDirectory.LevelingSystem;
 using PowerUps;
 using UnityEngine;
+using Utilities;
 using View.UI.Leveling;
 
 namespace PlayerDirectory
@@ -25,11 +27,14 @@ namespace PlayerDirectory
     public class Player : MonoBehaviour
     {
         [SerializeField] private Classes playerClassType;
-        
+        [SerializeField] private bool _autoTargetEnabled;
+        [SerializeField] private bool _autoAttackEnabled;
+        [SerializeField] private float _autoAttackRange = 10f;
+
         public PlayerStats playerStats;
         public PlayerStatsModifier statsMod;
         public List<PowerUp> powerUps;
-        public LevelSystem levelSystem = new LevelSystem();
+        public LevelSystem levelSystem = new();
         
         private LevelUpManager _levelUpManager;
         private IClass _playerClass;
@@ -42,7 +47,6 @@ namespace PlayerDirectory
         private Camera _mainCamera;
         private void Awake()
         {
-            
             switch (playerClassType)
             {
                 case Classes.Warrior:
@@ -71,6 +75,7 @@ namespace PlayerDirectory
         {
             Vector3 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector2 newDirection = (mousePosition - transform.position).normalized;
+            
             _vec = new Vec()
             {
                 Position = transform.position,
@@ -85,6 +90,11 @@ namespace PlayerDirectory
             if (Input.GetKeyDown(KeyCode.L))
             {
                 GainExperience(100f);
+            }
+
+            if (CanSpecialAttack() || CanAttack())
+            {
+                HandleAutoTargeting();
             }
         }
 
@@ -162,6 +172,40 @@ namespace PlayerDirectory
         public void Move(Vector2 direction)
         {
             transform.Translate(direction * (playerStats.speed * Time.deltaTime));
+        }
+        
+        public float SpecialAttackCooldownProgress => 
+            Mathf.Clamp01((Time.time - _lastSpecialAttackTime) / (playerStats.specialAttackSpeed * statsMod.sAttackSpeedMod));
+
+        public float DefenseCooldownProgress => 
+            Mathf.Clamp01((Time.time - _lastDefenseTime) / (playerStats.defenseSpeed * statsMod.defenseSpeedMod));
+
+        public bool AutoTargetEnabled 
+        { 
+            get => _autoTargetEnabled; 
+            set => _autoTargetEnabled = value; 
+        }
+
+        public bool AutoAttackEnabled 
+        { 
+            get => _autoAttackEnabled; 
+            set => _autoAttackEnabled = value; 
+        }
+
+        private void HandleAutoTargeting()
+        {
+            if (!_autoTargetEnabled || !_autoAttackEnabled) return;
+
+            Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(transform.position, _autoAttackRange);
+            if (!nearestEnemy) return;
+
+            Vector2 directionToEnemy = ((Vector2)nearestEnemy.transform.position - (Vector2)transform.position).normalized;
+            _vec.Direction = directionToEnemy;
+            
+            BasicAttack();
+            
+            SpecialAttack();
+            
         }
     }
 }

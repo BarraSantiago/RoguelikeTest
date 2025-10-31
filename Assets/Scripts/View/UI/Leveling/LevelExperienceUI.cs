@@ -10,10 +10,10 @@ namespace View.UI.Leveling
     {
         [Header("References")]
         [SerializeField] private Slider xpSlider;
-        [SerializeField] private Text xpText; // optional
-        [SerializeField] private TextMeshProUGUI xpTextTMP; // optional
-        [SerializeField] private Text levelText; // optional
-        [SerializeField] private TextMeshProUGUI levelTextTMP; // optional
+        [SerializeField] private Text xpText; 
+        [SerializeField] private TextMeshProUGUI xpTextTMP; 
+        [SerializeField] private Text levelText; 
+        [SerializeField] private TextMeshProUGUI levelTextTMP; 
 
         [Header("Options")] 
         [SerializeField] private bool updateEveryFrame = true;
@@ -25,7 +25,6 @@ namespace View.UI.Leveling
 
         private void Awake()
         {
-            // Try to find player in scene
             _player = FindObjectOfType<Player>();
             if (_player) _levelSystem = _player.levelSystem;
             if (!xpSlider) return;
@@ -35,7 +34,6 @@ namespace View.UI.Leveling
 
         private void OnEnable()
         {
-            // Try again if player wasn't present at Awake
             if (!_player)
             {
                 _player = FindObjectOfType<Player>();
