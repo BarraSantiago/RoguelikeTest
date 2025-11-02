@@ -27,15 +27,15 @@ namespace PlayerDirectory
     public class Player : MonoBehaviour
     {
         [SerializeField] private Classes playerClassType;
-        [SerializeField] private bool _autoTargetEnabled;
-        [SerializeField] private bool _autoAttackEnabled;
+        [SerializeField] private bool _autoTargetEnabled = true;
+        [SerializeField] private bool _autoAttackEnabled = true;
         [SerializeField] private float _autoAttackRange = 10f;
 
         public PlayerStats playerStats;
         public PlayerStatsModifier statsMod;
         public List<PowerUp> powerUps;
         public LevelSystem levelSystem = new();
-        
+
         private LevelUpManager _levelUpManager;
         private IClass _playerClass;
         private float _lastAttackTime;
@@ -45,6 +45,8 @@ namespace PlayerDirectory
         private float _currentHp = 100;
         private LevelUpUI _levelUpUI;
         private Camera _mainCamera;
+        private Vector2 _manualTargetDirection;
+
         private void Awake()
         {
             switch (playerClassType)
@@ -63,7 +65,7 @@ namespace PlayerDirectory
                     throw new ArgumentOutOfRangeException();
             }
 
-            playerStats = Resources.Load<PlayerStats>("scriptableObjects/ClassesStats/" + playerClassType.ToString() + "Stats");
+            playerStats = Resources.Load<PlayerStats>("scriptableObjects/ClassesStats/" + playerClassType + "Stats");
 
             _currentHp = playerStats.health;
             _levelUpManager = FindFirstObjectByType<LevelUpManager>();
@@ -73,35 +75,65 @@ namespace PlayerDirectory
 
         private void Update()
         {
-            Vector3 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 newDirection = (mousePosition - transform.position).normalized;
-            
-            _vec = new Vec()
+            UpdateTargetDirection();
+
+            _vec = new Vec
             {
                 Position = transform.position,
-                Direction = newDirection
+                Direction = GetTargetDirection()
             };
 
             foreach (PowerUp powerUp in powerUps)
             {
                 powerUp.Activate(this);
             }
-            
-            if (Input.GetKeyDown(KeyCode.L))
+
+            if (_autoAttackEnabled && CanAttack())
             {
-                GainExperience(100f);
+                BasicAttack();
             }
 
-            if (CanSpecialAttack() || CanAttack())
+            if (_autoAttackEnabled && CanSpecialAttack())
             {
-                HandleAutoTargeting();
+                SpecialAttack();
+            }
+        }
+
+        private void UpdateTargetDirection()
+        {
+            if (!_autoTargetEnabled)
+            {
+                Vector3 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+                _manualTargetDirection = (mousePosition - transform.position).normalized;
+            }
+        }
+
+        private Vector2 GetTargetDirection()
+        {
+            if (_autoTargetEnabled)
+            {
+                Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(transform.position, _autoAttackRange);
+                if (nearestEnemy)
+                {
+                    return ((Vector2)nearestEnemy.transform.position - (Vector2)transform.position).normalized;
+                }
+            }
+
+            return _manualTargetDirection != Vector2.zero ? _manualTargetDirection : Vector2.right;
+        }
+
+        public void SetManualTargetDirection(Vector2 direction)
+        {
+            if (direction != Vector2.zero)
+            {
+                _manualTargetDirection = direction;
             }
         }
 
         public Player(PlayerStats playerStats, IClass playerClass)
         {
             this.playerStats = playerStats;
-            this._playerClass = playerClass;
+            _playerClass = playerClass;
             _lastAttackTime = -playerStats.attackSpeed;
             _lastSpecialAttackTime = -playerStats.specialAttackSpeed;
             _lastDefenseTime = -playerStats.defenseSpeed;
@@ -168,44 +200,29 @@ namespace PlayerDirectory
             List<object> choices = _levelUpManager.GenerateLevelUpChoices(this);
             _levelUpUI.ShowLevelUpChoices(this, choices);
         }
-        
+
         public void Move(Vector2 direction)
         {
             transform.Translate(direction * (playerStats.speed * Time.deltaTime));
         }
-        
-        public float SpecialAttackCooldownProgress => 
-            Mathf.Clamp01((Time.time - _lastSpecialAttackTime) / (playerStats.specialAttackSpeed * statsMod.sAttackSpeedMod));
 
-        public float DefenseCooldownProgress => 
+        public float SpecialAttackCooldownProgress =>
+            Mathf.Clamp01((Time.time - _lastSpecialAttackTime) /
+                          (playerStats.specialAttackSpeed * statsMod.sAttackSpeedMod));
+
+        public float DefenseCooldownProgress =>
             Mathf.Clamp01((Time.time - _lastDefenseTime) / (playerStats.defenseSpeed * statsMod.defenseSpeedMod));
 
-        public bool AutoTargetEnabled 
-        { 
-            get => _autoTargetEnabled; 
-            set => _autoTargetEnabled = value; 
-        }
-
-        public bool AutoAttackEnabled 
-        { 
-            get => _autoAttackEnabled; 
-            set => _autoAttackEnabled = value; 
-        }
-
-        private void HandleAutoTargeting()
+        public bool AutoTargetEnabled
         {
-            if (!_autoTargetEnabled || !_autoAttackEnabled) return;
+            get => _autoTargetEnabled;
+            set => _autoTargetEnabled = value;
+        }
 
-            Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(transform.position, _autoAttackRange);
-            if (!nearestEnemy) return;
-
-            Vector2 directionToEnemy = ((Vector2)nearestEnemy.transform.position - (Vector2)transform.position).normalized;
-            _vec.Direction = directionToEnemy;
-            
-            BasicAttack();
-            
-            SpecialAttack();
-            
+        public bool AutoAttackEnabled
+        {
+            get => _autoAttackEnabled;
+            set => _autoAttackEnabled = value;
         }
     }
 }

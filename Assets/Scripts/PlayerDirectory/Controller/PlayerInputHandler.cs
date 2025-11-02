@@ -10,15 +10,23 @@ namespace PlayerDirectory.Controller
         private Vector2 _moveDirection;
         private PauseManager _pauseManager;
 
+        [SerializeField] private FixedJoystick moveJoystick;
+        [SerializeField] private bool useJoystick = true;
+
         private void Awake()
         {
             _player = GetComponent<Player>();
-            _pauseManager = FindObjectOfType<PauseManager>();
+            _pauseManager = FindFirstObjectByType<PauseManager>();
+
+            if (!moveJoystick)
+            {
+                moveJoystick = FindFirstObjectByType<FixedJoystick>();
+            }
         }
 
         public void OnAttack(InputAction.CallbackContext context)
         {
-            if (context.performed)
+            if (context.performed && !_pauseManager.IsPaused && !_player.AutoAttackEnabled)
             {
                 _player.BasicAttack();
             }
@@ -26,7 +34,7 @@ namespace PlayerDirectory.Controller
 
         public void OnSpecialAttack(InputAction.CallbackContext context)
         {
-            if (context.performed)
+            if (context.performed && !_pauseManager.IsPaused && !_player.AutoAttackEnabled)
             {
                 _player.SpecialAttack();
             }
@@ -34,7 +42,7 @@ namespace PlayerDirectory.Controller
 
         public void OnJump(InputAction.CallbackContext context)
         {
-            if (context.performed)
+            if (context.performed && !_pauseManager.IsPaused)
             {
                 _player.Defense();
             }
@@ -42,9 +50,12 @@ namespace PlayerDirectory.Controller
 
         public void OnMove(InputAction.CallbackContext context)
         {
-            _moveDirection = context.ReadValue<Vector2>();
+            if (!useJoystick)
+            {
+                _moveDirection = context.ReadValue<Vector2>();
+            }
         }
-        
+
         public void OnPause(InputAction.CallbackContext context)
         {
             if (context.performed && _pauseManager)
@@ -52,9 +63,16 @@ namespace PlayerDirectory.Controller
                 _pauseManager.TogglePause();
             }
         }
-        
+
         private void Update()
         {
+            if (_pauseManager && _pauseManager.IsPaused) return;
+
+            if (useJoystick && moveJoystick)
+            {
+                _moveDirection = new Vector2(moveJoystick.Horizontal, moveJoystick.Vertical);
+            }
+
             if (_moveDirection != Vector2.zero)
             {
                 _player.Move(_moveDirection);
