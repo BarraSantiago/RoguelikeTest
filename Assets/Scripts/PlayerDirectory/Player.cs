@@ -86,18 +86,17 @@ namespace PlayerDirectory
             {
                 StartCoroutine(AutoAttackCoroutine());
             }
-            
+
             playerStats.maxHealth = playerStats.health;
             _currentHp = playerStats.maxHealth;
-        
+
             // Start health regeneration
             if (playerStats.healthRegen > 0)
             {
                 _healthRegenCoroutine = StartCoroutine(HealthRegeneration());
             }
-            
-            StartCoroutine(DetectPickups());
 
+            StartCoroutine(DetectPickups());
         }
 
         private void Update()
@@ -108,7 +107,7 @@ namespace PlayerDirectory
                 powerUps[i].Activate(this);
             }
         }
-        
+
         private void UpdateTargetDirection()
         {
             if (!_autoTargetEnabled)
@@ -213,15 +212,15 @@ namespace PlayerDirectory
             get => _autoAttackEnabled;
             set => _autoAttackEnabled = value;
         }
-        
+
         private IEnumerator AutoAttackCoroutine()
         {
             while (true)
             {
                 yield return _autoAttackCheckDelay;
-        
+
                 if (!_autoAttackEnabled) continue;
-        
+
                 UpdateTargetDirection();
                 _vec = new Vec
                 {
@@ -239,172 +238,205 @@ namespace PlayerDirectory
                     SpecialAttack();
                 }
             }
-            
         }
-        
-        private IEnumerator HealthRegeneration()
-    {
-        WaitForSeconds wait = new WaitForSeconds(1f);
-        
-        while (true)
-        {
-            yield return wait;
-            
-            float totalRegen = (playerStats.healthRegen + statsMod.healthRegenBonus);
-            if (totalRegen > 0 && _currentHp < GetMaxHealth())
-            {
-                Heal(totalRegen);
-            }
-        }
-    }
 
-    // Pickup magnet system
-    private IEnumerator DetectPickups()
-    {
-        WaitForSeconds wait = new WaitForSeconds(0.1f);
-        
-        while (true)
+        private IEnumerator HealthRegeneration()
         {
-            yield return wait;
-            
-            float radius = playerStats.pickupRadius * statsMod.pickupRadiusMod;
-            Collider2D[] pickups = Physics2D.OverlapCircleAll(_transform.position, radius);
-            
-            foreach (Collider2D pickup in pickups)
+            WaitForSeconds wait = new WaitForSeconds(1f);
+
+            while (true)
             {
-                if (pickup.CompareTag("Experience") || pickup.CompareTag("Coin"))
+                yield return wait;
+
+                float totalRegen = (playerStats.healthRegen + statsMod.healthRegenBonus);
+                if (totalRegen > 0 && _currentHp < GetMaxHealth())
                 {
-                    AttractPickup(pickup.transform);
+                    Heal(totalRegen);
                 }
             }
         }
-    }
 
-    private void AttractPickup(Transform pickup)
-    {
-        float magnetForce = playerStats.magnetism * statsMod.magnetismMod;
-        Vector2 direction = (_transform.position - pickup.position).normalized;
-        pickup.position = Vector2.MoveTowards(pickup.position, _transform.position, 
-            magnetForce * 5f * Time.deltaTime);
-    }
-
-    public void TakeDamage(float attackDamage)
-    {
-        if (_isInvincible) return;
-        
-        // Apply armor reduction
-        float totalArmor = playerStats.armor + statsMod.armorBonus;
-        float finalDamage = Mathf.Max(0, (attackDamage - totalArmor) / (playerStats.defense * statsMod.defenseMod));
-        
-        _currentHp -= finalDamage;
-
-        if (_currentHp <= 0)
+        // Pickup magnet system
+        private IEnumerator DetectPickups()
         {
-            AttemptRevival();
+            WaitForSeconds wait = new WaitForSeconds(0.1f);
+
+            while (true)
+            {
+                yield return wait;
+
+                float radius = playerStats.pickupRadius * statsMod.pickupRadiusMod;
+                Collider2D[] pickups = Physics2D.OverlapCircleAll(_transform.position, radius);
+
+                foreach (Collider2D pickup in pickups)
+                {
+                    if (pickup.CompareTag("Experience") || pickup.CompareTag("Coin"))
+                    {
+                        AttractPickup(pickup.transform);
+                    }
+                }
+            }
         }
-        else
+
+        private void AttractPickup(Transform pickup)
         {
-            StartCoroutine(InvincibilityFrames());
+            float magnetForce = playerStats.magnetism * statsMod.magnetismMod;
+            Vector2 direction = (_transform.position - pickup.position).normalized;
+            pickup.position = Vector2.MoveTowards(pickup.position, _transform.position,
+                magnetForce * 5f * Time.deltaTime);
         }
-    }
 
-    private IEnumerator InvincibilityFrames()
-    {
-        _isInvincible = true;
-        float duration = playerStats.invincibilityDuration;
-        
-        // Visual feedback
-        SpriteRenderer sprite = GetComponent<SpriteRenderer>();
-        float elapsed = 0;
-        
-        while (elapsed < duration)
+        public void TakeDamage(float attackDamage)
         {
-            sprite.enabled = !sprite.enabled;
-            yield return new WaitForSeconds(0.1f);
-            elapsed += 0.1f;
-        }
-        
-        sprite.enabled = true;
-        _isInvincible = false;
-    }
+            if (_isInvincible) return;
 
-    private void AttemptRevival()
-    {
-        int totalRevivals = playerStats.revival + statsMod.revivalBonus;
-        
-        if (totalRevivals > 0)
+            // Apply armor reduction
+            float totalArmor = playerStats.armor + statsMod.armorBonus;
+            float finalDamage = Mathf.Max(0, (attackDamage - totalArmor) / (playerStats.defense * statsMod.defenseMod));
+
+            _currentHp -= finalDamage;
+
+            if (_currentHp <= 0)
+            {
+                AttemptRevival();
+            }
+            else
+            {
+                StartCoroutine(InvincibilityFrames());
+            }
+        }
+
+        private IEnumerator InvincibilityFrames()
         {
-            playerStats.revival--;
-            _currentHp = GetMaxHealth() * 0.5f; // Revive with 50% HP
-            StartCoroutine(InvincibilityFrames());
-            Debug.Log($"Revived! {playerStats.revival} revivals remaining");
+            _isInvincible = true;
+            float duration = playerStats.invincibilityDuration;
+
+            // Visual feedback
+            SpriteRenderer sprite = GetComponent<SpriteRenderer>();
+            float elapsed = 0;
+
+            while (elapsed < duration)
+            {
+                sprite.enabled = !sprite.enabled;
+                yield return new WaitForSeconds(0.1f);
+                elapsed += 0.1f;
+            }
+
+            sprite.enabled = true;
+            _isInvincible = false;
         }
-        else
+
+        private void AttemptRevival()
         {
-            Die();
+            int totalRevivals = playerStats.revival + statsMod.revivalBonus;
+
+            if (totalRevivals > 0)
+            {
+                playerStats.revival--;
+                _currentHp = GetMaxHealth() * 0.5f; // Revive with 50% HP
+                StartCoroutine(InvincibilityFrames());
+                Debug.Log($"Revived! {playerStats.revival} revivals remaining");
+            }
+            else
+            {
+                Die();
+            }
         }
-    }
 
-    private void Die()
-    {
-        Debug.Log("Player died!");
-        Time.timeScale = 0;
-        // TODO: Show game over screen
-    }
-
-    public void Heal(float amount)
-    {
-        _currentHp = Mathf.Min(_currentHp + amount, GetMaxHealth());
-    }
-
-    public void GainExperience(float amount)
-    {
-        float totalGrowth = playerStats.growth * statsMod.growthMod;
-        bool leveledUp = levelSystem.AddExperience(amount * totalGrowth);
-
-        if (leveledUp)
+        private void Die()
         {
-            OnLevelUp();
+            Debug.Log("Player died!");
+            Time.timeScale = 0;
+            // TODO: Show game over screen
         }
-    }
 
-    private void OnLevelUp()
-    {
-        List<object> choices = _levelUpManager.GenerateLevelUpChoices(this);
-        
-        // Apply reroll/skip/banish charges
-        int rerolls = playerStats.reroll + statsMod.rerollBonus;
-        int skips = playerStats.skip + statsMod.skipBonus;
-        int banishes = playerStats.banish + statsMod.banishBonus;
-        
-        _levelUpUI.ShowLevelUpChoices(this, choices, rerolls, skips, banishes);
-    }
+        public void Heal(float amount)
+        {
+            _currentHp = Mathf.Min(_currentHp + amount, GetMaxHealth());
+        }
 
-    // Calculate final cooldown with reduction
-    private float GetModifiedCooldown(float baseCooldown, float cooldownMod)
-    {
-        float totalReduction = playerStats.cooldownReduction + statsMod.cooldownReductionBonus;
-        return baseCooldown * cooldownMod * (1f - Mathf.Clamp01(totalReduction));
-    }
+        public void GainExperience(float amount)
+        {
+            float totalGrowth = playerStats.growth * statsMod.growthMod;
+            bool leveledUp = levelSystem.AddExperience(amount * totalGrowth);
 
-    private bool CanAttack()
-    {
-        float modifiedCooldown = GetModifiedCooldown(playerStats.attackSpeed, statsMod.attackSpeedMod);
-        return Time.time >= _lastAttackTime + modifiedCooldown;
-    }
+            if (leveledUp)
+            {
+                OnLevelUp();
+            }
+        }
 
-    private bool CanSpecialAttack()
-    {
-        float modifiedCooldown = GetModifiedCooldown(playerStats.specialAttackSpeed, statsMod.sAttackSpeedMod);
-        return Time.time >= _lastSpecialAttackTime + modifiedCooldown;
-    }
+        private void OnLevelUp()
+        {
+            List<object> choices = _levelUpManager.GenerateLevelUpChoices(this);
 
-    // Getters for UI
-    public float GetMaxHealth() => playerStats.maxHealth;
-    public float GetCurrentHealth() => _currentHp;
-    public float GetHealthPercentage() => _currentHp / GetMaxHealth();
-    public int GetRevivals() => playerStats.revival + statsMod.revivalBonus;
-    public float GetPickupRadius() => playerStats.pickupRadius * statsMod.pickupRadiusMod;
+            // Apply reroll/skip/banish charges
+            int rerolls = playerStats.reroll + statsMod.rerollBonus;
+            int skips = playerStats.skip + statsMod.skipBonus;
+            int banishes = playerStats.banish + statsMod.banishBonus;
 
+            _levelUpUI.ShowLevelUpChoices(this, choices, rerolls, skips, banishes);
+        }
+
+        // Calculate final cooldown with reduction
+        private float GetModifiedCooldown(float baseCooldown, float cooldownMod)
+        {
+            float totalReduction = playerStats.cooldownReduction + statsMod.cooldownReductionBonus;
+            return baseCooldown * cooldownMod * (1f - Mathf.Clamp01(totalReduction));
+        }
+
+        private bool CanAttack()
+        {
+            float modifiedCooldown = GetModifiedCooldown(playerStats.attackSpeed, statsMod.attackSpeedMod);
+            return Time.time >= _lastAttackTime + modifiedCooldown;
+        }
+
+        private bool CanSpecialAttack()
+        {
+            float modifiedCooldown = GetModifiedCooldown(playerStats.specialAttackSpeed, statsMod.sAttackSpeedMod);
+            return Time.time >= _lastSpecialAttackTime + modifiedCooldown;
+        }
+
+        public void EvolveClass(IClass newClass, string subclassName)
+        {
+            _playerClass = newClass;
+            _currentSubclass = subclassName;
+
+            // Initialize subclass with player reference
+            if (_playerClass is Berserker berserker)
+            {
+                berserker.Initialize(this);
+            }
+            else if (_playerClass is Ranger rangerSubclass)
+            {
+                rangerSubclass.ArrowPool = GetComponent<ArrowPool>() ?? gameObject.AddComponent<ArrowPool>();
+            }
+
+            Debug.Log($"Evolved to {subclassName}!");
+            StartCoroutine(EvolutionEffect());
+        }
+
+        private IEnumerator EvolutionEffect()
+        {
+            SpriteRenderer sprite = GetComponent<SpriteRenderer>();
+            Color original = sprite.color;
+
+            for (int i = 0; i < 5; i++)
+            {
+                sprite.color = Color.cyan;
+                yield return new WaitForSeconds(0.1f);
+                sprite.color = original;
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+
+        public string GetCurrentSubclass() => _currentSubclass;
+
+        // Getters for UI
+        public float GetMaxHealth() => playerStats.maxHealth;
+        public float GetCurrentHealth() => _currentHp;
+        public float GetHealthPercentage() => _currentHp / GetMaxHealth();
+        public int GetRevivals() => playerStats.revival + statsMod.revivalBonus;
+        public float GetPickupRadius() => playerStats.pickupRadius * statsMod.pickupRadiusMod;
     }
 }

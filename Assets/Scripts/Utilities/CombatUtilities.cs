@@ -60,8 +60,9 @@ namespace Utilities
             return result;
         }
 
-        public static void DamageEnemies(Enemy[] enemies, Stats playerStats, StatsModifier statsMod)
+        public static float DamageEnemies(Enemy[] enemies, Stats playerStats, StatsModifier statsMod)
         {
+            float totalDamage = 0f;
             float damage = CalculateDamage(playerStats, statsMod);
 
             for (int i = 0; i < enemies.Length; i++)
@@ -69,8 +70,10 @@ namespace Utilities
                 if (enemies[i])
                 {
                     enemies[i].TakeDamage(damage);
+                    totalDamage += damage;
                 }
             }
+            return totalDamage;
         }
 
         public static void KnockbackEnemies(Enemy[] enemies, Vector2 origin, float force)

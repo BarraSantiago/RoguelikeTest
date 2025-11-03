@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Classes.Evolution;
 using Entities.XpDirectory;
 using UnityEngine;
 
@@ -9,23 +10,28 @@ namespace Entities.EnemyDirectory
     public class Enemy : MonoBehaviour, IEnemy
     {
         public EnemyData data;
-        private SpriteRenderer _spriteRenderer;
-        private Color _originalColor;
         public Action<Enemy> OnDeath { get; set; }
         public int frameImmunity = 10;
         public bool inmmune = false;
-        private Rigidbody2D _rigidbody;
-        private bool _canMove = true;
         public float experienceValue = 10f;
         public static EnemyManager EnemyManager;
         public static ExperiencePool ExperiencePool;
 
+        private Color _originalColor;
         private EnemyType _enemyType = EnemyType.Normal;
         private static readonly Dictionary<Collider2D, Enemy> ColliderToEnemy = new();
         private Collider2D _collider;
-
+        private SpriteRenderer _spriteRenderer;
+        private Rigidbody2D _rigidbody;
+        private bool _canMove = true;
         private Transform _transform;
         private WaitForSeconds _frameWait;
+        private bool _isSlowed;
+        private float _slowMultiplier = 1f;
+        private float _slowEndTime;
+        private bool _isRooted;
+        private float _rootEndTime;
+        private float _originalSpeed;
         public Vector2 Position => _transform.position;
 
         private void Awake()
@@ -41,9 +47,100 @@ namespace Entities.EnemyDirectory
             {
                 ColliderToEnemy[_collider] = this;
             }
+
+            _originalSpeed = data.speed;
         }
 
+        private void Update()
+        {
+            UpdateStatusEffects();
+        }
 
+        private void UpdateStatusEffects()
+        {
+            // Update slow
+            if (_isSlowed && Time.time >= _slowEndTime)
+            {
+                RemoveSlow();
+            }
+
+            // Update root
+            if (_isRooted && Time.time >= _rootEndTime)
+            {
+                RemoveRoot();
+            }
+        }
+
+        public void Slow(float slowMultiplier, float duration)
+        {
+            _isSlowed = true;
+            _slowMultiplier = slowMultiplier;
+            _slowEndTime = Time.time + duration;
+
+            // Visual feedback - blue tint
+            if (!_isRooted)
+            {
+                _spriteRenderer.color = new Color(0.6f, 0.8f, 1f);
+            }
+
+            UpdateMovementSpeed();
+        }
+
+        public void Root(float duration)
+        {
+            _isRooted = true;
+            _rootEndTime = Time.time + duration;
+            _canMove = false;
+
+            // Visual feedback - purple tint
+            _spriteRenderer.color = new Color(0.8f, 0.4f, 1f);
+
+            // Stop movement
+            if (_rigidbody != null)
+            {
+                _rigidbody.linearVelocity = Vector2.zero;
+            }
+        }
+
+        private void RemoveSlow()
+        {
+            _isSlowed = false;
+            _slowMultiplier = 1f;
+
+            if (!_isRooted)
+            {
+                _spriteRenderer.color = _originalColor;
+            }
+
+            UpdateMovementSpeed();
+        }
+
+        private void RemoveRoot()
+        {
+            _isRooted = false;
+            _canMove = true;
+
+            if (_isSlowed)
+            {
+                _spriteRenderer.color = new Color(0.6f, 0.8f, 1f);
+            }
+            else
+            {
+                _spriteRenderer.color = _originalColor;
+            }
+        }
+
+        private void UpdateMovementSpeed()
+        {
+            if (_isRooted)
+            {
+                data.speed = 0;
+            }
+            else
+            {
+                data.speed = _originalSpeed * _slowMultiplier;
+            }
+        }
 
         public void SetPosition(Vector3 position)
         {
@@ -53,8 +150,10 @@ namespace Entities.EnemyDirectory
         public void TakeDamage(float damage)
         {
             if (inmmune) return;
+
             data.health -= damage;
-            StartCoroutine(FlashRed());
+            StartCoroutine(DamageFlash());
+            StartCoroutine(FrameInvulnerability());
 
             if (data.health <= 0)
             {
@@ -62,15 +161,34 @@ namespace Entities.EnemyDirectory
             }
         }
 
-        private IEnumerator FlashRed()
+        private IEnumerator DamageFlash()
+        {
+            Color flashColor = _isRooted ? new Color(1f, 0.4f, 1f) :
+                _isSlowed ? new Color(0.8f, 1f, 1f) :
+                Color.red;
+
+            _spriteRenderer.color = flashColor;
+            yield return new WaitForSeconds(0.1f);
+
+            if (_isRooted)
+            {
+                _spriteRenderer.color = new Color(0.8f, 0.4f, 1f);
+            }
+            else if (_isSlowed)
+            {
+                _spriteRenderer.color = new Color(0.6f, 0.8f, 1f);
+            }
+            else
+            {
+                _spriteRenderer.color = _originalColor;
+            }
+        }
+
+        private IEnumerator FrameInvulnerability()
         {
             inmmune = true;
-            _spriteRenderer.color = Color.red;
-
             yield return _frameWait;
-
             inmmune = false;
-            _spriteRenderer.color = _originalColor;
         }
 
         public void Move(Vector2 direction)
@@ -92,6 +210,10 @@ namespace Entities.EnemyDirectory
             OnDeath?.Invoke(this);
             EnemyManager.HandleEnemyDeath(this);
             ExperiencePool.SpawnExperienceDrop(transform.position, experienceValue);
+
+            SubclassEvolutionManager evolutionManager =
+                FindFirstObjectByType<Classes.Evolution.SubclassEvolutionManager>();
+            evolutionManager?.OnEnemyKilled();
         }
 
         private IEnumerator ContinueMoving()
@@ -135,6 +257,23 @@ namespace Entities.EnemyDirectory
             }
         }
 
+
+        public bool IsDead() => data.health <= 0;
+        public float GetHealth() => data.health;
+        public bool IsRooted() => _isRooted;
+        public bool IsSlowed() => _isSlowed;
+
+        private void OnDisable()
+        {
+            // Reset status effects when returned to pool
+            _isSlowed = false;
+            _isRooted = false;
+            _slowMultiplier = 1f;
+            _canMove = true;
+            data.speed = _originalSpeed;
+            _spriteRenderer.color = _originalColor;
+        }
+        
         private void OnDestroy()
         {
             if (_collider)
