@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Classes;
 using Classes.RangerClass;
@@ -46,6 +47,10 @@ namespace PlayerDirectory
         private LevelUpUI _levelUpUI;
         private Camera _mainCamera;
         private Vector2 _manualTargetDirection;
+        private static readonly int MaxPowerUps = 10; // Reasonable limit
+        private int _powerUpCount;
+        private Transform _transform;
+        private static WaitForSeconds _autoAttackCheckDelay = new WaitForSeconds(0.1f);
 
         private void Awake()
         {
@@ -71,34 +76,23 @@ namespace PlayerDirectory
             _levelUpManager = FindFirstObjectByType<LevelUpManager>();
             _levelUpUI = FindFirstObjectByType<LevelUpUI>();
             _mainCamera = Camera.main;
+            _transform = transform;
+
+            if (_autoAttackEnabled)
+            {
+                StartCoroutine(AutoAttackCoroutine());
+            }
         }
 
         private void Update()
         {
-            UpdateTargetDirection();
-
-            _vec = new Vec
+            // Only iterate actual power-ups, not capacity
+            for (int i = 0; i < _powerUpCount; i++)
             {
-                Position = transform.position,
-                Direction = GetTargetDirection()
-            };
-
-            foreach (PowerUp powerUp in powerUps)
-            {
-                powerUp.Activate(this);
-            }
-
-            if (_autoAttackEnabled && CanAttack())
-            {
-                BasicAttack();
-            }
-
-            if (_autoAttackEnabled && CanSpecialAttack())
-            {
-                SpecialAttack();
+                powerUps[i].Activate(this);
             }
         }
-
+        
         private void UpdateTargetDirection()
         {
             if (!_autoTargetEnabled)
@@ -108,14 +102,29 @@ namespace PlayerDirectory
             }
         }
 
+        public void AddPowerUp(PowerUp powerUp)
+        {
+            if (_powerUpCount < MaxPowerUps)
+            {
+                powerUps.Add(powerUp);
+                _powerUpCount++;
+            }
+        }
+
+        // Optimize target finding with distance check first
         private Vector2 GetTargetDirection()
         {
             if (_autoTargetEnabled)
             {
-                Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(transform.position, _autoAttackRange);
+                Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(_transform.position, _autoAttackRange);
                 if (nearestEnemy)
                 {
-                    return ((Vector2)nearestEnemy.transform.position - (Vector2)transform.position).normalized;
+                    Vector2 direction = (Vector2)nearestEnemy.transform.position - (Vector2)_transform.position;
+                    float sqrDistance = direction.sqrMagnitude;
+                    if (sqrDistance > 0.01f) // Avoid division by zero
+                    {
+                        return direction / Mathf.Sqrt(sqrDistance); // Manual normalization
+                    }
                 }
             }
 
@@ -223,6 +232,33 @@ namespace PlayerDirectory
         {
             get => _autoAttackEnabled;
             set => _autoAttackEnabled = value;
+        }
+        
+        private IEnumerator AutoAttackCoroutine()
+        {
+            while (true)
+            {
+                yield return _autoAttackCheckDelay;
+        
+                if (!_autoAttackEnabled) continue;
+        
+                UpdateTargetDirection();
+                _vec = new Vec
+                {
+                    Position = _transform.position,
+                    Direction = GetTargetDirection()
+                };
+
+                if (CanAttack())
+                {
+                    BasicAttack();
+                }
+
+                if (CanSpecialAttack())
+                {
+                    SpecialAttack();
+                }
+            }
         }
     }
 }

@@ -11,8 +11,8 @@ namespace Entities.EnemyDirectory
         public float endTime;
         public int baseSpawnCount;
         public float spawnInterval;
-        [Range(0,1)]public float eliteChance;
-        [Range(0,1)]public float bossChance;
+        [Range(0, 1)] public float eliteChance;
+        [Range(0, 1)] public float bossChance;
         public EnemyScaling scaling;
     }
 
@@ -35,6 +35,19 @@ namespace Entities.EnemyDirectory
         [SerializeField] private float healthScalingPerMinute = 0.1f;
         [SerializeField] private float damageScalingPerMinute = 0.08f;
         [SerializeField] private float speedScalingPerMinute = 0.05f;
+
+        [Header("Mobile Optimization")] 
+        [SerializeField] private int maxSpawnsPerFrame = 5;
+
+        private Queue<SpawnRequest> _spawnQueue = new Queue<SpawnRequest>();
+
+        private struct SpawnRequest
+        {
+            public Vector3 Position;
+            public EnemyScaling Scaling;
+            public EnemyType Type;
+            public int PrefabIndex;
+        }
 
         private EnemyManager _enemyManager;
         private float _gameStartTime;
@@ -128,7 +141,10 @@ namespace Entities.EnemyDirectory
         {
             float gameTime = GameTime;
 
-            // Check if we should transition to next wave
+            // Process spawn queue gradually
+            ProcessSpawnQueue();
+
+            // Wave transition check
             if (_currentWave != null && gameTime >= _currentWave.endTime)
             {
                 if (_currentWaveIndex + 1 < waves.Count)
@@ -137,11 +153,52 @@ namespace Entities.EnemyDirectory
                 }
             }
 
-            // Spawn enemies
+            // Queue spawns instead of spawning immediately
             if (Time.time >= _nextSpawnTime)
             {
-                SpawnWaveEnemies();
+                QueueWaveEnemies();
                 _nextSpawnTime = Time.time + _currentWave.spawnInterval;
+            }
+        }
+
+        private void QueueWaveEnemies()
+        {
+            if (_enemyManager.ActiveEnemyCount >= maxSimultaneousEnemies)
+                return;
+
+            int spawnCount = _currentWave.baseSpawnCount;
+            EnemyScaling scaling = CalculateCurrentScaling();
+
+            for (int i = 0; i < spawnCount; i++)
+            {
+                Vector3 spawnPosition = GetRandomSpawnPosition();
+                EnemyType enemyType = DetermineEnemyType();
+                int prefabIndex = GetEnemyPrefabIndex(enemyType);
+
+                _spawnQueue.Enqueue(new SpawnRequest
+                {
+                    Position = spawnPosition,
+                    Scaling = scaling,
+                    Type = enemyType,
+                    PrefabIndex = prefabIndex
+                });
+            }
+        }
+
+        private void ProcessSpawnQueue()
+        {
+            int spawned = 0;
+            while (_spawnQueue.Count > 0 && spawned < maxSpawnsPerFrame)
+            {
+                SpawnRequest request = _spawnQueue.Dequeue();
+                Enemy enemy = _enemyManager.SpawnEnemy(request.PrefabIndex, request.Position);
+
+                if (enemy)
+                {
+                    ApplyScaling(enemy, request.Scaling, request.Type);
+                }
+
+                spawned++;
             }
         }
 

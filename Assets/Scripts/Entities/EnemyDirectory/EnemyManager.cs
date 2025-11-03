@@ -20,6 +20,12 @@ namespace Entities.EnemyDirectory
         public int ActiveEnemyCount => _activeEnemies.Count;
         public Transform PlayerTransform => _playerTransform;
         
+        [Header("Performance Settings")]
+        [SerializeField] private float updateInterval = 0.1f; // Update enemies 10 times per second
+        [SerializeField] private int enemiesPerFrame = 10; // Process enemies in batches
+        
+        private float _lastUpdateTime;
+        private int _currentUpdateIndex;
         private Player _player;
         private Transform _playerTransform;
         private Dictionary<int, Queue<GameObject>> _enemyPools = new();
@@ -44,6 +50,16 @@ namespace Entities.EnemyDirectory
             }
 
             SpawnEnemiesAroundPlayer(10);
+        }
+        
+        
+        private void Update()
+        {
+            if (Time.time - _lastUpdateTime < updateInterval)
+                return;
+        
+            _lastUpdateTime = Time.time;
+            UpdateEnemyBehaviorsBatched();
         }
 
         private void InitializePools()
@@ -117,9 +133,72 @@ namespace Entities.EnemyDirectory
             }
         }
 
-        private void Update()
+        
+        // Process enemies in batches to spread load
+        private void UpdateEnemyBehaviorsBatched()
         {
-            UpdateEnemyBehaviors();
+            if (!_playerTransform || _activeEnemies.Count == 0) return;
+        
+            Vector2 playerPosition = _playerTransform.position;
+            int enemiesThisFrame = Mathf.Min(enemiesPerFrame, _activeEnemies.Count);
+            
+            for (int i = 0; i < enemiesThisFrame; i++)
+            {
+                _currentUpdateIndex = (_currentUpdateIndex + 1) % _activeEnemies.Count;
+                Enemy enemy = _activeEnemies[_currentUpdateIndex];
+                
+                if (!enemy || !enemy.gameObject.activeInHierarchy)
+                    continue;
+        
+                UpdateSingleEnemy(enemy, playerPosition);
+            }
+        }
+        
+        // Optimize distance calculations with squared distance
+        private void UpdateSingleEnemy(Enemy enemy, Vector2 playerPosition)
+        {
+            Vector2 enemyPosition = enemy.transform.position;
+            Vector2 toPlayer = playerPosition - enemyPosition;
+            float sqrDistance = toPlayer.sqrMagnitude;
+            float attackRangeSqr = enemy.data.attackRange * enemy.data.attackRange;
+        
+            if (sqrDistance <= attackRangeSqr)
+            {
+                if (Time.time >= enemy.data.lastAttackTime + enemy.data.attackCooldown)
+                {
+                    _player.TakeDamage(enemy.data.attackDamage);
+                    enemy.data.lastAttackTime = Time.time;
+                }
+            }
+            else
+            {
+                // Use pre-calculated direction
+                Vector2 direction = toPlayer / Mathf.Sqrt(sqrDistance);
+                enemy.Move(direction);
+            }
+        }
+        
+        // Add spatial partitioning for better performance
+        public Enemy GetNearestEnemy(Vector2 position, float maxRange)
+        {
+            Enemy nearest = null;
+            float minSqrDistance = maxRange * maxRange;
+        
+            foreach (Enemy enemy in _activeEnemies)
+            {
+                if (!enemy.gameObject.activeInHierarchy) continue;
+                
+                Vector2 offset = (Vector2)enemy.transform.position - position;
+                float sqrDistance = offset.sqrMagnitude;
+                
+                if (sqrDistance < minSqrDistance)
+                {
+                    minSqrDistance = sqrDistance;
+                    nearest = enemy;
+                }
+            }
+        
+            return nearest;
         }
 
         private void UpdateEnemyBehaviors()

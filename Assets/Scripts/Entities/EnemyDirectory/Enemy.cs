@@ -19,22 +19,31 @@ namespace Entities.EnemyDirectory
         public float experienceValue = 10f;
         public static EnemyManager EnemyManager;
         public static ExperiencePool ExperiencePool;
-        
+
         private EnemyType _enemyType = EnemyType.Normal;
         private static readonly Dictionary<Collider2D, Enemy> ColliderToEnemy = new();
         private Collider2D _collider;
 
+        private Transform _transform;
+        private WaitForSeconds _frameWait;
+        public Vector2 Position => _transform.position;
+
         private void Awake()
         {
+            _transform = transform;
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _originalColor = _spriteRenderer.color;
             _rigidbody = GetComponent<Rigidbody2D>();
             _collider = GetComponent<Collider2D>();
+            _frameWait = new WaitForSeconds(Time.fixedDeltaTime);
+
             if (_collider != null)
             {
                 ColliderToEnemy[_collider] = this;
             }
         }
+
+
 
         public void SetPosition(Vector3 position)
         {
@@ -57,10 +66,8 @@ namespace Entities.EnemyDirectory
         {
             inmmune = true;
             _spriteRenderer.color = Color.red;
-            for (int i = 0; i < frameImmunity; i++)
-            {
-                yield return null; // Wait for one frame
-            }
+
+            yield return _frameWait;
 
             inmmune = false;
             _spriteRenderer.color = _originalColor;
@@ -69,7 +76,8 @@ namespace Entities.EnemyDirectory
         public void Move(Vector2 direction)
         {
             if (!_canMove) return;
-            _rigidbody.MovePosition(_rigidbody.position + direction * (data.speed * Time.deltaTime));
+            Vector2 movement = direction * (data.speed * Time.fixedDeltaTime);
+            _rigidbody.MovePosition(_rigidbody.position + movement);
         }
 
         public void Knockback(Vector2 direction, float knockback)
@@ -107,13 +115,13 @@ namespace Entities.EnemyDirectory
         {
             return ColliderToEnemy.TryGetValue(collider, out Enemy enemy) ? enemy : null;
         }
-        
+
         public void SetEnemyType(EnemyType enemyType)
         {
             _enemyType = enemyType;
             ApplyVisualEffects();
         }
-        
+
         private void ApplyVisualEffects()
         {
             switch (_enemyType)
