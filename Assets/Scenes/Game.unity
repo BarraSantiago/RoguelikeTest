@@ -2456,6 +2456,8 @@ MonoBehaviour:
   enemyContainer: {fileID: 106815830}
   spawnRadius: 10
   maxEnemies: 20
+  updateInterval: 0.1
+  enemiesPerFrame: 10
 --- !u!114 &584674452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2474,6 +2476,7 @@ MonoBehaviour:
   healthScalingPerMinute: 0.1
   damageScalingPerMinute: 0.08
   speedScalingPerMinute: 0.05
+  maxSpawnsPerFrame: 5
 --- !u!1 &591599045
 GameObject:
   m_ObjectHideFlags: 0
@@ -5272,7 +5275,12 @@ MonoBehaviour:
   rerollButton: {fileID: 1397088987}
   tooltipPanel: {fileID: 345017926}
   tooltipText: {fileID: 2098734987}
-  rerollCost: 50
+  rerollChargesText: {fileID: 0}
+  skipChargesText: {fileID: 0}
+  banishChargesText: {fileID: 0}
+  chargesPanel: {fileID: 0}
+  levelText: {fileID: 0}
+  choosePromptText: {fileID: 0}
 --- !u!4 &1284160009
 Transform:
   m_ObjectHideFlags: 0
@@ -6841,6 +6849,7 @@ MonoBehaviour:
   _autoTargetEnabled: 1
   _autoAttackEnabled: 1
   _autoAttackRange: 0
+  _currentSubclass: 
   playerStats: {fileID: 11400000, guid: a10f8742b8fd1dd48924812d30b695ea, type: 2}
   statsMod: {fileID: 11400000, guid: 3603d0a72eeee9e49a3d85d85b579745, type: 2}
   powerUps: []
