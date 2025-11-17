@@ -33,28 +33,28 @@ namespace PlayerDirectory
         [SerializeField] private float _autoAttackRange = 10f;
         [SerializeField] private string _currentSubclass = "None";
 
+        public Classes GetPlayerClassType() => playerClassType;
         public PlayerStats playerStats;
         public PlayerStatsModifier statsMod;
         public List<PowerUp> powerUps;
         public LevelSystem levelSystem = new();
 
+        private static WaitForSeconds _autoAttackCheckDelay = new WaitForSeconds(0.1f);
         private LevelUpManager _levelUpManager;
         private IClass _playerClass;
+        private LevelUpUI _levelUpUI;
+        private Camera _mainCamera;
+        private Coroutine _healthRegenCoroutine;
+        private Vector2 _manualTargetDirection;
+        private Transform _transform;
+        private Vec _vec;
         private float _lastAttackTime;
         private float _lastSpecialAttackTime;
         private float _lastDefenseTime;
-        private Vec _vec;
         private float _currentHp = 100;
-        private LevelUpUI _levelUpUI;
-        private Camera _mainCamera;
-        private Vector2 _manualTargetDirection;
         private static readonly int MaxPowerUps = 10; // Reasonable limit
         private int _powerUpCount;
-        private Transform _transform;
-        private static WaitForSeconds _autoAttackCheckDelay = new WaitForSeconds(0.1f);
         private bool _isInvincible;
-        private Coroutine _healthRegenCoroutine;
-        public Classes GetPlayerClassType() => playerClassType;
 
         private void Awake()
         {
@@ -188,7 +188,8 @@ namespace PlayerDirectory
 
         public void Move(Vector2 direction)
         {
-            transform.Translate(direction * (playerStats.speed * Time.deltaTime));
+            float speed = playerStats.speed * statsMod.speedMod;
+            _transform.position += (Vector3)(direction.normalized * (speed * Time.deltaTime));
         }
 
         public float SpecialAttackCooldownProgress =>

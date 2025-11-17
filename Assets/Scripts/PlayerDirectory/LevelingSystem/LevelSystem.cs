@@ -6,7 +6,7 @@ namespace PlayerDirectory.LevelingSystem
     [Serializable]
     public class LevelSystem
     {
-        [SerializeField] private float baseExperience = 100f;
+        [SerializeField] private float baseExperience = 7f;
         [SerializeField] private float exponentFactor = 1.1f;
         [SerializeField] private float linearFactor = 10f;
 

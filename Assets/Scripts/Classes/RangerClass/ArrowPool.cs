@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Entities;
 using UnityEngine;
@@ -105,6 +106,12 @@ namespace Classes.RangerClass
         {
             _activeArrows.Remove(arrow);
             base.Return(arrow);
+        }
+
+        private void OnDestroy()
+        {
+            _instance = null;
+            Arrow._pool = null;
         }
     }
 }

@@ -9,6 +9,7 @@ namespace PlayerDirectory.Controller
         private Player _player;
         private Vector2 _moveDirection;
         private PauseManager _pauseManager;
+        private Transform _transform;
 
         [SerializeField] private FixedJoystick moveJoystick;
         [SerializeField] private bool useJoystick = true;
@@ -17,6 +18,7 @@ namespace PlayerDirectory.Controller
         {
             _player = GetComponent<Player>();
             _pauseManager = FindFirstObjectByType<PauseManager>();
+            _transform = transform;
 
             if (!moveJoystick)
             {
@@ -64,16 +66,20 @@ namespace PlayerDirectory.Controller
             }
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
-            if (_pauseManager && _pauseManager.IsPaused) return;
+            if (_pauseManager && _pauseManager.IsPaused)
+            {
+                _moveDirection = Vector2.zero;
+                return;
+            }
 
             if (useJoystick && moveJoystick)
             {
                 _moveDirection = new Vector2(moveJoystick.Horizontal, moveJoystick.Vertical);
             }
 
-            if (_moveDirection != Vector2.zero)
+            if (_moveDirection.sqrMagnitude > 0.01f)
             {
                 _player.Move(_moveDirection);
             }

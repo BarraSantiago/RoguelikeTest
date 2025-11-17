@@ -248,11 +248,14 @@ namespace Entities.EnemyDirectory
         {
             switch (_enemyType)
             {
+                case EnemyType.Normal:
+                    _spriteRenderer.color = new Color(.5f, 0f, 0f); // Normal color
+                    break;
                 case EnemyType.Elite:
-                    _spriteRenderer.color = new Color(1f, 0.8f, 0f); // Golden tint
+                    _spriteRenderer.color = new Color(.7f, 0.2f, 0f); // Golden tint
                     break;
                 case EnemyType.Boss:
-                    _spriteRenderer.color = new Color(0.8f, 0f, 0f); // Red tint
+                    _spriteRenderer.color = new Color(1f, 0f, 0f); // Red tint
                     break;
             }
         }
