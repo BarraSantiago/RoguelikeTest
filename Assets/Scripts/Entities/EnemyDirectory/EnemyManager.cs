@@ -8,30 +8,32 @@ namespace Entities.EnemyDirectory
     public class EnemyManager : MonoBehaviour
     {
         [Header("Enemy Prefabs")] 
-        public GameObject[] enemyPrefabs;
-
+        [SerializeField]public GameObject[] enemyPrefabs;
+        
         [Header("Pooling Settings")] 
-        public int initialPoolSize = 10;
-        public Transform enemyContainer;
+        [SerializeField]public int initialPoolSize = 10;
+        [SerializeField]public Transform enemyContainer;
 
         [Header("Spawn Settings")] 
-        public float spawnRadius = 10f;
-        public int maxEnemies = 20;
-        public int ActiveEnemyCount => _activeEnemies.Count;
-        public Transform PlayerTransform => _playerTransform;
+        [SerializeField]public float spawnRadius = 10f;
+        [SerializeField]public int maxEnemies = 20;
         
         [Header("Performance Settings")]
         [SerializeField] private float updateInterval = 0.1f; // Update enemies 10 times per second
         [SerializeField] private int enemiesPerFrame = 10; // Process enemies in batches
         
+        public int ActiveEnemyCount => _activeEnemies.Count;
+        public Transform PlayerTransform => _playerTransform;
         private float _lastUpdateTime;
         private int _currentUpdateIndex;
         private Player _player;
         private Transform _playerTransform;
         private Dictionary<int, Queue<GameObject>> _enemyPools = new();
         private Dictionary<int, EnemyData> _enemyDataTemplates = new();
-        private List<Enemy> _activeEnemies = new();
-
+        private static List<Enemy> _activeEnemies = new();
+        
+        public static List<Enemy> Enemies => _activeEnemies;
+        
         private void Awake()
         {
             InitializePools();
@@ -179,7 +181,7 @@ namespace Entities.EnemyDirectory
         }
         
         // Add spatial partitioning for better performance
-        public Enemy GetNearestEnemy(Vector2 position, float maxRange)
+        public static Enemy GetNearestEnemy(Vector2 position, float maxRange)
         {
             Enemy nearest = null;
             float minSqrDistance = maxRange * maxRange;

@@ -6,36 +6,31 @@ namespace Utilities
 {
     public static class CombatUtilities
     {
-        private static readonly Collider2D[] ColliderBuffer = new Collider2D[64];
-        private static Enemy[] _enemyCache;
-        private static float _lastCacheTime;
-        private const float CacheLifetime = 0.1f;
-
         public static Enemy[] GetEnemiesInRadius(Vector2 position, float radius)
         {
-            int count = Physics2D.OverlapCircleNonAlloc(position, radius, ColliderBuffer);
-            int enemyCount = 0;
+            if (EnemyManager.Enemies == null || EnemyManager.Enemies.Count == 0) return new Enemy[0];
 
-            for (int i = 0; i < count; i++)
+            float radiusSqr = radius * radius;
+            int validCount = 0;
+            Enemy[] buffer = new Enemy[EnemyManager.Enemies.Count];
+
+            for (int i = 0; i < EnemyManager.Enemies.Count; i++)
             {
-                if (ColliderBuffer[i].CompareTag("Enemy"))
+                Enemy enemy = EnemyManager.Enemies[i];
+                if (!enemy || !enemy.gameObject.activeInHierarchy) continue;
+
+                float distSqr = Vector2.SqrMagnitude((Vector2)enemy.transform.position - position);
+                if (distSqr <= radiusSqr)
                 {
-                    enemyCount++;
+                    buffer[validCount++] = enemy;
                 }
             }
 
-            Enemy[] enemies = new Enemy[enemyCount];
-            int index = 0;
+            if (validCount == 0) return new Enemy[0];
 
-            for (int i = 0; i < count && index < enemyCount; i++)
-            {
-                if (ColliderBuffer[i].CompareTag("Enemy"))
-                {
-                    enemies[index++] = ColliderBuffer[i].GetComponent<Enemy>();
-                }
-            }
-
-            return enemies;
+            Enemy[] result = new Enemy[validCount];
+            System.Array.Copy(buffer, result, validCount);
+            return result;
         }
 
         public static Enemy[] GetEnemiesInCone(Vector2 position, Vector2 direction, float radius, float angle)
@@ -73,6 +68,7 @@ namespace Utilities
                     totalDamage += damage;
                 }
             }
+
             return totalDamage;
         }
 
@@ -126,28 +122,8 @@ namespace Utilities
 
         public static Enemy GetNearestEnemy(Vector2 position, float maxRange)
         {
-            if (Time.time - _lastCacheTime > CacheLifetime)
-            {
-                _enemyCache = Object.FindObjectsOfType<Enemy>();
-                _lastCacheTime = Time.time;
-            }
-
-            Enemy nearestEnemy = null;
-            float nearestDistSqr = maxRange * maxRange;
-
-            for (int i = 0; i < _enemyCache.Length; i++)
-            {
-                if (!_enemyCache[i]) continue;
-
-                float distSqr = Vector2.SqrMagnitude((Vector2)_enemyCache[i].transform.position - position);
-                if (distSqr < nearestDistSqr)
-                {
-                    nearestDistSqr = distSqr;
-                    nearestEnemy = _enemyCache[i];
-                }
-            }
-
-            return nearestEnemy;
+            if (EnemyManager.Enemies == null) return null;
+            return EnemyManager.GetNearestEnemy(position, maxRange);
         }
     }
 }

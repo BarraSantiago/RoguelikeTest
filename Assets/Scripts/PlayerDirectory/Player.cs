@@ -126,24 +126,19 @@ namespace PlayerDirectory
             }
         }
 
-        // Optimize target finding with distance check first
         private Vector2 GetTargetDirection()
         {
-            if (_autoTargetEnabled)
+            Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(_transform.position, _autoAttackRange);
+            if (nearestEnemy)
             {
-                Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(_transform.position, _autoAttackRange);
-                if (nearestEnemy)
+                Vector2 direction = (Vector2)nearestEnemy.transform.position - (Vector2)_transform.position;
+                float sqrDistance = direction.sqrMagnitude;
+                if (sqrDistance > 0.01f)
                 {
-                    Vector2 direction = (Vector2)nearestEnemy.transform.position - (Vector2)_transform.position;
-                    float sqrDistance = direction.sqrMagnitude;
-                    if (sqrDistance > 0.01f) // Avoid division by zero
-                    {
-                        return direction / Mathf.Sqrt(sqrDistance); // Manual normalization
-                    }
+                    return direction / Mathf.Sqrt(sqrDistance);
                 }
             }
-
-            return _manualTargetDirection != Vector2.zero ? _manualTargetDirection : Vector2.right;
+            return Vector2.right;
         }
 
         public void SetManualTargetDirection(Vector2 direction)
@@ -221,7 +216,6 @@ namespace PlayerDirectory
 
                 if (!_autoAttackEnabled) continue;
 
-                UpdateTargetDirection();
                 _vec = new Vec
                 {
                     Position = _transform.position,
