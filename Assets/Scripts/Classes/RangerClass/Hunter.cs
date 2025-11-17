@@ -1,7 +1,6 @@
 using PlayerDirectory;
 using UnityEngine;
 using Utilities;
-using Entities.EnemyDirectory;
 
 namespace Classes.RangerClass
 {
@@ -11,18 +10,14 @@ namespace Classes.RangerClass
 
         public void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
-            GameObject arrow = ArrowPool.GetArrow();
-            Arrow arrowScript = arrow.GetComponent<Arrow>();
+            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod);
+            float range = playerStats.range * statsMod.rangeMod;
+            Vector2 velocity = vec.Direction.normalized * (playerStats.projectileSpeed * statsMod.projectileSpeedMod);
 
-            arrowScript.damage = CombatUtilities.CalculateDamage(playerStats, statsMod);
-            arrowScript.range = playerStats.range * statsMod.rangeMod;
-            arrowScript.isHoming = true;
-            arrowScript.slowChance = 0.3f;
-            arrowScript.slowDuration = 2f;
-
-            arrow.transform.position = vec.Position;
-            arrow.GetComponent<Rigidbody2D>().linearVelocity =
-                vec.Direction.normalized * playerStats.projectileSpeed * statsMod.projectileSpeedMod;
+            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, false);
+            arrow.isHoming = true;
+            arrow.slowChance = 0.3f;
+            arrow.slowDuration = 2f;
         }
 
         public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
@@ -34,23 +29,22 @@ namespace Classes.RangerClass
             directions[1] = Quaternion.Euler(0, 0, spreadAngle) * vec.Direction;
             directions[2] = Quaternion.Euler(0, 0, -spreadAngle) * vec.Direction;
 
+            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod, 0.8f);
+            float range = playerStats.range * statsMod.rangeMod;
+            float speed = playerStats.projectileSpeed * statsMod.projectileSpeedMod;
+
             foreach (Vector2 dir in directions)
             {
-                GameObject arrow = ArrowPool.GetArrow();
-                Arrow arrowScript = arrow.GetComponent<Arrow>();
-
-                arrowScript.damage = CombatUtilities.CalculateDamage(playerStats, statsMod, 0.8f);
-                arrowScript.range = playerStats.range * statsMod.rangeMod;
-
-                arrow.transform.position = vec.Position;
-                arrow.GetComponent<Rigidbody2D>().linearVelocity =
-                    dir.normalized * playerStats.projectileSpeed * statsMod.projectileSpeedMod;
+                Vector2 velocity = dir.normalized * speed;
+                ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, false);
             }
         }
 
         public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
             GameObject player = GameObject.FindWithTag("Player");
+            if (!player) return;
+
             Vector2 dodgeDirection = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
 
             if (dodgeDirection == Vector2.zero)

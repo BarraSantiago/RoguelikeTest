@@ -13,30 +13,25 @@ namespace Classes.RangerClass
 
         public void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
-            GameObject arrow = ArrowPool.GetArrow();
-            Arrow arrowScript = arrow.GetComponent<Arrow>();
+            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod);
+            float range = playerStats.range * statsMod.rangeMod;
+            Vector2 velocity = vec.Direction.normalized * (playerStats.projectileSpeed * statsMod.projectileSpeedMod);
 
-            arrowScript.damage = CombatUtilities.CalculateDamage(playerStats, statsMod);
-            arrowScript.range = playerStats.range * statsMod.rangeMod;
-            arrowScript.leaveTrap = true;
-            arrowScript.trapDuration = 3f;
-            arrowScript.trapRadius = 2f;
-            arrowScript.trapperReference = this;
-
-            arrow.transform.position = vec.Position;
-            arrow.GetComponent<Rigidbody2D>().linearVelocity =
-                vec.Direction.normalized * playerStats.projectileSpeed * statsMod.projectileSpeedMod;
+            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, false);
+            arrow.leaveTrap = true;
+            arrow.trapDuration = 3f;
+            arrow.trapRadius = 2f;
+            arrow.trapperReference = this;
         }
 
         public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
-            // Create root trap at position
             float rootRadius = playerStats.range * statsMod.rangeMod * 0.4f;
             GameObject trap = new GameObject("RootTrap");
             trap.transform.position = vec.Position;
 
             TrapZone trapZone = trap.AddComponent<TrapZone>();
-            trapZone.Initialize(rootRadius, 3f, true); // Rooting trap
+            trapZone.Initialize(rootRadius, 3f, true);
 
             RegisterTrap(trap);
         }
@@ -44,6 +39,8 @@ namespace Classes.RangerClass
         public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
             GameObject player = GameObject.FindWithTag("Player");
+            if (!player) return;
+
             Vector2 dodgeDirection = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
 
             if (dodgeDirection == Vector2.zero)
@@ -51,7 +48,6 @@ namespace Classes.RangerClass
 
             player.transform.position += (Vector3)dodgeDirection * playerStats.speed * 2f * statsMod.speedMod;
 
-            // Leave trap at dodge start position
             GameObject trap = new GameObject("DodgeTrap");
             trap.transform.position = vec.Position;
 
@@ -78,5 +74,4 @@ namespace Classes.RangerClass
             _activeTraps.Remove(trap);
         }
     }
-
 }

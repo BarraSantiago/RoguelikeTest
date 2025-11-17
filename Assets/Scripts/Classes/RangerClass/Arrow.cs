@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using Classes.RangerClass;
 using Entities.EnemyDirectory;
 using UnityEngine;
 
@@ -8,19 +6,18 @@ namespace Classes.RangerClass
 {
     public class Arrow : MonoBehaviour
     {
-        [Header("Base Stats")]
+        [Header("Base Stats")] 
         public float damage;
         public float range;
 
         [Header("Piercing")] 
         public bool isPiercing;
-        public int maxPierceCount = -1; // -1 = infinite
+        public int maxPierceCount = -1;
         private int _currentPierceCount;
 
-        [Header("Sniper")]
+        [Header("Sniper")] 
         public bool isSniper;
         public float sniperThreshold;
-        private Vector2 _startPosition;
 
         [Header("Hunter")] 
         public bool isHoming;
@@ -34,62 +31,36 @@ namespace Classes.RangerClass
         public float trapRadius;
         public Trapper trapperReference;
 
+        // Public properties for ArrowPool to access
+        public Vector2 StartPosition { get; private set; }
+        public Vector2 Velocity { get; set; }
+        public Transform NearestEnemy { get; private set; }
+
         private HashSet<Enemy> _hitEnemies = new();
-        private Rigidbody2D _rigidbody;
-        private Transform _nearestEnemy;
+        public static ArrowPool _pool;
 
         private void Awake()
         {
-            _rigidbody = GetComponent<Rigidbody2D>();
+            _pool ??= GetComponentInParent<ArrowPool>();
         }
 
-        private void OnEnable()
+        public void Setup(Vector2 position, Vector2 velocity, float dmg, float rng, bool piercing = false)
         {
-            _startPosition = transform.position;
+            transform.position = position;
+            StartPosition = position;
+            Velocity = velocity;
+            damage = dmg;
+            range = rng;
+            isPiercing = piercing;
             _currentPierceCount = 0;
             _hitEnemies.Clear();
-            _nearestEnemy = null;
+            NearestEnemy = null;
+
+            float angle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0, 0, angle);
         }
 
-        private void Update()
-        {
-            // Range check
-            if (Vector2.Distance(_startPosition, transform.position) >= range)
-            {
-                OnArrowExpire();
-                return;
-            }
-
-            // Homing logic for Hunter
-            if (isHoming)
-            {
-                UpdateHoming();
-            }
-        }
-
-        private void UpdateHoming()
-        {
-            if (!_nearestEnemy || !_nearestEnemy.gameObject.activeInHierarchy)
-            {
-                FindNearestEnemy();
-            }
-
-            if (_nearestEnemy)
-            {
-                Vector2 direction = ((Vector2)_nearestEnemy.position - (Vector2)transform.position).normalized;
-                Vector2 currentVelocity = _rigidbody.linearVelocity;
-                Vector2 newVelocity = Vector2.Lerp(currentVelocity, direction * currentVelocity.magnitude,
-                    homingStrength * Time.deltaTime);
-
-                _rigidbody.linearVelocity = newVelocity;
-
-                // Rotate arrow to face direction
-                float angle = Mathf.Atan2(newVelocity.y, newVelocity.x) * Mathf.Rad2Deg;
-                transform.rotation = Quaternion.Euler(0, 0, angle);
-            }
-        }
-
-        private void FindNearestEnemy()
+        public void FindNearestEnemy()
         {
             Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
             float nearestDistance = float.MaxValue;
@@ -100,14 +71,14 @@ namespace Classes.RangerClass
                 if (!enemy.gameObject.activeInHierarchy || _hitEnemies.Contains(enemy)) continue;
 
                 float distance = Vector2.Distance(transform.position, enemy.Position);
-                if (distance < nearestDistance && distance < 10f) // 10 unit homing range
+                if (distance < nearestDistance && distance < 10f)
                 {
                     nearestDistance = distance;
                     nearest = enemy.transform;
                 }
             }
 
-            _nearestEnemy = nearest;
+            NearestEnemy = nearest;
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -115,41 +86,37 @@ namespace Classes.RangerClass
             if (!other.CompareTag("Enemy")) return;
 
             Enemy enemy = other.GetComponent<Enemy>();
-            if (enemy == null || _hitEnemies.Contains(enemy)) return;
+            if (!enemy || _hitEnemies.Contains(enemy)) return;
 
             _hitEnemies.Add(enemy);
 
-            // Calculate damage with Sniper bonus
             float finalDamage = damage;
             if (isSniper)
             {
-                float distanceTraveled = Vector2.Distance(_startPosition, transform.position);
+                float distanceTraveled = Vector2.Distance(StartPosition, transform.position);
                 if (distanceTraveled >= sniperThreshold)
                 {
-                    finalDamage *= 1.5f; // +50% damage at long range
+                    finalDamage *= 1.5f;
                     ShowSniperEffect();
                 }
             }
 
             enemy.TakeDamage(finalDamage);
 
-            // Hunter slow effect
             if (slowChance > 0 && Random.value <= slowChance)
             {
                 enemy.Slow(0.7f, slowDuration);
             }
 
-            // Trapper leave trap
             if (leaveTrap)
             {
                 CreateTrap(transform.position);
             }
 
-            // Piercing logic
             if (isPiercing)
             {
                 _currentPierceCount++;
-                damage *= 0.9f; // 10% damage reduction per pierce
+                damage *= 0.9f;
 
                 if (maxPierceCount > 0 && _currentPierceCount >= maxPierceCount)
                 {
@@ -168,25 +135,17 @@ namespace Classes.RangerClass
             trap.transform.position = position;
 
             TrapZone trapZone = trap.AddComponent<TrapZone>();
-            trapZone.Initialize(trapRadius, trapDuration, false); // Slowing trap
+            trapZone.Initialize(trapRadius, trapDuration, false);
 
             trapperReference?.RegisterTrap(trap);
         }
 
         private void ShowSniperEffect()
         {
-            // Visual feedback for long-range hit
-            GameObject effect = new GameObject("SniperHit");
-            effect.transform.position = transform.position;
-
-            SpriteRenderer sprite = effect.AddComponent<SpriteRenderer>();
-            sprite.sprite = Resources.Load<Sprite>("Effects/SniperHit"); // Create this sprite
-            sprite.color = new Color(1, 1, 0, 0.8f);
-
-            Destroy(effect, 0.3f);
+            // Visual feedback placeholder
         }
 
-        private void OnArrowExpire()
+        public void OnArrowExpire()
         {
             if (leaveTrap && trapperReference != null)
             {
@@ -198,15 +157,12 @@ namespace Classes.RangerClass
 
         private void ReturnToPool()
         {
-            _hitEnemies.Clear();
-            _nearestEnemy = null;
-            gameObject.SetActive(false);
-            FindAnyObjectByType<ArrowPool>()?.ReturnArrow(gameObject);
+            Velocity = Vector2.zero;
+            _pool?.Return(this);
         }
 
         private void OnDisable()
         {
-            // Reset all flags when returned to pool
             isPiercing = false;
             isSniper = false;
             isHoming = false;
@@ -214,6 +170,9 @@ namespace Classes.RangerClass
             maxPierceCount = -1;
             slowChance = 0;
             trapperReference = null;
+            _hitEnemies.Clear();
+            NearestEnemy = null;
+            Velocity = Vector2.zero;
         }
     }
 }

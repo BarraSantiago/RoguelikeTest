@@ -138,7 +138,9 @@ namespace PlayerDirectory
                     return direction / Mathf.Sqrt(sqrDistance);
                 }
             }
-            return Vector2.right;
+            
+            // Return zero vector if no target found - don't attack
+            return Vector2.zero;
         }
 
         public void SetManualTargetDirection(Vector2 direction)
@@ -213,27 +215,33 @@ namespace PlayerDirectory
             while (true)
             {
                 yield return _autoAttackCheckDelay;
-
+        
                 if (!_autoAttackEnabled) continue;
-
-                _vec = new Vec
+        
+                Vector2 targetDirection = GetTargetDirection();
+                
+                // Only attack if we have a valid target
+                if (targetDirection != Vector2.zero)
                 {
-                    Position = _transform.position,
-                    Direction = GetTargetDirection()
-                };
-
-                if (CanAttack())
-                {
-                    BasicAttack();
-                }
-
-                if (CanSpecialAttack())
-                {
-                    SpecialAttack();
+                    _vec = new Vec
+                    {
+                        Position = _transform.position,
+                        Direction = targetDirection
+                    };
+        
+                    if (CanAttack())
+                    {
+                        BasicAttack();
+                    }
+        
+                    if (CanSpecialAttack())
+                    {
+                        SpecialAttack();
+                    }
                 }
             }
         }
-
+        
         private IEnumerator HealthRegeneration()
         {
             WaitForSeconds wait = new WaitForSeconds(1f);

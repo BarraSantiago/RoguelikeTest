@@ -12,43 +12,35 @@ namespace Classes.RangerClass
 
         public void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
-            GameObject arrow = ArrowPool.GetArrow();
-            Arrow arrowScript = arrow.GetComponent<Arrow>();
-
             float maxRange = playerStats.range * statsMod.rangeMod;
-            arrowScript.range = maxRange;
-            arrowScript.isSniper = true;
-            arrowScript.sniperThreshold = maxRange * LongRangeThreshold;
 
-            // Check if no enemies nearby for crit bonus
             Enemy[] nearbyEnemies = CombatUtilities.GetEnemiesInRadius(vec.Position, 3f);
             float critMultiplier = nearbyEnemies.Length == 0 ? 2f : 1f;
 
-            arrowScript.damage = CombatUtilities.CalculateDamage(playerStats, statsMod) * critMultiplier;
+            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod) * critMultiplier;
+            Vector2 velocity = vec.Direction.normalized * (playerStats.projectileSpeed * statsMod.projectileSpeedMod);
 
-            arrow.transform.position = vec.Position;
-            arrow.GetComponent<Rigidbody2D>().linearVelocity =
-                vec.Direction.normalized * playerStats.projectileSpeed * statsMod.projectileSpeedMod;
+            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, maxRange, false);
+            arrow.isSniper = true;
+            arrow.sniperThreshold = maxRange * LongRangeThreshold;
         }
 
         public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
-            GameObject piercingArrow = ArrowPool.GetArrow();
-            Arrow arrowScript = piercingArrow.GetComponent<Arrow>();
+            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod, 2f);
+            float range = playerStats.range * statsMod.rangeMod * 1.5f;
+            Vector2 velocity = vec.Direction.normalized *
+                               (playerStats.projectileSpeed * statsMod.projectileSpeedMod * 1.5f);
 
-            arrowScript.damage = CombatUtilities.CalculateDamage(playerStats, statsMod, 2f);
-            arrowScript.isPiercing = true;
-            arrowScript.maxPierceCount = 5;
-            arrowScript.range = playerStats.range * statsMod.rangeMod * 1.5f;
-
-            piercingArrow.transform.position = vec.Position;
-            piercingArrow.GetComponent<Rigidbody2D>().linearVelocity =
-                vec.Direction.normalized * playerStats.projectileSpeed * statsMod.projectileSpeedMod * 1.5f;
+            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, true);
+            arrow.maxPierceCount = 5;
         }
 
         public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
             GameObject player = GameObject.FindWithTag("Player");
+            if (!player) return;
+
             Vector2 dodgeDirection = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
 
             if (dodgeDirection == Vector2.zero)

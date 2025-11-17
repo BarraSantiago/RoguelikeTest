@@ -34,9 +34,8 @@ namespace PowerUps
             if (!closestEnemy) return;
 
             if (!_arrowPool) return;
-
-            GameObject arrowObj = _arrowPool.GetArrow();
-
+            
+            /*
             Arrow arrow = arrowObj.GetComponent<Arrow>();
             arrow.damage = CombatUtilities.CalculateDamage(PowerUpStats, PowerUpStatsMod);
             arrow.range = player.playerStats.range;
@@ -61,6 +60,8 @@ namespace PowerUps
             }
 
             arrowObj.SetActive(true);
+        */
+            
         }
     }
 }
