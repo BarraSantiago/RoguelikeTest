@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Entities;
 using UnityEngine;
@@ -97,7 +96,7 @@ namespace Classes.RangerClass
             bool isPiercing = false)
         {
             Arrow arrow = Get();
-            arrow.Setup(position, velocity, damage, range, piercing: isPiercing);
+            arrow.Setup(position, velocity, damage, range, isPiercing);
             _activeArrows.Add(arrow);
             return arrow;
         }

@@ -53,13 +53,13 @@ namespace Classes.RangerClass
             if (!trail) trail = GetComponent<TrailRenderer>();
         }
 
-        public void Setup(Vector2 position, Vector2 velocity, float dmg, float rng, bool piercing = false)
+        public void Setup(Vector2 position, Vector2 velocity, float dmg, float range, bool piercing = false)
         {
             transform.position = position;
             StartPosition = position;
             Velocity = velocity;
             damage = dmg;
-            range = rng;
+            this.range = range;
             isPiercing = piercing;
             _hitEnemies.Clear();
             NearestEnemy = null;

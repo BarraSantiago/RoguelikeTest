@@ -5,26 +5,30 @@ using Utilities;
 
 namespace Classes.RangerClass
 {
-    public class Trapper : IClass
+    public class Trapper : RangerBase
     {
-        public ArrowPool ArrowPool;
+        private const float SpreadAngle = 15f;
         private List<GameObject> _activeTraps = new List<GameObject>();
         private const int MaxTraps = 3;
 
-        public void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
             float damage = CombatUtilities.CalculateDamage(playerStats, statsMod);
             float range = playerStats.range * statsMod.rangeMod;
-            Vector2 velocity = vec.Direction.normalized * (playerStats.projectileSpeed * statsMod.projectileSpeedMod);
+            float speed = playerStats.projectileSpeed * statsMod.projectileSpeedMod;
+            int projectileCount = GetProjectileCount(playerStats, statsMod);
 
-            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range);
-            arrow.leaveTrap = true;
-            arrow.trapDuration = 3f;
-            arrow.trapRadius = 2f;
-            arrow.trapperReference = this;
+            ArrowPool.StartCoroutine(FireArrowsSequential(vec.Position, vec.Direction, speed, damage, range,
+                projectileCount, SpreadAngle, arrow =>
+                {
+                    arrow.leaveTrap = true;
+                    arrow.trapDuration = 3f;
+                    arrow.trapRadius = 2f;
+                    arrow.trapperReference = this;
+                }));
         }
 
-        public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
             float rootRadius = playerStats.range * statsMod.rangeMod * 0.4f;
             GameObject trap = new GameObject("RootTrap");
@@ -36,17 +40,9 @@ namespace Classes.RangerClass
             RegisterTrap(trap);
         }
 
-        public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
         {
-            GameObject player = GameObject.FindWithTag("Player");
-            if (!player) return;
-
-            Vector2 dodgeDirection = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
-
-            if (dodgeDirection == Vector2.zero)
-                dodgeDirection = -vec.Direction;
-
-            player.transform.position += (Vector3)dodgeDirection * playerStats.speed * 2f * statsMod.speedMod;
+            PerformDodge(2f, playerStats, statsMod, vec);
 
             GameObject trap = new GameObject("DodgeTrap");
             trap.transform.position = vec.Position;
