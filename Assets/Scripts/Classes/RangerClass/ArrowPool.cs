@@ -97,7 +97,7 @@ namespace Classes.RangerClass
             bool isPiercing = false)
         {
             Arrow arrow = Get();
-            arrow.Setup(position, velocity, damage, range, isPiercing);
+            arrow.Setup(position, velocity, damage, range, piercing: isPiercing);
             _activeArrows.Add(arrow);
             return arrow;
         }

@@ -14,7 +14,7 @@ namespace Classes.RangerClass
             float range = playerStats.range * statsMod.rangeMod;
             Vector2 velocity = vec.Direction.normalized * (playerStats.projectileSpeed * statsMod.projectileSpeedMod);
 
-            ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, false);
+            ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range);
         }
 
         public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
@@ -23,7 +23,7 @@ namespace Classes.RangerClass
             float range = playerStats.range * statsMod.rangeMod;
             Vector2 velocity = vec.Direction.normalized * (playerStats.projectileSpeed * statsMod.projectileSpeedMod);
 
-            ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, true);
+            ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range);
         }
 
         public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)

@@ -25,5 +25,9 @@ namespace PlayerDirectory
         public int rerollBonus = 0;
         public int skipBonus = 0;
         public int banishBonus = 0;
+        public int projectileCountBonus = 0;
+        public int pierceCountBonus = 0;
+        public float durationMod = 1f; // Affects projectile lifetime, DoT, buffs
+        
     }
 }

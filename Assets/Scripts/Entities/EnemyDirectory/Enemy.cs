@@ -17,6 +17,8 @@ namespace Entities.EnemyDirectory
         public static EnemyManager EnemyManager;
         public static ExperiencePool ExperiencePool;
 
+        public static event Action<Enemy, float, bool> OnEnemyDamaged;
+        
         private Color _originalColor;
         private EnemyType _enemyType = EnemyType.Normal;
         private static readonly Dictionary<Collider2D, Enemy> ColliderToEnemy = new();
@@ -147,14 +149,18 @@ namespace Entities.EnemyDirectory
             transform.position = position;
         }
 
-        public void TakeDamage(float damage)
+        public void TakeDamage(float damage, bool isCritical = false)
         {
             if (inmmune) return;
-
+        
             data.health -= damage;
+            
+            // Invoke damage event for popup system
+            OnEnemyDamaged?.Invoke(this, damage, isCritical);
+            
             StartCoroutine(DamageFlash());
             StartCoroutine(FrameInvulnerability());
-
+        
             if (data.health <= 0)
             {
                 Die();

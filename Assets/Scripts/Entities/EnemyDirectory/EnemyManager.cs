@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Entities.XpDirectory;
 using PlayerDirectory;
 using UnityEngine;
+using Utilities;
 
 namespace Entities.EnemyDirectory
 {
@@ -225,18 +226,33 @@ namespace Entities.EnemyDirectory
             }
         }
 
+        // Add to EnemyManager.cs
         public void SpawnEnemiesAroundPlayer(int count)
         {
-            if (!_playerTransform) return;
-
-            for (int i = 0; i < count; i++)
+            if (!_playerTransform || !_player) return;
+        
+            // Apply curse to spawn count
+            float curseMultiplier = 1f + _player.playerStats.curse + _player.statsMod.curseBonus;
+            int cursedCount = Mathf.RoundToInt(count * curseMultiplier);
+        
+            for (int i = 0; i < cursedCount; i++)
             {
                 int randomType = Random.Range(0, enemyPrefabs.Length);
                 Vector2 randomDirection = Random.insideUnitCircle.normalized;
                 Vector3 spawnPos = _playerTransform.position +
                                    new Vector3(randomDirection.x, randomDirection.y, 0) * spawnRadius;
-
-                SpawnEnemy(randomType, spawnPos);
+        
+                Enemy enemy = SpawnEnemy(randomType, spawnPos);
+                
+                // Apply curse to enemy health
+                if (enemy)
+                {
+                    enemy.data.health = CombatUtilities.ApplyCurse(
+                        enemy.data.health, 
+                        _player.playerStats.curse, 
+                        _player.statsMod.curseBonus
+                    );
+                }
             }
         }
     }

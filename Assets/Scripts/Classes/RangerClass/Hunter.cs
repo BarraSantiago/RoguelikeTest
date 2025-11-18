@@ -14,7 +14,7 @@ namespace Classes.RangerClass
             float range = playerStats.range * statsMod.rangeMod;
             Vector2 velocity = vec.Direction.normalized * (playerStats.projectileSpeed * statsMod.projectileSpeedMod);
 
-            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, false);
+            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range);
             arrow.isHoming = true;
             arrow.slowChance = 0.3f;
             arrow.slowDuration = 2f;
@@ -36,7 +36,7 @@ namespace Classes.RangerClass
             foreach (Vector2 dir in directions)
             {
                 Vector2 velocity = dir.normalized * speed;
-                ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, false);
+                ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range);
             }
         }
 

@@ -20,7 +20,7 @@ namespace Classes.RangerClass
             float damage = CombatUtilities.CalculateDamage(playerStats, statsMod) * critMultiplier;
             Vector2 velocity = vec.Direction.normalized * (playerStats.projectileSpeed * statsMod.projectileSpeedMod);
 
-            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, maxRange, false);
+            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, maxRange);
             arrow.isSniper = true;
             arrow.sniperThreshold = maxRange * LongRangeThreshold;
         }
@@ -32,7 +32,7 @@ namespace Classes.RangerClass
             Vector2 velocity = vec.Direction.normalized *
                                (playerStats.projectileSpeed * statsMod.projectileSpeedMod * 1.5f);
 
-            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, true);
+            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range);
             arrow.maxPierceCount = 5;
         }
 

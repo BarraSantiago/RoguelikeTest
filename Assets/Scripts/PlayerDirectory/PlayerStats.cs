@@ -31,5 +31,9 @@ namespace PlayerDirectory
         public int reroll = 0; // Level-up reroll charges
         public int skip = 0; // Level-up skip charges
         public int banish = 0; // Level-up banish charges
+        public int projectileCount = 1; // Base projectile count
+        public int pierceCount = 0; // Projectiles pierce through enemies
+        public float cooldownReduction = 0f; // Already exists
+        
     }
 }

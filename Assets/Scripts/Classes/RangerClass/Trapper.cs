@@ -17,7 +17,7 @@ namespace Classes.RangerClass
             float range = playerStats.range * statsMod.rangeMod;
             Vector2 velocity = vec.Direction.normalized * (playerStats.projectileSpeed * statsMod.projectileSpeedMod);
 
-            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range, false);
+            Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range);
             arrow.leaveTrap = true;
             arrow.trapDuration = 3f;
             arrow.trapRadius = 2f;

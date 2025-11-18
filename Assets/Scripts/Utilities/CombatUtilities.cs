@@ -58,17 +58,24 @@ namespace Utilities
         public static float DamageEnemies(Enemy[] enemies, Stats playerStats, StatsModifier statsMod)
         {
             float totalDamage = 0f;
-            float damage = CalculateDamage(playerStats, statsMod);
-
+        
             for (int i = 0; i < enemies.Length; i++)
             {
                 if (enemies[i])
                 {
-                    enemies[i].TakeDamage(damage);
+                    float damage = CalculateDamage(playerStats, statsMod);
+                    bool isCrit = IsCriticalHit(playerStats, statsMod);
+                    
+                    if (isCrit)
+                    {
+                        damage *= playerStats.criticalDamage * statsMod.criticalDamageMod;
+                    }
+                    
+                    enemies[i].TakeDamage(damage, isCrit);
                     totalDamage += damage;
                 }
             }
-
+        
             return totalDamage;
         }
 
@@ -124,6 +131,38 @@ namespace Utilities
         {
             if (EnemyManager.Enemies == null) return null;
             return EnemyManager.GetNearestEnemy(position, maxRange);
+        }
+        
+        public static bool RollLuck(float baseLuck, float luckMod)
+        {
+            float totalLuck = baseLuck * luckMod;
+            // Each point of luck = 1% chance, capped at 95%
+            float luckChance = Mathf.Min(totalLuck * 0.01f, 0.95f);
+            return Random.value < luckChance;
+        }
+
+        public static float ApplyGreed(float baseValue, float greed, float greedMod)
+        {
+            return baseValue * greed * greedMod;
+        }
+
+        public static float ApplyCurse(float baseValue, float curse, float curseMod)
+        {
+            return baseValue * (1f + (curse + curseMod));
+        }
+        
+        public static void DamageEnemy(Enemy enemy, float damage, bool isCrit, Stats playerStats, StatsModifier statsMod)
+        {
+            if (!enemy || enemy.IsDead()) return;
+        
+            float finalDamage = damage;
+            
+            if (isCrit)
+            {
+                finalDamage *= playerStats.criticalDamage * statsMod.criticalDamageMod;
+            }
+            
+            enemy.TakeDamage(finalDamage, isCrit);
         }
     }
 }
