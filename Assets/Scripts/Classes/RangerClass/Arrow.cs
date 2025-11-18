@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Entities.EnemyDirectory;
 using PlayerDirectory;
 using UnityEngine;
 using Utilities;
+using Random = UnityEngine.Random;
 
 namespace Classes.RangerClass
 {
@@ -226,6 +228,11 @@ namespace Classes.RangerClass
             _hitEnemies.Clear();
             NearestEnemy = null;
             Velocity = Vector2.zero;
+        }
+
+        private void OnDestroy()
+        {
+            _pool = null;
             _playerStats = null;
             _statsMod = null;
         }
