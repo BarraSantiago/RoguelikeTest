@@ -7,7 +7,7 @@ namespace GooglePlay
 {
     public class Achievement
     {
-        public void UnlockAchievement(string achievementId)
+        public static void UnlockAchievement(string achievementId)
         {
 #if UNITY_ANDROID
             if (PlayGamesPlatform.Instance.IsAuthenticated())
@@ -22,7 +22,7 @@ namespace GooglePlay
 #endif
         }
 
-        public void IncrementAchievement(string achievementId, int steps)
+        public static void IncrementAchievement(string achievementId, int steps)
         {
 #if UNITY_ANDROID
             if (PlayGamesPlatform.Instance.IsAuthenticated())
@@ -37,7 +37,7 @@ namespace GooglePlay
 #endif
         }
 
-        public void RevealAchievement(string achievementId)
+        public static void RevealAchievement(string achievementId)
         {
 #if UNITY_ANDROID
             if (PlayGamesPlatform.Instance.IsAuthenticated())
@@ -52,7 +52,7 @@ namespace GooglePlay
 #endif
         }
 
-        public void ShowAchievementsUI()
+        public static void ShowAchievementsUI()
         {
 #if UNITY_ANDROID
             if (PlayGamesPlatform.Instance.IsAuthenticated())

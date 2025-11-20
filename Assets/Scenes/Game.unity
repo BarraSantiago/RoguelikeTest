@@ -150,15 +150,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::View.UI.PlayerHealthSlider
   player: {fileID: 1599351149}
   healthSlider: {fileID: 956370294}
-  healthText: {fileID: 0}
+  healthText: {fileID: 505796693}
   fillImage: {fileID: 435862038}
   smooth: 1
   smoothSpeed: 6
   showNumeric: 1
   healthGradient:
     serializedVersion: 2
-    key0: {r: 1, g: 1, b: 1, a: 1}
-    key1: {r: 1, g: 1, b: 1, a: 1}
+    key0: {r: 0.3773585, g: 0, b: 0, a: 1}
+    key1: {r: 1, g: 0, b: 0, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
@@ -1983,7 +1983,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0, b: 0, a: 0.40392157}
+  m_Color: {r: 0.08526862, g: 0.8867924, b: 0, a: 0.8156863}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2153,7 +2153,7 @@ GameObject:
   - component: {fileID: 505796694}
   - component: {fileID: 505796693}
   m_Layer: 5
-  m_Name: WaveText
+  m_Name: HPText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2171,11 +2171,11 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 956370293}
+  m_Father: {fileID: 2144419505}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 408.5542, y: 46}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 256.8997, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &505796693
@@ -2225,15 +2225,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 23.9
+  m_fontSizeBase: 23.9
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -3541,7 +3541,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6132076, g: 0, b: 0, a: 0.12941177}
+  m_Color: {r: 0.05687439, g: 0.6117647, b: 0, a: 0.12941177}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4101,13 +4101,12 @@ RectTransform:
   - {fileID: 165067614}
   - {fileID: 2144419505}
   - {fileID: 1160809469}
-  - {fileID: 505796692}
   m_Father: {fileID: 982517200}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
-  m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -889, y: 228}
-  m_SizeDelta: {x: -1866.9492, y: 82}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 1059, y: 96}
+  m_SizeDelta: {x: 251.05078, y: 82}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &956370294
 MonoBehaviour:
@@ -4258,10 +4257,10 @@ RectTransform:
   - {fileID: 929905384}
   - {fileID: 515273938}
   - {fileID: 1297205656}
+  - {fileID: 956370293}
   - {fileID: 1172782447}
   - {fileID: 468886862}
   - {fileID: 621458899}
-  - {fileID: 956370293}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -6117,7 +6116,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2929252283123773938, guid: aaa2c939c0359ac4dbce3f49e8b90252, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 226
+      value: 280
       objectReference: {fileID: 0}
     - target: {fileID: 2929252283123773938, guid: aaa2c939c0359ac4dbce3f49e8b90252, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -9517,6 +9516,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 435862040}
+  - {fileID: 505796692}
   m_Father: {fileID: 956370293}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.25}

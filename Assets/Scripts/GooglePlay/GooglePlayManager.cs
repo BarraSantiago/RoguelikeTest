@@ -1,8 +1,6 @@
-using UnityEngine;
-#if UNITY_ANDROID
 using GooglePlayGames;
+using UnityEngine;
 using GooglePlayGames.BasicApi;
-#endif
 
 namespace GooglePlay
 {
@@ -23,6 +21,7 @@ namespace GooglePlay
             DontDestroyOnLoad(gameObject);
 
             InitializeGooglePlay();
+            SignIn();
         }
 
         private void InitializeGooglePlay()
@@ -40,19 +39,20 @@ namespace GooglePlay
 #endif
         }
 
+#if UNITY_ANDROID
         private void ProcessAuthentication(SignInStatus status)
         {
-#if UNITY_ANDROID
             if (status == SignInStatus.Success)
             {
+                Achievement.UnlockAchievement(GPGSIds.achievement_start_the_game);
                 Debug.Log("Signed in successfully");
             }
             else
             {
                 Debug.Log($"Sign in failed: {status}");
             }
-#endif
         }
+#endif
 
         public bool IsAuthenticated()
         {
