@@ -1,11 +1,9 @@
 using System;
-using UnityEngine;
 
 namespace PlayerDirectory
 {
-    [CreateAssetMenu(fileName = "StatsModifier", menuName = "Scriptable Objects/StatsModifiers")]
     [Serializable]
-    public class StatsModifier : ScriptableObject
+    public class StatsModifier
     {
         public float damageMod = 1;
         public float attackSpeedMod = 1;
@@ -14,7 +12,7 @@ namespace PlayerDirectory
         public float criticalChanceMod = 1;
         public float criticalDamageMod = 1;
         public float areaMod = 1;
-        
+
         // New modifiers
         public int projectileCountBonus = 0;
         public int pierceCountBonus = 0;

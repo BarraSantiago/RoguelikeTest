@@ -74,7 +74,8 @@ namespace PlayerDirectory
                     throw new ArgumentOutOfRangeException();
             }
 
-            playerStats = Resources.Load<PlayerStats>("scriptableObjects/ClassesStats/" + playerClassType + "Stats");
+            playerStats = new PlayerStats(playerClassType);
+            statsMod = new PlayerStatsModifier();
 
             _currentHp = playerStats.health;
             _levelUpManager = FindFirstObjectByType<LevelUpManager>();

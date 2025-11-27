@@ -2,8 +2,7 @@ using UnityEngine;
 
 namespace PlayerDirectory
 {
-    [CreateAssetMenu(fileName = "Stats", menuName = "Scriptable Objects/Stats")]
-    public class Stats : ScriptableObject
+    public class Stats 
     {
         public float damage;
         public float attackSpeed;

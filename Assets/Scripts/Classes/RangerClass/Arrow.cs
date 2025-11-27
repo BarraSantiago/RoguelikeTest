@@ -67,7 +67,7 @@ namespace Classes.RangerClass
             NearestEnemy = null;
 
 
-            if(!_playerStats || !_statsMod)
+            if(_playerStats == null || _statsMod == null)
             {
                 Player player = FindFirstObjectByType<Player>();
                 if (player)

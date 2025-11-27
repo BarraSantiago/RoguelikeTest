@@ -15,9 +15,7 @@ namespace View.UI.Leveling
 
         private SubclassEvolutionManager _evolutionManager;
 
-        public void ShowSubclasses(List<string> availableSubclasses,
-            Dictionary<string, UnlockCondition> conditions,
-            SubclassEvolutionManager manager)
+        public void ShowSubclasses(List<string> availableSubclasses, Dictionary<string, UnlockCondition> conditions, SubclassEvolutionManager manager)
         {
             _evolutionManager = manager;
             titleText.text = "Choose Your Path";

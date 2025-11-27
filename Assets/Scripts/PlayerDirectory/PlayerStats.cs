@@ -2,13 +2,62 @@ using UnityEngine;
 
 namespace PlayerDirectory
 {
-    [CreateAssetMenu(fileName = "PlayerStats", menuName = "Scriptable Objects/PlayerStats")]
     public class PlayerStats : Stats
     {
-        public float health;
-        public float maxHealth;
-        public float speed;
-        public float specialAttackSpeed;
+        public PlayerStats(Classes classType)
+        {
+            switch (classType)
+            {
+                case Classes.Ranger:
+                    health= 100f;
+                    speed= 2f;
+                    damage= 15f;
+                    attackSpeed= 0.8f;
+                    specialAttackSpeed= 3f;
+                    projectileSpeed= 2f;
+                    defenseSpeed= 1.5f;
+                    range= 7f;
+                    defense= 0.8f;
+                    criticalChance= 0.07f;
+                    criticalDamage= 2.15f;
+                    area= 0f;
+                    knockback= 0f;
+                    knockbackResistance= 0f;
+                    slowResistance= 0f;
+                    break;
+                case Classes.Warrior:
+                    health = 150;
+                    speed = 1.5f;
+                    damage = 20;
+                    attackSpeed = 0.8f;
+                    specialAttackSpeed = 3f;
+                    projectileSpeed = 2f;
+                    defenseSpeed = 1.5f;
+                    range = 1.5f;
+                    defense = 0.8f;
+                    criticalChance = 0.09f;
+                    criticalDamage = 2.15f;
+                    area = 30f;
+                    knockback = 15f;
+                    break;
+                //case Classes.Mage:
+                //    damage = 8;
+                //    attackSpeed = 1.2f;
+                //    projectileSpeed = 8;
+                //    range = 4;
+                //    break;
+                default:
+                    damage = 10;
+                    attackSpeed = 1;
+                    projectileSpeed = 10;
+                    range = 5;
+                    break;
+            }
+        }
+        public float health = 100;
+        public float maxHealth = 100;
+        public float speed = 5;
+        public float specialAttackSpeed = 1;
         public float defenseSpeed;
         public float defense;
         public float knockback;

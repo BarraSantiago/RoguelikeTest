@@ -33,9 +33,8 @@ namespace Classes.Evolution
 
     public class SubclassEvolutionManager : MonoBehaviour
     {
-        [Header("Evolution Settings")] [SerializeField]
-        private float evolutionCheckInterval = 1f;
-
+        [Header("Evolution Settings")] 
+        [SerializeField] private float evolutionCheckInterval = 1f;
         [SerializeField] private GameObject evolutionUIPanel;
 
         private Player _player;
@@ -145,7 +144,7 @@ namespace Classes.Evolution
             List<string> available = new List<string>();
             PlayerDirectory.Classes playerClass = _player.GetPlayerClassType();
 
-            foreach (var kvp in _unlockConditions)
+            foreach (KeyValuePair<string, UnlockCondition> kvp in _unlockConditions)
             {
                 string subclass = kvp.Key;
                 UnlockCondition condition = kvp.Value;

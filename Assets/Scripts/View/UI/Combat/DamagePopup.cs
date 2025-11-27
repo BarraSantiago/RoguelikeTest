@@ -43,15 +43,13 @@ namespace View.UI.Combat
             // Set color and size based on damage type
             if (isCritical)
             {
-                damageText.color = new Color(1f, 0.5f, 0f); // Orange for crits
-                damageText.fontSize = 24f;
+                damageText.color = new Color(1f, 0.26f, 0f); // Orange for crits
+                damageText.fontSize *= 1.3f;
                 damageText.fontStyle = FontStyles.Bold;
             }
             else
             {
                 damageText.color = Color.white;
-                damageText.fontSize = 18f;
-                damageText.fontStyle = FontStyles.Normal;
             }
             
             canvasGroup.alpha = 1f;

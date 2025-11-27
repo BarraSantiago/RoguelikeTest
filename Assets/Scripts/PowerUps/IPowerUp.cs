@@ -38,8 +38,8 @@ namespace PowerUps
         public virtual void OnPickup(Player player)
         {
             // Store base values
-            _baseStats = Instantiate(powerUpStats);
-            _baseStatsMod = Instantiate(powerUpStatsMod);
+            _baseStats = new Stats();
+            _baseStatsMod = new StatsModifier();
 
             player.powerUps.Add(this);
             _lastAttackTime = Time.time;
