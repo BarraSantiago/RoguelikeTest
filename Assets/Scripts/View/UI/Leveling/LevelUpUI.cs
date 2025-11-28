@@ -9,7 +9,7 @@ namespace View.UI.Leveling
 {
     public class LevelUpUI : MonoBehaviour
     {
-        [Header("UI References")]
+        [Header("UI References")] 
         [SerializeField] private GameObject levelUpPanel;
         [SerializeField] private Transform choicesContainer;
         [SerializeField] private GameObject choiceCardPrefab;
@@ -19,16 +19,14 @@ namespace View.UI.Leveling
         [SerializeField] private GameObject tooltipPanel;
         [SerializeField] private TextMeshProUGUI tooltipText;
 
-        [Header("Charge Display")] [SerializeField]
-        private TextMeshProUGUI rerollChargesText;
-
+        [Header("Charge Display")] 
+        [SerializeField] private TextMeshProUGUI rerollChargesText;
         [SerializeField] private TextMeshProUGUI skipChargesText;
         [SerializeField] private TextMeshProUGUI banishChargesText;
         [SerializeField] private GameObject chargesPanel;
 
-        [Header("Level Info")] [SerializeField]
-        private TextMeshProUGUI levelText;
-
+        [Header("Level Info")] 
+        [SerializeField] private TextMeshProUGUI levelText;
         [SerializeField] private TextMeshProUGUI choosePromptText;
 
         private Player _player;

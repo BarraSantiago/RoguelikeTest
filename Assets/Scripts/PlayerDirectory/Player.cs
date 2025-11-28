@@ -39,6 +39,7 @@ namespace PlayerDirectory
         public List<PowerUp> powerUps;
         public LevelSystem levelSystem = new();
 
+        private bool alive => _currentHp > 0;
         private static WaitForSeconds _autoAttackCheckDelay = new WaitForSeconds(0.1f);
         private LevelUpManager _levelUpManager;
         private IClass _playerClass;
@@ -62,13 +63,11 @@ namespace PlayerDirectory
             {
                 case Classes.Warrior:
                     _playerClass = new Warrior();
+                    _playerClass.Initialize(this);
                     break;
                 case Classes.Ranger:
-                    Ranger ranger = new Ranger
-                    {
-                        ArrowPool = gameObject.AddComponent<ArrowPool>()
-                    };
-                    _playerClass = ranger;
+                    _playerClass = new Ranger();
+                    _playerClass.Initialize(this);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -91,13 +90,8 @@ namespace PlayerDirectory
             playerStats.maxHealth = playerStats.health;
             _currentHp = playerStats.maxHealth;
 
-            // Start health regeneration
-            if (playerStats.healthRegen > 0)
-            {
-                _healthRegenCoroutine = StartCoroutine(HealthRegeneration());
-            }
-
             StartCoroutine(DetectPickups());
+            StartCoroutine(HealthRegeneration());
         }
 
         private void Update()
@@ -214,7 +208,7 @@ namespace PlayerDirectory
 
         private IEnumerator AutoAttackCoroutine()
         {
-            while (true)
+            while (alive)
             {
                 yield return _autoAttackCheckDelay;
         
@@ -223,23 +217,21 @@ namespace PlayerDirectory
                 Vector2 targetDirection = GetTargetDirection();
                 
                 // Only attack if we have a valid target
-                if (targetDirection != Vector2.zero)
+                if (targetDirection == Vector2.zero) continue;
+                _vec = new Vec
                 {
-                    _vec = new Vec
-                    {
-                        Position = _transform.position,
-                        Direction = targetDirection
-                    };
+                    Position = _transform.position,
+                    Direction = targetDirection
+                };
         
-                    if (CanAttack())
-                    {
-                        BasicAttack();
-                    }
+                if (CanAttack())
+                {
+                    BasicAttack();
+                }
         
-                    if (CanSpecialAttack())
-                    {
-                        SpecialAttack();
-                    }
+                if (CanSpecialAttack())
+                {
+                    SpecialAttack();
                 }
             }
         }
@@ -248,7 +240,7 @@ namespace PlayerDirectory
         {
             WaitForSeconds wait = new WaitForSeconds(1f);
 
-            while (true)
+            while (alive)
             {
                 yield return wait;
 
@@ -265,7 +257,7 @@ namespace PlayerDirectory
         {
             WaitForSeconds wait = new WaitForSeconds(0.1f);
 
-            while (true)
+            while (alive)
             {
                 yield return wait;
 
@@ -300,7 +292,7 @@ namespace PlayerDirectory
 
             _currentHp -= finalDamage;
 
-            if (_currentHp <= 0)
+            if (!alive)
             {
                 AttemptRevival();
             }
@@ -406,15 +398,7 @@ namespace PlayerDirectory
             _playerClass = newClass;
             _currentSubclass = subclassName;
 
-            // Initialize subclass with player reference
-            if (_playerClass is Berserker berserker)
-            {
-                berserker.Initialize(this);
-            }
-            else if (_playerClass is Ranger rangerSubclass)
-            {
-                rangerSubclass.ArrowPool = GetComponent<ArrowPool>() ?? gameObject.AddComponent<ArrowPool>();
-            }
+            _playerClass.Initialize(this);
 
             Debug.Log($"Evolved to {subclassName}!");
             StartCoroutine(EvolutionEffect());

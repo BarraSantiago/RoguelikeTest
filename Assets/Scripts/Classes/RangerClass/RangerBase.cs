@@ -10,6 +10,15 @@ namespace Classes.RangerClass
         public ArrowPool ArrowPool;
         protected const float ProjectileDelay = 0.1f;
 
+        public void Initialize(Player player)
+        {
+            ArrowPool = player.GetComponent<ArrowPool>();
+            if(!ArrowPool)
+            {
+                ArrowPool = player.gameObject.AddComponent<ArrowPool>();
+            }
+        }
+
         public abstract void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec);
         public abstract void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec);
         public abstract void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec);

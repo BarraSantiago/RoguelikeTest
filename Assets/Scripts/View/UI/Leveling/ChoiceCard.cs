@@ -20,11 +20,10 @@ namespace View.UI.Leveling
         [SerializeField] private Image backgroundImage;
         [SerializeField] private GameObject rarityIndicator;
 
-        [Header("Visual Settings")] [SerializeField]
-        private Color normalColor = Color.white;
-
-        [SerializeField] private Color hoverColor = new Color(1f, 1f, 0.8f);
-        [SerializeField] private Color banishColor = new Color(1f, 0.3f, 0.3f);
+        [Header("Visual Settings")] 
+        [SerializeField] private Color normalColor = Color.white;
+        [SerializeField] private Color hoverColor = new(1f, 1f, 0.8f);
+        [SerializeField] private Color banishColor = new(1f, 0.3f, 0.3f);
 
         private object _choice;
         private Player _player;
@@ -40,7 +39,7 @@ namespace View.UI.Leveling
             SetupCard();
             selectButton.onClick.AddListener(OnSelectClicked);
 
-            if (backgroundImage != null)
+            if (backgroundImage)
             {
                 backgroundImage.color = normalColor;
             }
@@ -51,11 +50,39 @@ namespace View.UI.Leveling
             if (_choice is StatUpgradeOption statUpgrade)
             {
                 SetupStatUpgrade(statUpgrade);
+                ApplyRarityColor(statUpgrade.rarity);
             }
             else if (_choice is PowerUp powerUp)
             {
                 SetupPowerUpUpgrade(powerUp);
+                ApplyPowerUpColor();
             }
+        }
+        
+        private void ApplyRarityColor(StatRarity rarity)
+        {
+            if (backgroundImage == null) return;
+        
+            Color rarityColor = rarity switch
+            {
+                StatRarity.Common => new Color(0.8f, 0.8f, 0.8f),
+                StatRarity.Rare => new Color(0.3f, 0.6f, 1f),
+                StatRarity.Epic => new Color(0.7f, 0.3f, 1f),
+                StatRarity.Legendary => new Color(1f, 0.6f, 0f),
+                _ => Color.white
+            };
+        
+            backgroundImage.color = rarityColor;
+            normalColor = rarityColor;
+        }
+        
+        private void ApplyPowerUpColor()
+        {
+            if (!backgroundImage) return;
+        
+            Color powerUpColor = new Color(0.4f, 0.8f, 0.4f);
+            backgroundImage.color = powerUpColor;
+            normalColor = powerUpColor;
         }
 
         private void SetupStatUpgrade(StatUpgradeOption upgrade)

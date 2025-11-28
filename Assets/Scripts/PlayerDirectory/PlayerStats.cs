@@ -31,7 +31,6 @@ namespace PlayerDirectory
                     damage = 20;
                     attackSpeed = 0.8f;
                     specialAttackSpeed = 3f;
-                    projectileSpeed = 2f;
                     defenseSpeed = 1.5f;
                     range = 1.5f;
                     defense = 0.8f;

@@ -197,6 +197,7 @@ namespace Classes.Evolution
                 _ => null
             };
 
+            
             if (newClass != null)
             {
                 _player.EvolveClass(newClass, subclassName);

@@ -3584,6 +3584,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDirectory.LevelUpManager
   numberOfChoices: 3
+  commonChance: 0.65
+  rareChance: 0.25
+  epicChance: 0.08
+  legendaryChance: 0.02
 --- !u!4 &633262909
 Transform:
   m_ObjectHideFlags: 0
@@ -4149,6 +4153,7 @@ GameObject:
   m_Component:
   - component: {fileID: 861575952}
   - component: {fileID: 861575951}
+  - component: {fileID: 861575953}
   m_Layer: 0
   m_Name: VFXManager
   m_TagString: Untagged
@@ -4168,9 +4173,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd81b1a3be914f7a8af8a5180e4c205e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  warriorBasicVFX: {fileID: 2464408884321332722, guid: 8dc1f95b1be9bbe4889da1cab8af4714, type: 3}
-  warriorSpecialVFX: {fileID: 8819700824904800591, guid: 128f8a659b1e64e49b23be701538759e, type: 3}
-  warriorDefenseVFX: {fileID: 4318526132756344824, guid: 2257e256fbbf8e64c9c222f947f852ba, type: 3}
+  vfxDuration: 0.4
 --- !u!4 &861575952
 Transform:
   m_ObjectHideFlags: 0
@@ -4186,6 +4189,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &861575953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861575950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63b2d5667e9e4b94b1a401a5d03003a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::View.VFXPool
+  prefab: {fileID: 0}
+  initialPoolSize: 20
 --- !u!1 &929905383
 GameObject:
   m_ObjectHideFlags: 0
@@ -4653,9 +4670,9 @@ RectTransform:
   - {fileID: 1297205656}
   - {fileID: 956370293}
   - {fileID: 1172782447}
+  - {fileID: 1372996938}
   - {fileID: 468886862}
   - {fileID: 621458899}
-  - {fileID: 1372996938}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -5342,7 +5359,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.6156863}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -7307,9 +7324,9 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1172782447}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 52}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 1059, y: 541}
   m_SizeDelta: {x: 1903.2109, y: 662.672}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1487164182
@@ -7325,7 +7342,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.6156863}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -10020,9 +10037,9 @@ RectTransform:
   - {fileID: 1397088986}
   m_Father: {fileID: 1172782447}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -331}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 1059, y: 161.20001}
   m_SizeDelta: {x: 1036.0337, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2130650419
@@ -10064,7 +10081,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.6156863}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
