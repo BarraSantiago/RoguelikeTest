@@ -86,16 +86,12 @@ namespace PlayerDirectory
             sessionStats.Reset();
             _lastPosition = _transform.position;
             
-            if (autoAttackEnabled)
-            {
-                StartCoroutine(AutoAttackCoroutine());
-            }
-
             ApplyShopBonuses();
             
             PlayerStats.MaxHealth = PlayerStats.Health;
             _currentHp = PlayerStats.MaxHealth;
 
+            StartCoroutine(AutoAttackCoroutine());
             StartCoroutine(DetectPickups());
             StartCoroutine(HealthRegeneration());
         }
@@ -220,9 +216,7 @@ namespace PlayerDirectory
             while (Alive)
             {
                 yield return _autoAttackCheckDelay;
-        
-                if (!autoAttackEnabled) continue;
-        
+                
                 Vector2 targetDirection = GetTargetDirection();
                 
                 // Only attack if we have a valid target

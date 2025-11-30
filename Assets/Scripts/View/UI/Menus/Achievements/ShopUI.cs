@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Achievements;
 using TMPro;
@@ -21,7 +22,7 @@ namespace View.UI.Menus.Achievements
 
         private ShopUnlockType _currentTab = ShopUnlockType.Subclass;
 
-        private void Awake()
+        private void Start()
         {
             closeButton.onClick.AddListener(() => gameObject.SetActive(false));
             subclassesTab.onClick.AddListener(() => ShowTab(ShopUnlockType.Subclass));
@@ -31,6 +32,26 @@ namespace View.UI.Menus.Achievements
 
         private void OnEnable()
         {
+            TryShowTab();
+        }
+
+        private void TryShowTab()
+        {
+            StopAllCoroutines();
+            if (AchievementManager.Instance && ShopManager.Instance)
+            {
+                UpdateCoinsDisplay();
+                ShowTab(_currentTab);
+            }
+            else
+            {
+                StartCoroutine(WaitForManagersAndShow());
+            }
+        }
+
+        private IEnumerator WaitForManagersAndShow()
+        {
+            yield return new WaitUntil(() => AchievementManager.Instance && ShopManager.Instance);
             UpdateCoinsDisplay();
             ShowTab(_currentTab);
         }

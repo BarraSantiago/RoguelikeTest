@@ -2555,7 +2555,7 @@ MonoBehaviour:
   progressContainer: {fileID: 1094345200}
   progressItemPrefab: {fileID: 9002189631349373681, guid: 48872ae2c0163d64da432f390c44aab8, type: 3}
   progressNextButton: {fileID: 1817050362}
-  achievementsContainer: {fileID: 1663639635}
+  achievementsContainer: {fileID: 664679599}
   achievementItemPrefab: {fileID: 3030545521784254132, guid: c28ef043abca39141ba13b7ff18903b2, type: 3}
   totalCoinsEarnedText: {fileID: 178472174}
   restartButton: {fileID: 1155061148}
@@ -7089,7 +7089,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 1
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -7204,19 +7204,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 984709836}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1185739593}
-        m_TargetAssemblyTypeName: View.UI.Menus.PauseManager, Assembly-CSharp
-        m_MethodName: TogglePause
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &984709836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8097,19 +8085,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1155061149}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1185739593}
-        m_TargetAssemblyTypeName: View.UI.Menus.PauseManager, Assembly-CSharp
-        m_MethodName: TogglePause
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1155061149
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11413,7 +11389,7 @@ MonoBehaviour:
   playerClassType: 0
   autoTargetEnabled: 0
   autoAttackEnabled: 0
-  autoAttackRange: 0
+  autoAttackRange: 10
   currentSubclass: 
   statsMod:
     damageMod: 1
@@ -13389,19 +13365,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1817050363}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1185739593}
-        m_TargetAssemblyTypeName: View.UI.Menus.PauseManager, Assembly-CSharp
-        m_MethodName: TogglePause
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1817050363
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14208,19 +14172,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2032540513}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1185739593}
-        m_TargetAssemblyTypeName: View.UI.Menus.PauseManager, Assembly-CSharp
-        m_MethodName: TogglePause
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &2032540513
 MonoBehaviour:
   m_ObjectHideFlags: 0

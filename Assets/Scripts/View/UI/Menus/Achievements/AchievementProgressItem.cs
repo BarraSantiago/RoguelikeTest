@@ -9,33 +9,49 @@ namespace View.UI.Menus.Achievements
     {
         [SerializeField] private TextMeshProUGUI achievementNameText;
         [SerializeField] private TextMeshProUGUI achievementDescriptionText;
-        [SerializeField] private Transform milestonesContainer;
-        [SerializeField] private GameObject milestonePrefab;
+        [SerializeField] private AchievementMilestoneItem currentMilestoneDisplay;
         [SerializeField] private Image completionIcon;
+        [SerializeField] private TextMeshProUGUI milestoneCounterText;
 
         public void Setup(Achievement achievement, float currentValue)
         {
             achievementNameText.text = achievement.name;
             achievementDescriptionText.text = achievement.description;
 
-            // Clear existing milestones
-            foreach (Transform child in milestonesContainer)
-            {
-                Destroy(child.gameObject);
-            }
+            // Find current active milestone
+            AchievementMilestone currentMilestone = null;
+            int completedCount = 0;
 
-            // Create milestone progress bars
             foreach (AchievementMilestone milestone in achievement.milestones)
             {
-                GameObject milestoneObj = Instantiate(milestonePrefab, milestonesContainer);
-                AchievementMilestoneItem milestoneItem = milestoneObj.GetComponent<AchievementMilestoneItem>();
-
-                float progress = Mathf.Clamp01(currentValue / milestone.targetValue);
-                milestoneItem.Setup(milestone, progress, currentValue);
+                if (milestone.isCompleted)
+                {
+                    completedCount++;
+                }
+                else if (currentMilestone == null)
+                {
+                    currentMilestone = milestone;
+                }
             }
 
-            // Show completion icon if fully completed
-            completionIcon.gameObject.SetActive(achievement.isUnlocked);
+            // Update milestone counter
+            milestoneCounterText.text = $"{completedCount}/{achievement.milestones.Count}";
+
+            // Display current milestone or show completion
+            if (achievement.isUnlocked)
+            {
+                currentMilestoneDisplay.gameObject.SetActive(false);
+                completionIcon.gameObject.SetActive(true);
+                achievementDescriptionText.text = "COMPLETED!";
+            }
+            else if (currentMilestone != null)
+            {
+                currentMilestoneDisplay.gameObject.SetActive(true);
+                completionIcon.gameObject.SetActive(false);
+
+                float progress = Mathf.Clamp01(currentValue / currentMilestone.targetValue);
+                currentMilestoneDisplay.Setup(currentMilestone, progress, currentValue);
+            }
         }
     }
 }

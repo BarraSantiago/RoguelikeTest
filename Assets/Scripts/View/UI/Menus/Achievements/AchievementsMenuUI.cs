@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Achievements;
 using TMPro;
@@ -27,6 +28,26 @@ namespace View.UI.Menus.Achievements
 
         private void OnEnable()
         {
+            TryRefreshDisplay();
+        }
+
+        private void TryRefreshDisplay()
+        {
+            StopAllCoroutines();
+            if (AchievementManager.Instance)
+            {
+                RefreshDisplay();
+            }
+            else
+            {
+                StartCoroutine(WaitForManagerAndRefresh());
+            }
+        }
+
+        private IEnumerator WaitForManagerAndRefresh()
+        {
+            yield return new WaitUntil(() => AchievementManager.Instance);
+            // small extra frame yield is optional: yield return null;
             RefreshDisplay();
         }
 

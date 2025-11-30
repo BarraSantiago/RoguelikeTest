@@ -11,31 +11,78 @@ namespace View.UI.Menus.Achievements
         [SerializeField] private TextMeshProUGUI targetText;
         [SerializeField] private TextMeshProUGUI rewardText;
         [SerializeField] private Image completionCheckmark;
+        [SerializeField] private TextMeshProUGUI percentageText;
         [SerializeField] private Color completedColor = Color.green;
-        [SerializeField] private Color incompleteColor = Color.gray;
+        [SerializeField] private Color incompleteColor = new Color(0.3f, 0.6f, 1f);
+        [SerializeField] private Color progressBarBackgroundColor = new Color(0.2f, 0.2f, 0.2f);
 
         public void Setup(AchievementMilestone milestone, float progress, float currentValue)
         {
             progressBar.value = progress;
-            targetText.text = $"{currentValue:F0} / {milestone.targetValue}";
 
-            // Show reward
-            string reward = $"+{milestone.coinReward} coins";
+            // Format numbers based on their size
+            string currentStr = FormatNumber(currentValue);
+            string targetStr = FormatNumber(milestone.targetValue);
+            targetText.text = $"{currentStr} / {targetStr}";
+
+            // Show percentage
+            if (percentageText != null)
+            {
+                percentageText.text = $"{(progress * 100):F0}%";
+            }
+
+            // Show reward with better formatting
+            string reward = $"Reward: {milestone.coinReward} <sprite=0>"; // Use coin sprite if you have one
             if (milestone.shopUnlock != null)
             {
-                reward += $" | Unlocks: {milestone.shopUnlock.targetId}";
+                string unlockName = GetFriendlyUnlockName(milestone.shopUnlock);
+                reward += $"\nUnlocks: {unlockName}";
             }
+
             rewardText.text = reward;
 
             // Visual feedback for completion
             bool isCompleted = milestone.isCompleted;
             completionCheckmark.gameObject.SetActive(isCompleted);
-            progressBar.fillRect.GetComponent<Image>().color = isCompleted ? completedColor : incompleteColor;
 
-            // Dim text if completed
-            Color textColor = isCompleted ? new Color(1, 1, 1, 0.6f) : Color.white;
-            targetText.color = textColor;
-            rewardText.color = textColor;
+            Image fillImage = progressBar.fillRect.GetComponent<Image>();
+            if (fillImage != null)
+            {
+                fillImage.color = isCompleted ? completedColor : incompleteColor;
+            }
+
+            Image backgroundImage = progressBar.GetComponentsInChildren<Image>()[0];
+            if (backgroundImage != null)
+            {
+                backgroundImage.color = progressBarBackgroundColor;
+            }
+
+            // Adjust text opacity if completed
+            float alpha = isCompleted ? 0.6f : 1f;
+            targetText.color = new Color(1, 1, 1, alpha);
+            rewardText.color = new Color(1, 1, 1, alpha);
+            if (percentageText != null)
+                percentageText.color = new Color(1, 1, 1, alpha);
+        }
+
+        private string FormatNumber(float value)
+        {
+            if (value >= 1000000)
+                return $"{value / 1000000f:F1}M";
+            if (value >= 1000)
+                return $"{value / 1000f:F1}K";
+            return $"{value:F0}";
+        }
+
+        private string GetFriendlyUnlockName(ShopUnlock unlock)
+        {
+            return unlock.type switch
+            {
+                ShopUnlockType.Subclass => unlock.targetId,
+                ShopUnlockType.StatBonus => ShopManager.Instance.GetStatBonus(unlock.targetId)?.name ?? unlock.targetId,
+                ShopUnlockType.Skin => unlock.targetId,
+                _ => unlock.targetId
+            };
         }
     }
 }

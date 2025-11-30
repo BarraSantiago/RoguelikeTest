@@ -11,7 +11,7 @@ namespace Achievements
         private Dictionary<string, ShopUnlock> _availableUnlocks;
         private Dictionary<string, StatBonus> _statBonuses;
 
-        private void Awake()
+        private void Start()
         {
             if (Instance == null)
             {
