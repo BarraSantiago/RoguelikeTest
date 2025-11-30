@@ -718,6 +718,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: TooltipPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 4785176329456307631, guid: d5c5c01e228819f47b07cfdc7348d28b, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9110735330614581101, guid: d5c5c01e228819f47b07cfdc7348d28b, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

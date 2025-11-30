@@ -200,7 +200,7 @@ namespace View.UI.Leveling
         {
             _isBanishHighlighted = highlighted;
 
-            if (backgroundImage != null)
+            if (backgroundImage)
             {
                 backgroundImage.color = highlighted ? banishColor : normalColor;
             }
@@ -208,7 +208,7 @@ namespace View.UI.Leveling
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (backgroundImage != null && !_isBanishHighlighted)
+            if (backgroundImage && !_isBanishHighlighted)
             {
                 backgroundImage.color = hoverColor;
             }
@@ -219,7 +219,7 @@ namespace View.UI.Leveling
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (backgroundImage != null && !_isBanishHighlighted)
+            if (backgroundImage && !_isBanishHighlighted)
             {
                 backgroundImage.color = normalColor;
             }
