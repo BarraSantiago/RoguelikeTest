@@ -53,7 +53,7 @@ namespace PowerUps
 
         public virtual bool CanActivate()
         {
-            return Time.time >= _lastAttackTime + PowerUpStats.attackSpeed;
+            return Time.time >= _lastAttackTime + PowerUpStats.AttackSpeed;
         }
 
         public virtual bool CanUpgrade()
@@ -68,10 +68,10 @@ namespace PowerUps
             powerUpLevel.level++;
 
             // Apply stat increases
-            powerUpStats.damage = _baseStats.damage * (1 + powerUpLevel.damageIncrease * (powerUpLevel.level - 1));
-            powerUpStats.attackSpeed = _baseStats.attackSpeed *
+            powerUpStats.Damage = _baseStats.Damage * (1 + powerUpLevel.damageIncrease * (powerUpLevel.level - 1));
+            powerUpStats.AttackSpeed = _baseStats.AttackSpeed *
                                        (1 - powerUpLevel.attackSpeedDecrease * (powerUpLevel.level - 1));
-            powerUpStats.range = _baseStats.range * (1 + powerUpLevel.rangeIncrease * (powerUpLevel.level - 1));
+            powerUpStats.Range = _baseStats.Range * (1 + powerUpLevel.rangeIncrease * (powerUpLevel.level - 1));
         }
     }
 }

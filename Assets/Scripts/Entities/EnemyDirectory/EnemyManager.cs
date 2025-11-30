@@ -232,7 +232,7 @@ namespace Entities.EnemyDirectory
             if (!_playerTransform || !_player) return;
         
             // Apply curse to spawn count
-            float curseMultiplier = 1f + _player.playerStats.curse + _player.statsMod.curseBonus;
+            float curseMultiplier = 1f + _player.PlayerStats.Curse + _player.statsMod.curseBonus;
             int cursedCount = Mathf.RoundToInt(count * curseMultiplier);
         
             for (int i = 0; i < cursedCount; i++)
@@ -249,7 +249,7 @@ namespace Entities.EnemyDirectory
                 {
                     enemy.data.health = CombatUtilities.ApplyCurse(
                         enemy.data.health, 
-                        _player.playerStats.curse, 
+                        _player.PlayerStats.Curse, 
                         _player.statsMod.curseBonus
                     );
                 }

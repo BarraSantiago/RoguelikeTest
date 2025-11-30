@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ClassesDirectory;
 using PowerUps;
 using UnityEngine;
 using Utilities;
@@ -19,7 +20,7 @@ namespace PlayerDirectory.LevelingSystem
     {
         public string name;
         public string description;
-        public Action<Player> applyUpgrade;
+        public Action<Player> ApplyUpgrade;
         public StatRarity rarity;
 
         public Color GetRarityColor()
@@ -102,7 +103,7 @@ namespace PlayerDirectory.LevelingSystem
                 name = $"{baseName}",
                 description = $"{finalDescription} ({rarity})",
                 rarity = rarity,
-                applyUpgrade = player => applyUpgrade(player, multiplier)
+                ApplyUpgrade = player => applyUpgrade(player, multiplier)
             };
         }
         
@@ -124,7 +125,7 @@ namespace PlayerDirectory.LevelingSystem
                 name = $"{baseName}",
                 description = $"{baseDescription} ({rarity})",
                 rarity = rarity,
-                applyUpgrade = player => applyUpgrade(player, multiplier)
+                ApplyUpgrade = player => applyUpgrade(player, multiplier)
             };
         }
 
@@ -152,7 +153,7 @@ namespace PlayerDirectory.LevelingSystem
                 }
                 else
                 {
-                    StatUpgradeOption statOption = GenerateRandomStatUpgrade(player, player.playerStats.luck * luckMod);
+                    StatUpgradeOption statOption = GenerateRandomStatUpgrade(player, player.PlayerStats.Luck * luckMod);
                     if (statOption != null && !_banishedChoices.Contains(statOption))
                     {
                         choices.Add(statOption);
@@ -194,18 +195,18 @@ namespace PlayerDirectory.LevelingSystem
                 (p, mult) => $"+{25f * mult:F0}% Range"));
         
             filtered.Add(CreateStatUpgrade("Critical Chance", "+5% Critical Chance",
-                (p, mult) => p.playerStats.criticalChance += 0.05f * mult, rarity,
+                (p, mult) => p.PlayerStats.CriticalChance += 0.05f * mult, rarity,
                 (p, mult) => $"+{5f * mult:F0}% Critical Chance"));
         
             filtered.Add(CreateStatUpgrade("Movement Speed", "+15% Speed",
-                (p, mult) => p.playerStats.speed *= 1f + (0.15f * mult), rarity,
+                (p, mult) => p.PlayerStats.Speed *= 1f + (0.15f * mult), rarity,
                 (p, mult) => $"+{15f * mult:F0}% Movement Speed"));
         
             filtered.Add(CreateStatUpgrade("Max Health", "+20% Health",
                 (p, mult) =>
                 {
-                    p.playerStats.health *= 1f + (0.2f * mult);
-                    p.playerStats.maxHealth = p.playerStats.health;
+                    p.PlayerStats.Health *= 1f + (0.2f * mult);
+                    p.PlayerStats.MaxHealth = p.PlayerStats.Health;
                 }, rarity,
                 (p, mult) => $"+{20f * mult:F0}% Max Health"));
         
@@ -281,7 +282,7 @@ namespace PlayerDirectory.LevelingSystem
         {
             if (choice is StatUpgradeOption statUpgrade)
             {
-                statUpgrade.applyUpgrade(player);
+                statUpgrade.ApplyUpgrade(player);
                 Debug.Log($"Applied {statUpgrade.rarity} stat upgrade: {statUpgrade.name}");
             }
             else if (choice is PowerUp powerUp)

@@ -142,17 +142,17 @@ namespace View.UI.Leveling
 
             if (upgrade.name.Contains("Critical"))
                 return
-                    $"Crit: {_player.playerStats.criticalChance:P0} → {(_player.playerStats.criticalChance + 0.05f):P0}";
+                    $"Crit: {_player.PlayerStats.CriticalChance:P0} → {(_player.PlayerStats.CriticalChance + 0.05f):P0}";
 
             if (upgrade.name.Contains("Movement"))
-                return $"Speed: {_player.playerStats.speed:F1} → {_player.playerStats.speed * 1.15f:F1}";
+                return $"Speed: {_player.PlayerStats.Speed:F1} → {_player.PlayerStats.Speed * 1.15f:F1}";
 
             if (upgrade.name.Contains("Health") && !upgrade.name.Contains("Regeneration"))
-                return $"HP: {_player.playerStats.health:F0} → {_player.playerStats.health * 1.2f:F0}";
+                return $"HP: {_player.PlayerStats.Health:F0} → {_player.PlayerStats.Health * 1.2f:F0}";
 
             if (upgrade.name.Contains("Regeneration"))
                 return
-                    $"Regen: {_player.playerStats.healthRegen + _player.statsMod.healthRegenBonus:F1}/s → {_player.playerStats.healthRegen + _player.statsMod.healthRegenBonus + 1f:F1}/s";
+                    $"Regen: {_player.PlayerStats.HealthRegen + _player.statsMod.healthRegenBonus:F1}/s → {_player.PlayerStats.HealthRegen + _player.statsMod.healthRegenBonus + 1f:F1}/s";
 
             if (upgrade.name.Contains("Armor"))
                 return $"Armor: {_player.statsMod.armorBonus:F0} → {_player.statsMod.armorBonus + 5f:F0}";
@@ -163,7 +163,7 @@ namespace View.UI.Leveling
 
             if (upgrade.name.Contains("Pickup"))
                 return
-                    $"Radius: {_player.playerStats.pickupRadius * _player.statsMod.pickupRadiusMod:F1} → {_player.playerStats.pickupRadius * _player.statsMod.pickupRadiusMod * 1.25f:F1}";
+                    $"Radius: {_player.PlayerStats.PickupRadius * _player.statsMod.pickupRadiusMod:F1} → {_player.PlayerStats.PickupRadius * _player.statsMod.pickupRadiusMod * 1.25f:F1}";
 
             if (upgrade.name.Contains("Magnetism"))
                 return $"Magnet: {_player.statsMod.magnetismMod:F2} → {_player.statsMod.magnetismMod * 1.3f:F2}";
@@ -176,11 +176,11 @@ namespace View.UI.Leveling
 
             if (upgrade.name.Contains("Projectile"))
                 return
-                    $"Projectiles: {_player.playerStats.projectileCount + _player.statsMod.projectileCountBonus} → {_player.playerStats.projectileCount + _player.statsMod.projectileCountBonus + 1}";
+                    $"Projectiles: {_player.PlayerStats.ProjectileCount + _player.statsMod.projectileCountBonus} → {_player.PlayerStats.ProjectileCount + _player.statsMod.projectileCountBonus + 1}";
 
             if (upgrade.name.Contains("Pierce"))
                 return
-                    $"Pierce: {_player.playerStats.pierceCount + _player.statsMod.pierceCountBonus} → {_player.playerStats.pierceCount + _player.statsMod.pierceCountBonus + 1}";
+                    $"Pierce: {_player.PlayerStats.PierceCount + _player.statsMod.pierceCountBonus} → {_player.PlayerStats.PierceCount + _player.statsMod.pierceCountBonus + 1}";
 
             if (upgrade.name.Contains("Revival"))
                 return $"Revivals: {_player.GetRevivals()} → {_player.GetRevivals() + 1}";
@@ -190,7 +190,7 @@ namespace View.UI.Leveling
 
         private string GetPowerUpIncreaseText(PowerUp powerUp)
         {
-            float currentDamage = powerUp.PowerUpStats.damage;
+            float currentDamage = powerUp.PowerUpStats.Damage;
             float nextDamage = currentDamage * (1 + powerUp.Level.damageIncrease);
 
             return $"Damage: {currentDamage:F1} → {nextDamage:F1}";
@@ -246,7 +246,7 @@ namespace View.UI.Leveling
             float currentDPS = CalculateCurrentDPS();
 
             // Temporarily apply upgrade to calculate new DPS
-            upgrade.applyUpgrade(_player);
+            upgrade.ApplyUpgrade(_player);
             float newDPS = CalculateCurrentDPS();
 
             // Revert the upgrade
@@ -264,21 +264,21 @@ namespace View.UI.Leveling
         private string GeneratePowerUpTooltip(PowerUp powerUp)
         {
             return $"<b>{powerUp.name} - Level {powerUp.Level.level + 1}</b>\n\n" +
-                   $"Damage: {powerUp.PowerUpStats.damage:F1} → " +
-                   $"{powerUp.PowerUpStats.damage * (1 + powerUp.Level.damageIncrease):F1}\n" +
-                   $"Attack Speed: {powerUp.PowerUpStats.attackSpeed:F2}s → " +
-                   $"{powerUp.PowerUpStats.attackSpeed * (1 - powerUp.Level.attackSpeedDecrease):F2}s\n" +
-                   $"Range: {powerUp.PowerUpStats.range:F1} → " +
-                   $"{powerUp.PowerUpStats.range * (1 + powerUp.Level.rangeIncrease):F1}";
+                   $"Damage: {powerUp.PowerUpStats.Damage:F1} → " +
+                   $"{powerUp.PowerUpStats.Damage * (1 + powerUp.Level.damageIncrease):F1}\n" +
+                   $"Attack Speed: {powerUp.PowerUpStats.AttackSpeed:F2}s → " +
+                   $"{powerUp.PowerUpStats.AttackSpeed * (1 - powerUp.Level.attackSpeedDecrease):F2}s\n" +
+                   $"Range: {powerUp.PowerUpStats.Range:F1} → " +
+                   $"{powerUp.PowerUpStats.Range * (1 + powerUp.Level.rangeIncrease):F1}";
         }
 
         private float CalculateCurrentDPS()
         {
-            float baseDamage = _player.playerStats.damage * _player.statsMod.damageMod;
-            float attacksPerSecond = 1f / (_player.playerStats.attackSpeed * _player.statsMod.attackSpeedMod);
+            float baseDamage = _player.PlayerStats.Damage * _player.statsMod.damageMod;
+            float attacksPerSecond = 1f / (_player.PlayerStats.AttackSpeed * _player.statsMod.attackSpeedMod);
 
-            float critMultiplier = 1f + (_player.playerStats.criticalChance *
-                                         (_player.playerStats.criticalDamage - 1f));
+            float critMultiplier = 1f + (_player.PlayerStats.CriticalChance *
+                                         (_player.PlayerStats.CriticalDamage - 1f));
 
             return baseDamage * attacksPerSecond * critMultiplier;
         }
@@ -292,13 +292,13 @@ namespace View.UI.Leveling
             else if (upgrade.name.Contains("Range"))
                 _player.statsMod.rangeMod /= 1.25f;
             else if (upgrade.name.Contains("Critical"))
-                _player.playerStats.criticalChance -= 0.05f;
+                _player.PlayerStats.CriticalChance -= 0.05f;
             else if (upgrade.name.Contains("Movement"))
-                _player.playerStats.speed /= 1.15f;
+                _player.PlayerStats.Speed /= 1.15f;
             else if (upgrade.name.Contains("Health") && !upgrade.name.Contains("Regeneration"))
             {
-                _player.playerStats.health /= 1.2f;
-                _player.playerStats.maxHealth = _player.playerStats.health;
+                _player.PlayerStats.Health /= 1.2f;
+                _player.PlayerStats.MaxHealth = _player.PlayerStats.Health;
             }
             else if (upgrade.name.Contains("Regeneration"))
                 _player.statsMod.healthRegenBonus -= 1f;

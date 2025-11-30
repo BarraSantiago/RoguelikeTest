@@ -68,7 +68,7 @@ namespace Utilities
                     
                     if (isCrit)
                     {
-                        damage *= playerStats.criticalDamage * statsMod.criticalDamageMod;
+                        damage *= playerStats.CriticalDamage * statsMod.criticalDamageMod;
                     }
                     
                     enemies[i].TakeDamage(damage, isCrit);
@@ -112,11 +112,11 @@ namespace Utilities
 
         public static float CalculateDamage(Stats playerStats, StatsModifier statsMod, float extraMod = 1.0f)
         {
-            float baseDamage = playerStats.damage * statsMod.damageMod;
+            float baseDamage = playerStats.Damage * statsMod.damageMod;
 
             if (IsCriticalHit(playerStats, statsMod))
             {
-                baseDamage *= playerStats.criticalDamage * statsMod.criticalDamageMod;
+                baseDamage *= playerStats.CriticalDamage * statsMod.criticalDamageMod;
             }
 
             return baseDamage * extraMod;
@@ -124,7 +124,7 @@ namespace Utilities
 
         public static bool IsCriticalHit(Stats playerStats, StatsModifier statsMod)
         {
-            return Random.value < playerStats.criticalChance * statsMod.criticalChanceMod;
+            return Random.value < playerStats.CriticalChance * statsMod.criticalChanceMod;
         }
 
         public static Enemy GetNearestEnemy(Vector2 position, float maxRange)
@@ -151,6 +151,7 @@ namespace Utilities
             return baseValue * (1f + (curse + curseMod));
         }
         
+        // In DamageEnemy method:
         public static void DamageEnemy(Enemy enemy, float damage, bool isCrit, Stats playerStats, StatsModifier statsMod)
         {
             if (!enemy || enemy.IsDead()) return;
@@ -159,10 +160,14 @@ namespace Utilities
             
             if (isCrit)
             {
-                finalDamage *= playerStats.criticalDamage * statsMod.criticalDamageMod;
+                finalDamage *= playerStats.CriticalDamage * statsMod.criticalDamageMod;
             }
             
             enemy.TakeDamage(finalDamage, isCrit);
+            
+            // Track damage
+            Player player = Object.FindFirstObjectByType<Player>();
+            if (player) player.OnDamageDealt(finalDamage, isCrit);
         }
     }
 }

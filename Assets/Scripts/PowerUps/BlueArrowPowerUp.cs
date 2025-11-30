@@ -1,7 +1,7 @@
+using ClassesDirectory.RangerClass;
 using UnityEngine;
 using PlayerDirectory;
 using Entities.EnemyDirectory;
-using Classes.RangerClass;
 using Utilities;
 
 namespace PowerUps

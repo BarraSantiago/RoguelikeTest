@@ -1,15 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Classes;
-using Classes.RangerClass;
-using Classes.WarriorClass;
+using Achievements;
+using ClassesDirectory;
+using ClassesDirectory.Evolution;
+using ClassesDirectory.RangerClass;
+using ClassesDirectory.WarriorClass;
 using Entities.EnemyDirectory;
 using PlayerDirectory.LevelingSystem;
 using PowerUps;
 using UnityEngine;
 using Utilities;
 using View.UI.Leveling;
+using View.UI.Menus;
 
 namespace PlayerDirectory
 {
@@ -19,32 +22,30 @@ namespace PlayerDirectory
         public Vector2 Direction;
     }
 
-    public enum Classes
-    {
-        Warrior,
-        Ranger
-    }
+
 
     public class Player : MonoBehaviour
     {
         [SerializeField] private Classes playerClassType;
-        [SerializeField] private bool _autoTargetEnabled = true;
-        [SerializeField] private bool _autoAttackEnabled = true;
-        [SerializeField] private float _autoAttackRange = 10f;
-        [SerializeField] private string _currentSubclass = "None";
+        [SerializeField] private bool autoTargetEnabled = true;
+        [SerializeField] private bool autoAttackEnabled = true;
+        [SerializeField] private float autoAttackRange = 10f;
+        [SerializeField] private string currentSubclass = "None";
 
         public Classes GetPlayerClassType() => playerClassType;
-        public PlayerStats playerStats;
+        public PlayerStats PlayerStats;
         public PlayerStatsModifier statsMod;
         public List<PowerUp> powerUps;
         public LevelSystem levelSystem = new();
-
-        private bool alive => _currentHp > 0;
-        private static WaitForSeconds _autoAttackCheckDelay = new WaitForSeconds(0.1f);
+        public GameSessionStats sessionStats = new();
+        
+        private DeathScreenUI _deathScreenUI;
+        private Vector2 _lastPosition;
+        private bool Alive => _currentHp > 0;
+        private static WaitForSeconds _autoAttackCheckDelay = new(0.1f);
         private LevelUpManager _levelUpManager;
         private IClass _playerClass;
         private LevelUpUI _levelUpUI;
-        private Camera _mainCamera;
         private Coroutine _healthRegenCoroutine;
         private Vector2 _manualTargetDirection;
         private Transform _transform;
@@ -73,22 +74,27 @@ namespace PlayerDirectory
                     throw new ArgumentOutOfRangeException();
             }
 
-            playerStats = new PlayerStats(playerClassType);
+            PlayerStats = new PlayerStats(playerClassType);
             statsMod = new PlayerStatsModifier();
 
-            _currentHp = playerStats.health;
+            _currentHp = PlayerStats.Health;
             _levelUpManager = FindFirstObjectByType<LevelUpManager>();
             _levelUpUI = FindFirstObjectByType<LevelUpUI>();
-            _mainCamera = Camera.main;
             _transform = transform;
-
-            if (_autoAttackEnabled)
+            
+            _deathScreenUI = FindFirstObjectByType<DeathScreenUI>();
+            sessionStats.Reset();
+            _lastPosition = _transform.position;
+            
+            if (autoAttackEnabled)
             {
                 StartCoroutine(AutoAttackCoroutine());
             }
 
-            playerStats.maxHealth = playerStats.health;
-            _currentHp = playerStats.maxHealth;
+            ApplyShopBonuses();
+            
+            PlayerStats.MaxHealth = PlayerStats.Health;
+            _currentHp = PlayerStats.MaxHealth;
 
             StartCoroutine(DetectPickups());
             StartCoroutine(HealthRegeneration());
@@ -101,15 +107,43 @@ namespace PlayerDirectory
             {
                 powerUps[i].Activate(this);
             }
+            
+            sessionStats.survivalTime = Time.time;
+            float distThisFrame = Vector2.Distance(_transform.position, _lastPosition);
+            sessionStats.totalDistanceTraveled += distThisFrame;
+            _lastPosition = _transform.position;
         }
 
-        private void UpdateTargetDirection()
+        public void Heal(float amount)
         {
-            if (!_autoTargetEnabled)
+            _currentHp = Mathf.Min(_currentHp + amount, GetMaxHealth());
+        }
+
+        public void GainExperience(float amount)
+        {
+            float totalGrowth = PlayerStats.Growth * statsMod.growthMod;
+            bool leveledUp = levelSystem.AddExperience(amount * totalGrowth);
+
+            if (leveledUp)
             {
-                Vector3 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-                _manualTargetDirection = (mousePosition - transform.position).normalized;
+                OnLevelUp();
             }
+        }
+        
+        public void EvolveClass(IClass newClass, string subclassName)
+        {
+            _playerClass = newClass;
+            currentSubclass = subclassName;
+
+            _playerClass.Initialize(this);
+
+            Debug.Log($"Evolved to {subclassName}!");
+            StartCoroutine(EvolutionEffect());
+        }
+        public void OnDamageDealt(float damage, bool wasCrit)
+        {
+            sessionStats.totalDamageDealt += damage;
+            if (wasCrit) sessionStats.criticalHits++;
         }
 
         public void AddPowerUp(PowerUp powerUp)
@@ -120,24 +154,7 @@ namespace PlayerDirectory
                 _powerUpCount++;
             }
         }
-
-        private Vector2 GetTargetDirection()
-        {
-            Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(_transform.position, _autoAttackRange);
-            if (nearestEnemy)
-            {
-                Vector2 direction = (Vector2)nearestEnemy.transform.position - (Vector2)_transform.position;
-                float sqrDistance = direction.sqrMagnitude;
-                if (sqrDistance > 0.01f)
-                {
-                    return direction / Mathf.Sqrt(sqrDistance);
-                }
-            }
-            
-            // Return zero vector if no target found - don't attack
-            return Vector2.zero;
-        }
-
+        
         public void SetManualTargetDirection(Vector2 direction)
         {
             if (direction != Vector2.zero)
@@ -148,71 +165,63 @@ namespace PlayerDirectory
 
         public Player(PlayerStats playerStats, IClass playerClass)
         {
-            this.playerStats = playerStats;
+            this.PlayerStats = playerStats;
             _playerClass = playerClass;
-            _lastAttackTime = -playerStats.attackSpeed;
-            _lastSpecialAttackTime = -playerStats.specialAttackSpeed;
-            _lastDefenseTime = -playerStats.defenseSpeed;
+            _lastAttackTime = -playerStats.AttackSpeed;
+            _lastSpecialAttackTime = -playerStats.SpecialAttackSpeed;
+            _lastDefenseTime = -playerStats.DefenseSpeed;
         }
 
         public void BasicAttack()
         {
             if (!CanAttack()) return;
-            _playerClass.BasicAttack(playerStats, statsMod, _vec);
+            _playerClass.BasicAttack(PlayerStats, statsMod, _vec);
             _lastAttackTime = Time.time;
         }
 
         public void SpecialAttack()
         {
             if (!CanSpecialAttack()) return;
-            _playerClass.SpecialAttack(playerStats, statsMod, _vec);
+            _playerClass.SpecialAttack(PlayerStats, statsMod, _vec);
             _lastSpecialAttackTime = Time.time;
         }
 
         public void Defense()
         {
             if (!CanDefense()) return;
-            _playerClass.Defense(playerStats, statsMod, _vec);
+            _playerClass.Defense(PlayerStats, statsMod, _vec);
             _lastDefenseTime = Time.time;
         }
-
-        private bool CanDefense()
-        {
-            return Time.time >= _lastDefenseTime + playerStats.defenseSpeed * statsMod.defenseSpeedMod;
-        }
-
+        
         public void Move(Vector2 direction)
         {
-            float speed = playerStats.speed * statsMod.speedMod;
+            float speed = PlayerStats.Speed * statsMod.speedMod;
             _transform.position += (Vector3)(direction.normalized * (speed * Time.deltaTime));
         }
-
-        public float SpecialAttackCooldownProgress =>
-            Mathf.Clamp01((Time.time - _lastSpecialAttackTime) /
-                          (playerStats.specialAttackSpeed * statsMod.sAttackSpeedMod));
-
-        public float DefenseCooldownProgress =>
-            Mathf.Clamp01((Time.time - _lastDefenseTime) / (playerStats.defenseSpeed * statsMod.defenseSpeedMod));
-
-        public bool AutoTargetEnabled
+        
+        private Vector2 GetTargetDirection()
         {
-            get => _autoTargetEnabled;
-            set => _autoTargetEnabled = value;
-        }
-
-        public bool AutoAttackEnabled
-        {
-            get => _autoAttackEnabled;
-            set => _autoAttackEnabled = value;
+            Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(_transform.position, autoAttackRange);
+            if (nearestEnemy)
+            {
+                Vector2 direction = (Vector2)nearestEnemy.transform.position - (Vector2)_transform.position;
+                float sqrDistance = direction.sqrMagnitude;
+                if (sqrDistance > 0.01f)
+                {
+                    return direction / Mathf.Sqrt(sqrDistance);
+                }
+            }
+            
+            return Vector2.zero;
         }
 
         private IEnumerator AutoAttackCoroutine()
         {
-            while (alive)
+            while (Alive)
             {
                 yield return _autoAttackCheckDelay;
         
-                if (!_autoAttackEnabled) continue;
+                if (!autoAttackEnabled) continue;
         
                 Vector2 targetDirection = GetTargetDirection();
                 
@@ -240,11 +249,11 @@ namespace PlayerDirectory
         {
             WaitForSeconds wait = new WaitForSeconds(1f);
 
-            while (alive)
+            while (Alive)
             {
                 yield return wait;
 
-                float totalRegen = (playerStats.healthRegen + statsMod.healthRegenBonus);
+                float totalRegen = (PlayerStats.HealthRegen + statsMod.healthRegenBonus);
                 if (totalRegen > 0 && _currentHp < GetMaxHealth())
                 {
                     Heal(totalRegen);
@@ -252,16 +261,15 @@ namespace PlayerDirectory
             }
         }
 
-        // Pickup magnet system
         private IEnumerator DetectPickups()
         {
             WaitForSeconds wait = new WaitForSeconds(0.1f);
 
-            while (alive)
+            while (Alive)
             {
                 yield return wait;
 
-                float radius = playerStats.pickupRadius * statsMod.pickupRadiusMod;
+                float radius = PlayerStats.PickupRadius * statsMod.pickupRadiusMod;
                 Collider2D[] pickups = Physics2D.OverlapCircleAll(_transform.position, radius);
 
                 foreach (Collider2D pickup in pickups)
@@ -276,7 +284,7 @@ namespace PlayerDirectory
 
         private void AttractPickup(Transform pickup)
         {
-            float magnetForce = playerStats.magnetism * statsMod.magnetismMod;
+            float magnetForce = PlayerStats.Magnetism * statsMod.magnetismMod;
             Vector2 direction = (_transform.position - pickup.position).normalized;
             pickup.position = Vector2.MoveTowards(pickup.position, _transform.position,
                 magnetForce * 5f * Time.deltaTime);
@@ -286,13 +294,13 @@ namespace PlayerDirectory
         {
             if (_isInvincible) return;
 
-            // Apply armor reduction
-            float totalArmor = playerStats.armor + statsMod.armorBonus;
-            float finalDamage = Mathf.Max(0, (attackDamage - totalArmor) / (playerStats.defense * statsMod.defenseMod));
+            float totalArmor = PlayerStats.Armor + statsMod.armorBonus;
+            float finalDamage = Mathf.Max(0, (attackDamage - totalArmor) / (PlayerStats.Defense * statsMod.defenseMod));
 
             _currentHp -= finalDamage;
+            sessionStats.totalDamageTaken += finalDamage;
 
-            if (!alive)
+            if (!Alive)
             {
                 AttemptRevival();
             }
@@ -305,7 +313,7 @@ namespace PlayerDirectory
         private IEnumerator InvincibilityFrames()
         {
             _isInvincible = true;
-            float duration = playerStats.invincibilityDuration;
+            float duration = PlayerStats.InvincibilityDuration;
 
             // Visual feedback
             SpriteRenderer sprite = GetComponent<SpriteRenderer>();
@@ -324,14 +332,14 @@ namespace PlayerDirectory
 
         private void AttemptRevival()
         {
-            int totalRevivals = playerStats.revival + statsMod.revivalBonus;
+            int totalRevivals = PlayerStats.Revival + statsMod.revivalBonus;
 
             if (totalRevivals > 0)
             {
-                playerStats.revival--;
+                PlayerStats.Revival--;
                 _currentHp = GetMaxHealth() * 0.5f; // Revive with 50% HP
                 StartCoroutine(InvincibilityFrames());
-                Debug.Log($"Revived! {playerStats.revival} revivals remaining");
+                Debug.Log($"Revived! {PlayerStats.Revival} revivals remaining");
             }
             else
             {
@@ -342,66 +350,47 @@ namespace PlayerDirectory
         private void Die()
         {
             Debug.Log("Player died!");
+            
+            AchievementManager.Instance.OnSessionEnd(sessionStats);
+            
             Time.timeScale = 0;
-            // TODO: Show game over screen
+            SubclassEvolutionManager evolutionManager = FindFirstObjectByType<SubclassEvolutionManager>();
+            _deathScreenUI.ShowDeathScreen(sessionStats, evolutionManager);
         }
-
-        public void Heal(float amount)
-        {
-            _currentHp = Mathf.Min(_currentHp + amount, GetMaxHealth());
-        }
-
-        public void GainExperience(float amount)
-        {
-            float totalGrowth = playerStats.growth * statsMod.growthMod;
-            bool leveledUp = levelSystem.AddExperience(amount * totalGrowth);
-
-            if (leveledUp)
-            {
-                OnLevelUp();
-            }
-        }
-
+        
         private void OnLevelUp()
         {
             List<object> choices = _levelUpManager.GenerateLevelUpChoices(this);
 
             // Apply reroll/skip/banish charges
-            int rerolls = playerStats.reroll + statsMod.rerollBonus;
-            int skips = playerStats.skip + statsMod.skipBonus;
-            int banishes = playerStats.banish + statsMod.banishBonus;
+            int rerolls = PlayerStats.Reroll + statsMod.rerollBonus;
+            int skips = PlayerStats.Skip + statsMod.skipBonus;
+            int banishes = PlayerStats.Banish + statsMod.banishBonus;
 
             _levelUpUI.ShowLevelUpChoices(this, choices, rerolls, skips, banishes);
         }
 
-        // Calculate final cooldown with reduction
         private float GetModifiedCooldown(float baseCooldown, float cooldownMod)
         {
-            float totalReduction = playerStats.cooldownReduction + statsMod.cooldownReductionBonus;
+            float totalReduction = PlayerStats.CooldownReduction + statsMod.cooldownReductionBonus;
             return baseCooldown * cooldownMod * (1f - Mathf.Clamp01(totalReduction));
         }
 
         private bool CanAttack()
         {
-            float modifiedCooldown = GetModifiedCooldown(playerStats.attackSpeed, statsMod.attackSpeedMod);
+            float modifiedCooldown = GetModifiedCooldown(PlayerStats.AttackSpeed, statsMod.attackSpeedMod);
             return Time.time >= _lastAttackTime + modifiedCooldown;
         }
 
         private bool CanSpecialAttack()
         {
-            float modifiedCooldown = GetModifiedCooldown(playerStats.specialAttackSpeed, statsMod.sAttackSpeedMod);
+            float modifiedCooldown = GetModifiedCooldown(PlayerStats.SpecialAttackSpeed, statsMod.sAttackSpeedMod);
             return Time.time >= _lastSpecialAttackTime + modifiedCooldown;
         }
-
-        public void EvolveClass(IClass newClass, string subclassName)
+        
+        private bool CanDefense()
         {
-            _playerClass = newClass;
-            _currentSubclass = subclassName;
-
-            _playerClass.Initialize(this);
-
-            Debug.Log($"Evolved to {subclassName}!");
-            StartCoroutine(EvolutionEffect());
+            return Time.time >= _lastDefenseTime + PlayerStats.DefenseSpeed * statsMod.defenseSpeedMod;
         }
 
         private IEnumerator EvolutionEffect()
@@ -417,14 +406,78 @@ namespace PlayerDirectory
                 yield return new WaitForSeconds(0.1f);
             }
         }
+        
+        private void ApplyShopBonuses()
+        {
+            Dictionary<StatBonusType, float> bonuses = ShopManager.Instance.GetPurchasedStatBonuses();
+            
+            foreach (KeyValuePair<StatBonusType, float> bonus in bonuses)
+            {
+                switch (bonus.Key)
+                {
+                    case StatBonusType.Growth:
+                        statsMod.growthMod += bonus.Value;
+                        break;
+                    case StatBonusType.Reroll:
+                        PlayerStats.Reroll += (int)bonus.Value;
+                        break;
+                    case StatBonusType.Skip:
+                        PlayerStats.Skip += (int)bonus.Value;
+                        break;
+                    case StatBonusType.Banish:
+                        PlayerStats.Banish += (int)bonus.Value;
+                        break;
+                    case StatBonusType.MaxHealth:
+                        PlayerStats.Health += bonus.Value;
+                        PlayerStats.MaxHealth += bonus.Value;
+                        break;
+                    case StatBonusType.Armor:
+                        statsMod.armorBonus += bonus.Value;
+                        break;
+                    case StatBonusType.HealthRegen:
+                        statsMod.healthRegenBonus += bonus.Value;
+                        break;
+                    case StatBonusType.PickupRadius:
+                        statsMod.pickupRadiusMod += bonus.Value;
+                        break;
+                    case StatBonusType.Luck:
+                        statsMod.luckMod += bonus.Value * 0.01f;
+                        break;
+                    case StatBonusType.CooldownReduction:
+                        PlayerStats.CooldownReduction += bonus.Value;
+                        break;
+                }
+            }
+        }
+        
+         // Getters and Setters 
 
-        public string GetCurrentSubclass() => _currentSubclass;
+        public bool AutoTargetEnabled
+        {
+            get => autoTargetEnabled;
+            set => autoTargetEnabled = value;
+        }
 
+        public bool AutoAttackEnabled
+        {
+            get => autoAttackEnabled;
+            set => autoAttackEnabled = value;
+        }
+        
+        public float SpecialAttackCooldownProgress =>
+            Mathf.Clamp01((Time.time - _lastSpecialAttackTime) /
+                          (PlayerStats.SpecialAttackSpeed * statsMod.sAttackSpeedMod));
+
+        public float DefenseCooldownProgress =>
+            Mathf.Clamp01((Time.time - _lastDefenseTime) / (PlayerStats.DefenseSpeed * statsMod.defenseSpeedMod));
         // Getters for UI
-        public float GetMaxHealth() => playerStats.maxHealth;
+        public void OnCoinCollected() => sessionStats.totalCoinsCollected++;
+        public void OnProjectileFired() => sessionStats.projectilesFired++;
+        public string GetCurrentSubclass() => currentSubclass;
+        public float GetMaxHealth() => PlayerStats.MaxHealth;
         public float GetCurrentHealth() => _currentHp;
         public float GetHealthPercentage() => _currentHp / GetMaxHealth();
-        public int GetRevivals() => playerStats.revival + statsMod.revivalBonus;
-        public float GetPickupRadius() => playerStats.pickupRadius * statsMod.pickupRadiusMod;
+        public int GetRevivals() => PlayerStats.Revival + statsMod.revivalBonus;
+        public float GetPickupRadius() => PlayerStats.PickupRadius * statsMod.pickupRadiusMod;
     }
 }

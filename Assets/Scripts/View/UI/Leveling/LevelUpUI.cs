@@ -91,19 +91,19 @@ namespace View.UI.Leveling
         {
             // Reroll button
             rerollButton.interactable = _rerollCharges > 0;
-            var rerollColors = rerollButton.colors;
+            ColorBlock rerollColors = rerollButton.colors;
             rerollColors.normalColor = _rerollCharges > 0 ? Color.white : Color.gray;
             rerollButton.colors = rerollColors;
 
             // Skip button
             skipButton.interactable = _skipCharges > 0;
-            var skipColors = skipButton.colors;
+            ColorBlock skipColors = skipButton.colors;
             skipColors.normalColor = _skipCharges > 0 ? Color.white : Color.gray;
             skipButton.colors = skipColors;
 
             // Banish button
             banishButton.interactable = _banishCharges > 0;
-            var banishColors = banishButton.colors;
+            ColorBlock banishColors = banishButton.colors;
             banishColors.normalColor = _banishCharges > 0 ? Color.white : new Color(0.5f, 0.5f, 0.5f);
             banishButton.colors = banishColors;
 
@@ -197,7 +197,7 @@ namespace View.UI.Leveling
             if (_skipCharges <= 0) return;
 
             _skipCharges--;
-            _player.playerStats.skip = Mathf.Max(0, _player.playerStats.skip - 1);
+            _player.PlayerStats.Skip = Mathf.Max(0, _player.PlayerStats.Skip - 1);
             CloseLevelUpUI();
         }
 
@@ -216,7 +216,7 @@ namespace View.UI.Leveling
                 // Confirm banish
                 _levelUpManager.BanishChoice(_selectedForBanish);
                 _banishCharges--;
-                _player.playerStats.banish = Mathf.Max(0, _player.playerStats.banish - 1);
+                _player.PlayerStats.Banish = Mathf.Max(0, _player.PlayerStats.Banish - 1);
 
                 // Generate new choices without the banished option
                 List<object> newChoices = _levelUpManager.GenerateLevelUpChoices(_player);
@@ -229,7 +229,7 @@ namespace View.UI.Leveling
             if (_rerollCharges <= 0) return;
 
             _rerollCharges--;
-            _player.playerStats.reroll = Mathf.Max(0, _player.playerStats.reroll - 1);
+            _player.PlayerStats.Reroll = Mathf.Max(0, _player.PlayerStats.Reroll - 1);
 
             List<object> newChoices = _levelUpManager.GenerateLevelUpChoices(_player);
             ShowLevelUpChoices(_player, newChoices, _rerollCharges, _skipCharges, _banishCharges);

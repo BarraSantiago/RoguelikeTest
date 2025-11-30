@@ -1,0 +1,315 @@
+using System.Collections.Generic;
+using System.Linq;
+using PlayerDirectory;
+using UnityEngine;
+using UnityEngine.Events;
+
+namespace Achievements
+{
+    public class AchievementManager : MonoBehaviour
+    {
+        public static AchievementManager Instance { get; private set; }
+        
+        [Header("Events")]
+        public UnityEvent<Achievement> onAchievementUnlocked;
+        public UnityEvent<int> onCoinsEarned;
+        
+        private PersistentStats _persistentStats;
+        private Dictionary<string, Achievement> _achievements;
+        private int _totalCoins;
+        
+        private void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+                Initialize();
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+        
+        private void Initialize()
+        {
+            _persistentStats = PersistentStats.Load();
+            _totalCoins = PlayerPrefs.GetInt("TotalCoins", 0);
+            _achievements = new Dictionary<string, Achievement>();
+            
+            InitializeAchievements();
+            LoadAchievementProgress();
+        }
+        
+        private void InitializeAchievements()
+        {
+            // Damage achievements
+            Achievement damageAchievement = new Achievement(
+                "total_damage",
+                "Damage Dealer",
+                "Deal massive damage to enemies",
+                AchievementType.TotalDamageDealt,
+                0
+            );
+            damageAchievement.milestones.Add(new AchievementMilestone(1000, 50));
+            damageAchievement.milestones.Add(new AchievementMilestone(10000, 100));
+            damageAchievement.milestones.Add(new AchievementMilestone(50000, 250));
+            damageAchievement.milestones.Add(new AchievementMilestone(100000, 500));
+            _achievements["total_damage"] = damageAchievement;
+            
+            // Kill achievements
+            Achievement killAchievement = new Achievement(
+                "total_kills",
+                "Executioner",
+                "Eliminate enemies",
+                AchievementType.TotalEnemiesKilled,
+                0
+            );
+
+            killAchievement.milestones.Add(new AchievementMilestone(100, 25, 
+                new ShopUnlock("reroll_1", ShopUnlockType.StatBonus, "reroll", 50)));
+            killAchievement.milestones.Add(new AchievementMilestone(500, 75, 
+                new ShopUnlock("reroll_2", ShopUnlockType.StatBonus, "reroll", 100)));
+            killAchievement.milestones.Add(new AchievementMilestone(1000, 150));
+            killAchievement.milestones.Add(new AchievementMilestone(5000, 500, 
+                new ShopUnlock("reroll_3", ShopUnlockType.StatBonus, "reroll", 200)));
+            _achievements["total_kills"] = killAchievement;
+            
+            // Healing achievements
+            Achievement healingAchievement = new Achievement(
+                "total_healing",
+                "Regenerator",
+                "Recover health throughout your runs",
+                AchievementType.TotalHealingReceived,
+                0
+            );
+            healingAchievement.milestones.Add(new AchievementMilestone(500, 30));
+            healingAchievement.milestones.Add(new AchievementMilestone(2000, 75, 
+                new ShopUnlock("health_regen_1", ShopUnlockType.StatBonus, "health_regen", 75)));
+            healingAchievement.milestones.Add(new AchievementMilestone(5000, 150));
+            _achievements["total_healing"] = healingAchievement;
+            
+            // Coin achievements
+            Achievement coinAchievement = new Achievement(
+                "total_coins",
+                "Treasure Hunter",
+                "Collect coins during runs",
+                AchievementType.TotalCoinsCollected,
+                0
+            );
+            coinAchievement.milestones.Add(new AchievementMilestone(500, 50, 
+                new ShopUnlock("growth_1", ShopUnlockType.StatBonus, "growth", 100)));
+            coinAchievement.milestones.Add(new AchievementMilestone(2000, 150));
+            coinAchievement.milestones.Add(new AchievementMilestone(10000, 500, 
+                new ShopUnlock("growth_2", ShopUnlockType.StatBonus, "growth", 250)));
+            _achievements["total_coins"] = coinAchievement;
+            
+            // Distance achievements
+            Achievement distanceAchievement = new Achievement(
+                "total_distance",
+                "Marathon Runner",
+                "Travel vast distances",
+                AchievementType.TotalDistanceTraveled,
+                0
+            );
+            distanceAchievement.milestones.Add(new AchievementMilestone(1000, 40));
+            distanceAchievement.milestones.Add(new AchievementMilestone(5000, 100, 
+                new ShopUnlock("pickup_radius_1", ShopUnlockType.StatBonus, "pickup_radius", 75)));
+            distanceAchievement.milestones.Add(new AchievementMilestone(20000, 300));
+            _achievements["total_distance"] = distanceAchievement;
+            
+            // Survival achievements
+            Achievement survivalAchievement = new Achievement(
+                "survival_time",
+                "Survivor",
+                "Survive for extended periods",
+                AchievementType.SurvivalTime,
+                0
+            );
+            survivalAchievement.milestones.Add(new AchievementMilestone(600, 50)); // 10 min
+            survivalAchievement.milestones.Add(new AchievementMilestone(1800, 150, 
+                new ShopUnlock("skip_1", ShopUnlockType.StatBonus, "skip", 100))); // 30 min
+            survivalAchievement.milestones.Add(new AchievementMilestone(3600, 400)); // 60 min
+            _achievements["survival_time"] = survivalAchievement;
+            
+            // Critical hit achievements
+            Achievement critAchievement = new Achievement(
+                "critical_hits",
+                "Precision Striker",
+                "Land critical hits",
+                AchievementType.CriticalHits,
+                0
+            );
+            critAchievement.milestones.Add(new AchievementMilestone(100, 30));
+            critAchievement.milestones.Add(new AchievementMilestone(500, 100, 
+                new ShopUnlock("luck_1", ShopUnlockType.StatBonus, "luck", 125)));
+            critAchievement.milestones.Add(new AchievementMilestone(2000, 300));
+            _achievements["critical_hits"] = critAchievement;
+            
+            // Kill streak achievements
+            Achievement streakAchievement = new Achievement(
+                "kill_streak",
+                "Unstoppable",
+                "Achieve high kill streaks",
+                AchievementType.LongestKillStreak,
+                0
+            );
+            streakAchievement.milestones.Add(new AchievementMilestone(50, 50));
+            streakAchievement.milestones.Add(new AchievementMilestone(150, 150, 
+                new ShopUnlock("banish_1", ShopUnlockType.StatBonus, "banish", 150)));
+            streakAchievement.milestones.Add(new AchievementMilestone(300, 400));
+            _achievements["kill_streak"] = streakAchievement;
+            
+            // Subclass unlock achievements
+            AddSubclassAchievements();
+        }
+        
+        private void AddSubclassAchievements()
+        {
+            string[] subclasses = { "Berserker", "Paladin", "Reaver", "Sniper", "Hunter", "Trapper" };
+            
+            foreach (string subclass in subclasses)
+            {
+                Achievement achievement = new Achievement(
+                    $"unlock_{subclass.ToLower()}",
+                    $"Unlock {subclass}",
+                    $"Complete the conditions to unlock {subclass}",
+                    AchievementType.SubclassUnlock,
+                    100
+                );
+                achievement.milestones.Add(new AchievementMilestone(1, 0, 
+                    new ShopUnlock($"subclass_{subclass.ToLower()}", ShopUnlockType.Subclass, subclass, 500)));
+                _achievements[$"unlock_{subclass.ToLower()}"] = achievement;
+            }
+        }
+        
+        public void OnSessionEnd(GameSessionStats sessionStats)
+        {
+            _persistentStats.AddSessionStats(sessionStats);
+            _persistentStats.Save();
+            
+            CheckAchievementProgress();
+        }
+        
+        private void CheckAchievementProgress()
+        {
+            foreach (Achievement achievement in _achievements.Values)
+            {
+                float currentValue = GetCurrentValueForType(achievement.type);
+                
+                foreach (AchievementMilestone milestone in achievement.milestones)
+                {
+                    if (!milestone.isCompleted && currentValue >= milestone.targetValue)
+                    {
+                        milestone.isCompleted = true;
+                        AwardCoins(milestone.coinReward);
+                        
+                        if (milestone.shopUnlock != null)
+                        {
+                            UnlockShopItem(milestone.shopUnlock);
+                        }
+                        
+                        Debug.Log($"Milestone completed: {achievement.name} - {milestone.targetValue}");
+                    }
+                }
+                
+                if (!achievement.isUnlocked && achievement.milestones.All(m => m.isCompleted))
+                {
+                    achievement.isUnlocked = true;
+                    AwardCoins(achievement.coinReward);
+                    onAchievementUnlocked?.Invoke(achievement);
+                    Debug.Log($"Achievement unlocked: {achievement.name}");
+                }
+            }
+            
+            SaveAchievementProgress();
+        }
+        
+        private float GetCurrentValueForType(AchievementType type)
+        {
+            return type switch
+            {
+                AchievementType.TotalDamageDealt => _persistentStats.totalDamageDealt,
+                AchievementType.TotalEnemiesKilled => _persistentStats.totalEnemiesKilled,
+                AchievementType.TotalHealingReceived => _persistentStats.totalHealingReceived,
+                AchievementType.TotalCoinsCollected => _persistentStats.totalCoinsCollected,
+                AchievementType.TotalDistanceTraveled => _persistentStats.totalDistanceTraveled,
+                AchievementType.SurvivalTime => _persistentStats.totalSurvivalTime,
+                AchievementType.CriticalHits => _persistentStats.totalCriticalHits,
+                AchievementType.LongestKillStreak => _persistentStats.longestKillStreak,
+                _ => 0
+            };
+        }
+        
+        public void OnSubclassConditionMet(string subclassName)
+        {
+            string achievementId = $"unlock_{subclassName.ToLower()}";
+            if (_achievements.TryGetValue(achievementId, out Achievement achievement))
+            {
+                achievement.milestones[0].isCompleted = true;
+                CheckAchievementProgress();
+            }
+        }
+        
+        private void AwardCoins(int amount)
+        {
+            _totalCoins += amount;
+            PlayerPrefs.SetInt("TotalCoins", _totalCoins);
+            PlayerPrefs.Save();
+            onCoinsEarned?.Invoke(amount);
+        }
+        
+        private void UnlockShopItem(ShopUnlock unlock)
+        {
+            string key = $"ShopUnlock_{unlock.id}";
+            PlayerPrefs.SetInt(key, 1);
+            PlayerPrefs.Save();
+            Debug.Log($"Unlocked shop item: {unlock.id}");
+        }
+        
+        private void SaveAchievementProgress()
+        {
+            foreach (KeyValuePair<string, Achievement> kvp in _achievements)
+            {
+                string json = JsonUtility.ToJson(kvp.Value);
+                PlayerPrefs.SetString($"Achievement_{kvp.Key}", json);
+            }
+            PlayerPrefs.Save();
+        }
+        
+        private void LoadAchievementProgress()
+        {
+            foreach (KeyValuePair<string, Achievement> kvp in _achievements)
+            {
+                string key = $"Achievement_{kvp.Key}";
+                if (PlayerPrefs.HasKey(key))
+                {
+                    string json = PlayerPrefs.GetString(key);
+                    Achievement loaded = JsonUtility.FromJson<Achievement>(json);
+                    kvp.Value.isUnlocked = loaded.isUnlocked;
+                    for (int i = 0; i < loaded.milestones.Count && i < kvp.Value.milestones.Count; i++)
+                    {
+                        kvp.Value.milestones[i].isCompleted = loaded.milestones[i].isCompleted;
+                    }
+                }
+            }
+        }
+        
+        public int GetTotalCoins() => _totalCoins;
+        public PersistentStats GetPersistentStats() => _persistentStats;
+        public Dictionary<string, Achievement> GetAllAchievements() => _achievements;
+        
+        public bool SpendCoins(int amount)
+        {
+            if (_totalCoins >= amount)
+            {
+                _totalCoins -= amount;
+                PlayerPrefs.SetInt("TotalCoins", _totalCoins);
+                PlayerPrefs.Save();
+                return true;
+            }
+            return false;
+        }
+    }
+}

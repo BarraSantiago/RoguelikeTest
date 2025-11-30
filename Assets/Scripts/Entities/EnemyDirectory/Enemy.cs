@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Classes.Evolution;
+using ClassesDirectory.Evolution;
 using Entities.XpDirectory;
 using UnityEngine;
 
@@ -218,7 +218,7 @@ namespace Entities.EnemyDirectory
             ExperiencePool.SpawnExperienceDrop(transform.position, experienceValue);
 
             SubclassEvolutionManager evolutionManager =
-                FindFirstObjectByType<Classes.Evolution.SubclassEvolutionManager>();
+                FindFirstObjectByType<SubclassEvolutionManager>();
             evolutionManager?.OnEnemyKilled();
         }
 

@@ -1,7 +1,8 @@
+using Entities.EnemyDirectory;
 using TMPro;
 using UnityEngine;
 
-namespace Entities.EnemyDirectory
+namespace View.UI
 {
     public class WaveUI : MonoBehaviour
     {
