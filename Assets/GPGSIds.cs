@@ -24,7 +24,40 @@
 
 public static class GPGSIds
 {
+        public const string achievement_streak_150 = "CgkIqILy-osJEAIQIQ"; // <GPGSID>
+        public const string achievement_survival_6min = "CgkIqILy-osJEAIQGw"; // <GPGSID>
+        public const string achievement_distance_5k = "CgkIqILy-osJEAIQBA"; // <GPGSID>
+        public const string achievement_streak_300 = "CgkIqILy-osJEAIQFg"; // <GPGSID>
+        public const string achievement_coins_2k = "CgkIqILy-osJEAIQDg"; // <GPGSID>
+        public const string achievement_survival_10min = "CgkIqILy-osJEAIQGA"; // <GPGSID>
+        public const string achievement_kills_5k = "CgkIqILy-osJEAIQIA"; // <GPGSID>
+        public const string achievement_coins_10k = "CgkIqILy-osJEAIQFQ"; // <GPGSID>
+        public const string leaderboard_kills_this_session = "CgkIqILy-osJEAIQAg"; // <GPGSID>
+        public const string achievement_kills_500 = "CgkIqILy-osJEAIQEw"; // <GPGSID>
+        public const string achievement_crits_500 = "CgkIqILy-osJEAIQFA"; // <GPGSID>
+        public const string achievement_damage_1k = "CgkIqILy-osJEAIQHA"; // <GPGSID>
+        public const string achievement_unlock_trapper = "CgkIqILy-osJEAIQCw"; // <GPGSID>
+        public const string achievement_survival_30min = "CgkIqILy-osJEAIQBg"; // <GPGSID>
+        public const string achievement_streak_50 = "CgkIqILy-osJEAIQEQ"; // <GPGSID>
+        public const string achievement_distance_20k = "CgkIqILy-osJEAIQEA"; // <GPGSID>
+        public const string achievement_unlock_hunter = "CgkIqILy-osJEAIQCA"; // <GPGSID>
+        public const string achievement_crits_2k = "CgkIqILy-osJEAIQGg"; // <GPGSID>
+        public const string achievement_kills_1k = "CgkIqILy-osJEAIQHw"; // <GPGSID>
+        public const string achievement_unlock_berserker = "CgkIqILy-osJEAIQIg"; // <GPGSID>
+        public const string achievement_damage_100k = "CgkIqILy-osJEAIQGQ"; // <GPGSID>
+        public const string achievement_healing_5k = "CgkIqILy-osJEAIQHQ"; // <GPGSID>
         public const string achievement_start_the_game = "CgkIqILy-osJEAIQAQ"; // <GPGSID>
+        public const string achievement_unlock_reaver = "CgkIqILy-osJEAIQCQ"; // <GPGSID>
+        public const string achievement_healing_2k = "CgkIqILy-osJEAIQBw"; // <GPGSID>
+        public const string achievement_unlock_sniper = "CgkIqILy-osJEAIQEg"; // <GPGSID>
+        public const string achievement_kills_100 = "CgkIqILy-osJEAIQCg"; // <GPGSID>
+        public const string achievement_coins_500 = "CgkIqILy-osJEAIQDA"; // <GPGSID>
+        public const string achievement_crits_100 = "CgkIqILy-osJEAIQFw"; // <GPGSID>
+        public const string achievement_damage_50k = "CgkIqILy-osJEAIQDw"; // <GPGSID>
+        public const string achievement_unlock_paladin = "CgkIqILy-osJEAIQDQ"; // <GPGSID>
+        public const string achievement_healing_500 = "CgkIqILy-osJEAIQHg"; // <GPGSID>
+        public const string achievement_distance_1k = "CgkIqILy-osJEAIQAw"; // <GPGSID>
+        public const string achievement_damage_10k = "CgkIqILy-osJEAIQBQ"; // <GPGSID>
 
 }
 
