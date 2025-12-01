@@ -26,18 +26,18 @@ namespace Entities.EnemyDirectory
 
     public class WaveSystem : MonoBehaviour
     {
-        [Header("Wave Configuration")] 
+        [Header("Wave Configuration")]
         [SerializeField] private List<WaveConfig> waves = new();
         [SerializeField] private float timeBetweenWaves = 30f;
-        [SerializeField] private int maxSimultaneousEnemies = 50;
+        [SerializeField] private int maxSimultaneousEnemies = 100;
 
-        [Header("Scaling Settings")] 
-        [SerializeField] private float healthScalingPerMinute = 0.1f;
-        [SerializeField] private float damageScalingPerMinute = 0.08f;
-        [SerializeField] private float speedScalingPerMinute = 0.05f;
+        [Header("Scaling Settings")]
+        [SerializeField] private float healthScalingPerMinute = 0.25f;
+        [SerializeField] private float damageScalingPerMinute = 0.2f;
+        [SerializeField] private float speedScalingPerMinute = 0.1f;
 
-        [Header("Mobile Optimization")] 
-        [SerializeField] private int maxSpawnsPerFrame = 5;
+        [Header("Mobile Optimization")]
+        [SerializeField] private int maxSpawnsPerFrame = 8;
 
         private Queue<SpawnRequest> _spawnQueue = new Queue<SpawnRequest>();
 
@@ -76,63 +76,82 @@ namespace Entities.EnemyDirectory
 
             waves = new List<WaveConfig>
             {
-                // Wave 1: 0-1 minute
+                // Wave 1: 0-1 minute - Tutorial Wave
                 new WaveConfig
                 {
                     startTime = 0f,
                     endTime = 60f,
-                    baseSpawnCount = 5,
-                    spawnInterval = 2f,
-                    eliteChance = 0f,
+                    baseSpawnCount = 8,
+                    spawnInterval = 1.8f,
+                    eliteChance = 0.05f,
                     bossChance = 0f,
                     scaling = new EnemyScaling { healthMultiplier = 1f, damageMultiplier = 1f, speedMultiplier = 1f }
                 },
-                // Wave 2: 1-3 minutes
+                // Wave 2: 1-2 minutes - Early Game
                 new WaveConfig
                 {
                     startTime = 60f,
-                    endTime = 180f,
-                    baseSpawnCount = 8,
+                    endTime = 120f,
+                    baseSpawnCount = 15,
                     spawnInterval = 1.5f,
-                    eliteChance = 0.1f,
+                    eliteChance = 0.15f,
                     bossChance = 0f,
-                    scaling = new EnemyScaling
-                        { healthMultiplier = 1.5f, damageMultiplier = 1.3f, speedMultiplier = 1.1f }
+                    scaling = new EnemyScaling { healthMultiplier = 1.5f, damageMultiplier = 1.4f, speedMultiplier = 1.1f }
                 },
-                // Wave 3: 3-5 minutes
+                // Wave 3: 2-3 minutes - Ramp Up
+                new WaveConfig
+                {
+                    startTime = 120f,
+                    endTime = 180f,
+                    baseSpawnCount = 22,
+                    spawnInterval = 1.2f,
+                    eliteChance = 0.25f,
+                    bossChance = 0.05f,
+                    scaling = new EnemyScaling { healthMultiplier = 2f, damageMultiplier = 1.8f, speedMultiplier = 1.2f }
+                },
+                // Wave 4: 3-5 minutes - Mid Game
                 new WaveConfig
                 {
                     startTime = 180f,
                     endTime = 300f,
-                    baseSpawnCount = 12,
-                    spawnInterval = 1.2f,
-                    eliteChance = 0.15f,
-                    bossChance = 0.05f,
-                    scaling = new EnemyScaling
-                        { healthMultiplier = 2f, damageMultiplier = 1.6f, speedMultiplier = 1.2f }
+                    baseSpawnCount = 30,
+                    spawnInterval = 1f,
+                    eliteChance = 0.35f,
+                    bossChance = 0.08f,
+                    scaling = new EnemyScaling { healthMultiplier = 3f, damageMultiplier = 2.3f, speedMultiplier = 1.3f }
                 },
-                // Wave 4: 5-8 minutes
+                // Wave 5: 5-8 minutes - Late Game
                 new WaveConfig
                 {
                     startTime = 300f,
                     endTime = 480f,
-                    baseSpawnCount = 15,
-                    spawnInterval = 1f,
-                    eliteChance = 0.2f,
-                    bossChance = 0.1f,
-                    scaling = new EnemyScaling { healthMultiplier = 3f, damageMultiplier = 2f, speedMultiplier = 1.3f }
+                    baseSpawnCount = 40,
+                    spawnInterval = 0.8f,
+                    eliteChance = 0.45f,
+                    bossChance = 0.12f,
+                    scaling = new EnemyScaling { healthMultiplier = 5f, damageMultiplier = 3f, speedMultiplier = 1.4f }
                 },
-                // Wave 5: 8+ minutes (endless)
+                // Wave 6: 8-12 minutes - Challenge Mode
                 new WaveConfig
                 {
                     startTime = 480f,
-                    endTime = float.MaxValue,
-                    baseSpawnCount = 20,
-                    spawnInterval = 0.8f,
-                    eliteChance = 0.25f,
+                    endTime = 720f,
+                    baseSpawnCount = 50,
+                    spawnInterval = 0.6f,
+                    eliteChance = 0.55f,
                     bossChance = 0.15f,
-                    scaling = new EnemyScaling
-                        { healthMultiplier = 4f, damageMultiplier = 2.5f, speedMultiplier = 1.4f }
+                    scaling = new EnemyScaling { healthMultiplier = 8f, damageMultiplier = 4f, speedMultiplier = 1.5f }
+                },
+                // Wave 7: 12+ minutes - Endless Hell
+                new WaveConfig
+                {
+                    startTime = 720f,
+                    endTime = float.MaxValue,
+                    baseSpawnCount = 60,
+                    spawnInterval = 0.5f,
+                    eliteChance = 0.65f,
+                    bossChance = 0.2f,
+                    scaling = new EnemyScaling { healthMultiplier = 12f, damageMultiplier = 5f, speedMultiplier = 1.6f }
                 }
             };
         }
@@ -141,10 +160,8 @@ namespace Entities.EnemyDirectory
         {
             float gameTime = GameTime;
 
-            // Process spawn queue gradually
             ProcessSpawnQueue();
 
-            // Wave transition check
             if (_currentWave != null && gameTime >= _currentWave.endTime)
             {
                 if (_currentWaveIndex + 1 < waves.Count)
@@ -153,7 +170,6 @@ namespace Entities.EnemyDirectory
                 }
             }
 
-            // Queue spawns instead of spawning immediately
             if (Time.time >= _nextSpawnTime)
             {
                 QueueWaveEnemies();
@@ -211,32 +227,6 @@ namespace Entities.EnemyDirectory
             Debug.Log($"Wave {CurrentWaveNumber} started!");
         }
 
-        private void SpawnWaveEnemies()
-        {
-            if (_enemyManager.ActiveEnemyCount >= maxSimultaneousEnemies)
-                return;
-
-            int spawnCount = _currentWave.baseSpawnCount;
-            EnemyScaling scaling = CalculateCurrentScaling();
-
-            for (int i = 0; i < spawnCount; i++)
-            {
-                SpawnScaledEnemy(scaling);
-            }
-        }
-
-        private void SpawnScaledEnemy(EnemyScaling scaling)
-        {
-            Vector3 spawnPosition = GetRandomSpawnPosition();
-            EnemyType enemyType = DetermineEnemyType();
-            int enemyPrefabIndex = GetEnemyPrefabIndex(enemyType);
-
-            Enemy enemy = _enemyManager.SpawnEnemy(enemyPrefabIndex, spawnPosition);
-            if (!enemy) return;
-
-            ApplyScaling(enemy, scaling, enemyType);
-        }
-
         private EnemyType DetermineEnemyType()
         {
             float roll = UnityEngine.Random.value;
@@ -252,7 +242,6 @@ namespace Entities.EnemyDirectory
 
         private int GetEnemyPrefabIndex(EnemyType type)
         {
-            // Assuming enemy prefabs are ordered: Normal, Elite, Boss
             return type switch
             {
                 EnemyType.Elite => Mathf.Min(1, _enemyManager.enemyPrefabs.Length - 1),
@@ -265,29 +254,27 @@ namespace Entities.EnemyDirectory
         {
             EnemyData scaledData = enemy.data;
 
-            // Apply wave scaling
             scaledData.health *= scaling.healthMultiplier;
             scaledData.attackDamage *= scaling.damageMultiplier;
             scaledData.speed *= scaling.speedMultiplier;
 
-            // Apply type multipliers
             switch (type)
             {
                 case EnemyType.Elite:
-                    scaledData.health *= 3f;
-                    scaledData.attackDamage *= 2f;
-                    scaledData.speed *= 0.8f;
-                    enemy.experienceValue *= 5f;
-                    enemy.transform.localScale *= 1.3f;
+                    scaledData.health *= 4f;
+                    scaledData.attackDamage *= 2.5f;
+                    scaledData.speed *= 0.85f;
+                    enemy.experienceValue *= 8f;
+                    enemy.transform.localScale *= 1.4f;
                     break;
 
                 case EnemyType.Boss:
-                    scaledData.health *= 10f;
-                    scaledData.attackDamage *= 3f;
+                    scaledData.health *= 15f;
+                    scaledData.attackDamage *= 4f;
                     scaledData.speed *= 0.6f;
-                    scaledData.attackRange *= 1.5f;
-                    enemy.experienceValue *= 20f;
-                    enemy.transform.localScale *= 2f;
+                    scaledData.attackRange *= 2f;
+                    enemy.experienceValue *= 30f;
+                    enemy.transform.localScale *= 2.5f;
                     break;
             }
 

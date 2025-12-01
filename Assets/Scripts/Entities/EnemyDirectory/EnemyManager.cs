@@ -8,43 +8,48 @@ namespace Entities.EnemyDirectory
 {
     public class EnemyManager : MonoBehaviour
     {
-        [Header("Enemy Prefabs")] 
-        [SerializeField]public GameObject[] enemyPrefabs;
-        
-        [Header("Pooling Settings")] 
-        [SerializeField]public int initialPoolSize = 10;
-        [SerializeField]public Transform enemyContainer;
+        [Header("Enemy Prefabs")]
+        [SerializeField] public GameObject[] enemyPrefabs;
 
-        [Header("Spawn Settings")] 
-        [SerializeField]public float spawnRadius = 10f;
-        [SerializeField]public int maxEnemies = 20;
-        
+        [Header("Pooling Settings")]
+        [SerializeField] public int initialPoolSize = 10;
+        [SerializeField] public Transform enemyContainer;
+
+        [Header("Spawn Settings")]
+        [SerializeField] public float spawnRadius = 10f;
+        [SerializeField] public int maxEnemies = 20;
+        [SerializeField] private float eliteSpawnChance = 0.15f;
+        [SerializeField] private float enemyScalingPerMinute = 0.2f;
+
         [Header("Performance Settings")]
-        [SerializeField] private float updateInterval = 0.1f; // Update enemies 10 times per second
-        [SerializeField] private int enemiesPerFrame = 10; // Process enemies in batches
-        
+        [SerializeField] private float updateInterval = 0.1f;
+        [SerializeField] private int enemiesPerFrame = 10;
+
         public int ActiveEnemyCount => _activeEnemies.Count;
         public Transform PlayerTransform => _playerTransform;
+
         private float _lastUpdateTime;
         private int _currentUpdateIndex;
         private Player _player;
         private Transform _playerTransform;
-        private Dictionary<int, Queue<GameObject>> _enemyPools = new();
+        private Dictionary<int, EnemyPool> _enemyPools = new();
+        private Dictionary<int, EnemyFactory> _enemyFactories = new();
         private Dictionary<int, EnemyData> _enemyDataTemplates = new();
         private static List<Enemy> _activeEnemies = new();
-        
+        private float _gameStartTime;
+
         public static List<Enemy> Enemies => _activeEnemies;
-        
+
         private void Awake()
         {
             InitializePools();
             Enemy.EnemyManager = this;
             Enemy.ExperiencePool = FindFirstObjectByType<ExperiencePool>();
+            _gameStartTime = Time.time;
         }
 
         private void Start()
         {
-            // Cache player reference
             GameObject playerObj = GameObject.FindWithTag("Player");
             if (playerObj)
             {
@@ -54,13 +59,12 @@ namespace Entities.EnemyDirectory
 
             SpawnEnemiesAroundPlayer(10);
         }
-        
-        
+
         private void Update()
         {
             if (Time.time - _lastUpdateTime < updateInterval)
                 return;
-        
+
             _lastUpdateTime = Time.time;
             UpdateEnemyBehaviorsBatched();
         }
@@ -71,55 +75,48 @@ namespace Entities.EnemyDirectory
             {
                 Enemy prefabEnemy = enemyPrefabs[i].GetComponent<Enemy>();
                 _enemyDataTemplates[i] = prefabEnemy.data;
+
+                EnemyPool pool = new EnemyPool();
+                pool.Initialize(enemyPrefabs[i], initialPoolSize, enemyContainer);
+
                 prefabEnemy.OnDeath += HandleEnemyDeath;
 
-                Queue<GameObject> pool = new Queue<GameObject>();
-                for (int j = 0; j < initialPoolSize; j++)
-                {
-                    GameObject enemy = CreateNewEnemy(i);
-                    enemy.SetActive(false);
-                    pool.Enqueue(enemy);
-                }
-
                 _enemyPools[i] = pool;
+                _enemyFactories[i] = new EnemyFactory(pool);
             }
         }
 
-        private GameObject CreateNewEnemy(int enemyType)
+        private float GetEnemyScaling()
         {
-            GameObject enemy = Instantiate(enemyPrefabs[enemyType], enemyContainer);
-            enemy.GetComponent<Enemy>().data = _enemyDataTemplates[enemyType];
-            return enemy;
+            float minutesElapsed = (Time.time - _gameStartTime) / 60f;
+            return 1f + (minutesElapsed * enemyScalingPerMinute);
         }
 
         public Enemy SpawnEnemy(int enemyType, Vector3 position)
         {
-            if (_activeEnemies.Count >= maxEnemies)
-                return null;
+            if (_activeEnemies.Count >= maxEnemies) return null;
 
-            GameObject enemyObj;
-            Queue<GameObject> pool = _enemyPools[enemyType];
+            IEnemy enemyInterface = _enemyFactories[enemyType].CreateEnemy(position);
+            Enemy enemy = enemyInterface as Enemy;
 
-            if (pool.Count > 0)
+            if (!enemy) return null;
+
+            enemy.ResetEnemy(_enemyDataTemplates[enemyType]);
+
+            float scaling = GetEnemyScaling();
+            enemy.data.health *= scaling;
+            enemy.data.attackDamage *= scaling;
+
+            if (Random.value < eliteSpawnChance)
             {
-                enemyObj = pool.Dequeue();
-                enemyObj.transform.position = position;
-
-                Enemy enemy = enemyObj.GetComponent<Enemy>();
-                enemy.ResetEnemy(_enemyDataTemplates[enemyType]);
-
-                enemyObj.SetActive(true);
-            }
-            else
-            {
-                enemyObj = CreateNewEnemy(enemyType);
-                enemyObj.transform.position = position;
+                enemy.SetEnemyType(EnemyType.Elite);
+                enemy.data.health *= 2f;
+                enemy.data.attackDamage *= 1.5f;
             }
 
-            Enemy enemyComponent = enemyObj.GetComponent<Enemy>();
-            _activeEnemies.Add(enemyComponent);
+            _activeEnemies.Add(enemy);
 
-            return enemyComponent;
+            return enemy;
         }
 
         public void HandleEnemyDeath(Enemy enemy)
@@ -130,41 +127,37 @@ namespace Entities.EnemyDirectory
             for (int i = 0; i < enemyPrefabs.Length; i++)
             {
                 if (!enemy.gameObject.name.Contains(enemyPrefabs[i].name)) continue;
-                enemy.gameObject.SetActive(false);
-                _enemyPools[i].Enqueue(enemy.gameObject);
+                _enemyPools[i].Return(enemy);
                 break;
             }
         }
 
-        
-        // Process enemies in batches to spread load
         private void UpdateEnemyBehaviorsBatched()
         {
             if (!_playerTransform || _activeEnemies.Count == 0) return;
-        
+
             Vector2 playerPosition = _playerTransform.position;
             int enemiesThisFrame = Mathf.Min(enemiesPerFrame, _activeEnemies.Count);
-            
+
             for (int i = 0; i < enemiesThisFrame; i++)
             {
                 _currentUpdateIndex = (_currentUpdateIndex + 1) % _activeEnemies.Count;
                 Enemy enemy = _activeEnemies[_currentUpdateIndex];
-                
+
                 if (!enemy || !enemy.gameObject.activeInHierarchy)
                     continue;
-        
+
                 UpdateSingleEnemy(enemy, playerPosition);
             }
         }
-        
-        // Optimize distance calculations with squared distance
+
         private void UpdateSingleEnemy(Enemy enemy, Vector2 playerPosition)
         {
             Vector2 enemyPosition = enemy.transform.position;
             Vector2 toPlayer = playerPosition - enemyPosition;
             float sqrDistance = toPlayer.sqrMagnitude;
             float attackRangeSqr = enemy.data.attackRange * enemy.data.attackRange;
-        
+
             if (sqrDistance <= attackRangeSqr)
             {
                 if (Time.time >= enemy.data.lastAttackTime + enemy.data.attackCooldown)
@@ -175,81 +168,54 @@ namespace Entities.EnemyDirectory
             }
             else
             {
-                // Use pre-calculated direction
                 Vector2 direction = toPlayer / Mathf.Sqrt(sqrDistance);
                 enemy.Move(direction);
             }
         }
-        
-        // Add spatial partitioning for better performance
+
         public static Enemy GetNearestEnemy(Vector2 position, float maxRange)
         {
             Enemy nearest = null;
             float minSqrDistance = maxRange * maxRange;
-        
+
             foreach (Enemy enemy in _activeEnemies)
             {
                 if (!enemy.gameObject.activeInHierarchy) continue;
-                
+
                 Vector2 offset = (Vector2)enemy.transform.position - position;
                 float sqrDistance = offset.sqrMagnitude;
-                
+
                 if (sqrDistance < minSqrDistance)
                 {
                     minSqrDistance = sqrDistance;
                     nearest = enemy;
                 }
             }
-        
+
             return nearest;
         }
 
-        private void UpdateEnemyBehaviors()
-        {
-            if (!_playerTransform) return;
-
-            foreach (Enemy enemy in _activeEnemies)
-            {
-                float distanceToPlayer = Vector2.Distance(enemy.transform.position, _playerTransform.position);
-
-                if (distanceToPlayer <= enemy.data.attackRange)
-                {
-                    if (!(Time.time >= enemy.data.lastAttackTime + enemy.data.attackCooldown)) continue;
-                    _player.TakeDamage(enemy.data.attackDamage);
-                    enemy.data.lastAttackTime = Time.time;
-                }
-                else
-                {
-                    Vector2 direction = (_playerTransform.position - enemy.transform.position).normalized;
-                    enemy.Move(direction);
-                }
-            }
-        }
-
-        // Add to EnemyManager.cs
         public void SpawnEnemiesAroundPlayer(int count)
         {
             if (!_playerTransform || !_player) return;
-        
-            // Apply curse to spawn count
+
             float curseMultiplier = 1f + _player.PlayerStats.Curse + _player.statsMod.curseBonus;
             int cursedCount = Mathf.RoundToInt(count * curseMultiplier);
-        
+
             for (int i = 0; i < cursedCount; i++)
             {
                 int randomType = Random.Range(0, enemyPrefabs.Length);
                 Vector2 randomDirection = Random.insideUnitCircle.normalized;
                 Vector3 spawnPos = _playerTransform.position +
                                    new Vector3(randomDirection.x, randomDirection.y, 0) * spawnRadius;
-        
+
                 Enemy enemy = SpawnEnemy(randomType, spawnPos);
-                
-                // Apply curse to enemy health
+
                 if (enemy)
                 {
                     enemy.data.health = CombatUtilities.ApplyCurse(
-                        enemy.data.health, 
-                        _player.PlayerStats.Curse, 
+                        enemy.data.health,
+                        _player.PlayerStats.Curse,
                         _player.statsMod.curseBonus
                     );
                 }

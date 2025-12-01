@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using ClassesDirectory.Evolution;
 using Entities.XpDirectory;
 using UnityEngine;
@@ -11,8 +10,6 @@ namespace Entities.EnemyDirectory
     {
         public EnemyData data;
         public Action<Enemy> OnDeath { get; set; }
-        public int frameImmunity = 10;
-        public bool inmmune = false;
         public float experienceValue = 10f;
         public static EnemyManager EnemyManager;
         public static ExperiencePool ExperiencePool;
@@ -21,36 +18,36 @@ namespace Entities.EnemyDirectory
         
         private Color _originalColor;
         private EnemyType _enemyType = EnemyType.Normal;
-        private static readonly Dictionary<Collider2D, Enemy> ColliderToEnemy = new();
         private Collider2D _collider;
         private SpriteRenderer _spriteRenderer;
         private Rigidbody2D _rigidbody;
         private bool _canMove = true;
         private Transform _transform;
-        private WaitForSeconds _frameWait;
         private bool _isSlowed;
         private float _slowMultiplier = 1f;
         private float _slowEndTime;
         private bool _isRooted;
         private float _rootEndTime;
         private float _originalSpeed;
+        private Coroutine _knockbackCoroutine;
+        
         public Vector2 Position => _transform.position;
 
         private void Awake()
         {
             _transform = transform;
             _spriteRenderer = GetComponent<SpriteRenderer>();
-            _originalColor = _spriteRenderer.color;
             _rigidbody = GetComponent<Rigidbody2D>();
             _collider = GetComponent<Collider2D>();
-            _frameWait = new WaitForSeconds(Time.fixedDeltaTime);
+        }
 
-            if (_collider != null)
-            {
-                ColliderToEnemy[_collider] = this;
-            }
-
+        private void OnEnable()
+        {
+            _originalColor = _spriteRenderer.color;
             _originalSpeed = data.speed;
+            _canMove = true;
+            _isSlowed = false;
+            _isRooted = false;
         }
 
         private void Update()
@@ -60,13 +57,11 @@ namespace Entities.EnemyDirectory
 
         private void UpdateStatusEffects()
         {
-            // Update slow
             if (_isSlowed && Time.time >= _slowEndTime)
             {
                 RemoveSlow();
             }
 
-            // Update root
             if (_isRooted && Time.time >= _rootEndTime)
             {
                 RemoveRoot();
@@ -79,7 +74,6 @@ namespace Entities.EnemyDirectory
             _slowMultiplier = slowMultiplier;
             _slowEndTime = Time.time + duration;
 
-            // Visual feedback - blue tint
             if (!_isRooted)
             {
                 _spriteRenderer.color = new Color(0.6f, 0.8f, 1f);
@@ -94,10 +88,8 @@ namespace Entities.EnemyDirectory
             _rootEndTime = Time.time + duration;
             _canMove = false;
 
-            // Visual feedback - purple tint
             _spriteRenderer.color = new Color(0.8f, 0.4f, 1f);
 
-            // Stop movement
             if (_rigidbody != null)
             {
                 _rigidbody.linearVelocity = Vector2.zero;
@@ -151,15 +143,11 @@ namespace Entities.EnemyDirectory
 
         public void TakeDamage(float damage, bool isCritical = false)
         {
-            if (inmmune) return;
-        
             data.health -= damage;
             
-            // Invoke damage event for popup system
             OnEnemyDamaged?.Invoke(this, damage, isCritical);
             
             StartCoroutine(DamageFlash());
-            StartCoroutine(FrameInvulnerability());
         
             if (data.health <= 0)
             {
@@ -176,6 +164,8 @@ namespace Entities.EnemyDirectory
             _spriteRenderer.color = flashColor;
             yield return new WaitForSeconds(0.1f);
 
+            if (!gameObject.activeInHierarchy) yield break;
+
             if (_isRooted)
             {
                 _spriteRenderer.color = new Color(0.8f, 0.4f, 1f);
@@ -190,13 +180,6 @@ namespace Entities.EnemyDirectory
             }
         }
 
-        private IEnumerator FrameInvulnerability()
-        {
-            inmmune = true;
-            yield return _frameWait;
-            inmmune = false;
-        }
-
         public void Move(Vector2 direction)
         {
             if (!_canMove) return;
@@ -206,9 +189,25 @@ namespace Entities.EnemyDirectory
 
         public void Knockback(Vector2 direction, float knockback)
         {
-            StopAllCoroutines();
+            if (_knockbackCoroutine != null)
+            {
+                StopCoroutine(_knockbackCoroutine);
+            }
+            
+            _rigidbody.linearVelocity = Vector2.zero;
             _rigidbody.AddForce(direction * knockback, ForceMode2D.Impulse);
-            StartCoroutine(ContinueMoving());
+            _knockbackCoroutine = StartCoroutine(RecoverFromKnockback());
+        }
+
+        private IEnumerator RecoverFromKnockback()
+        {
+            _canMove = false;
+            
+            yield return new WaitForSeconds(0.2f);
+            
+            _rigidbody.linearVelocity = Vector2.zero;
+            _canMove = true;
+            _knockbackCoroutine = null;
         }
 
         public void Die()
@@ -217,55 +216,45 @@ namespace Entities.EnemyDirectory
             EnemyManager.HandleEnemyDeath(this);
             ExperiencePool.SpawnExperienceDrop(transform.position, experienceValue);
 
-            SubclassEvolutionManager evolutionManager =
-                FindFirstObjectByType<SubclassEvolutionManager>();
+            SubclassEvolutionManager evolutionManager = FindFirstObjectByType<SubclassEvolutionManager>();
             evolutionManager?.OnEnemyKilled();
-        }
-
-        private IEnumerator ContinueMoving()
-        {
-            _canMove = false;
-            for (int i = 0; i < frameImmunity; i++)
-            {
-                yield return null;
-            }
-
-            _rigidbody.linearVelocity = Vector2.zero;
-            _canMove = true;
         }
 
         public void ResetEnemy(EnemyData defaultData)
         {
             data = defaultData;
-        }
-
-        public static Enemy GetFromCollider(Collider2D collider)
-        {
-            return ColliderToEnemy.TryGetValue(collider, out Enemy enemy) ? enemy : null;
+            _originalSpeed = data.speed;
+            _originalColor = GetEnemyTypeColor();
+            _spriteRenderer.color = _originalColor;
+            _canMove = true;
+            _isSlowed = false;
+            _isRooted = false;
+            _slowMultiplier = 1f;
+            _rigidbody.linearVelocity = Vector2.zero;
+            
+            if (_knockbackCoroutine != null)
+            {
+                StopCoroutine(_knockbackCoroutine);
+                _knockbackCoroutine = null;
+            }
         }
 
         public void SetEnemyType(EnemyType enemyType)
         {
             _enemyType = enemyType;
-            ApplyVisualEffects();
+            _originalColor = GetEnemyTypeColor();
+            _spriteRenderer.color = _originalColor;
         }
 
-        private void ApplyVisualEffects()
+        private Color GetEnemyTypeColor()
         {
-            switch (_enemyType)
+            return _enemyType switch
             {
-                case EnemyType.Normal:
-                    _spriteRenderer.color = new Color(.5f, 0f, 0f); // Normal color
-                    break;
-                case EnemyType.Elite:
-                    _spriteRenderer.color = new Color(.7f, 0.2f, 0f); // Golden tint
-                    break;
-                case EnemyType.Boss:
-                    _spriteRenderer.color = new Color(1f, 0f, 0f); // Red tint
-                    break;
-            }
+                EnemyType.Elite => new Color(.7f, 0.2f, 0f),
+                EnemyType.Boss => new Color(1f, 0f, 0f),
+                _ => new Color(.5f, 0f, 0f)
+            };
         }
-
 
         public bool IsDead() => data.health <= 0;
         public float GetHealth() => data.health;
@@ -274,20 +263,17 @@ namespace Entities.EnemyDirectory
 
         private void OnDisable()
         {
-            // Reset status effects when returned to pool
             _isSlowed = false;
             _isRooted = false;
             _slowMultiplier = 1f;
             _canMove = true;
             data.speed = _originalSpeed;
-            _spriteRenderer.color = _originalColor;
-        }
-        
-        private void OnDestroy()
-        {
-            if (_collider)
+            _rigidbody.linearVelocity = Vector2.zero;
+            
+            if (_knockbackCoroutine != null)
             {
-                ColliderToEnemy.Remove(_collider);
+                StopCoroutine(_knockbackCoroutine);
+                _knockbackCoroutine = null;
             }
         }
     }
