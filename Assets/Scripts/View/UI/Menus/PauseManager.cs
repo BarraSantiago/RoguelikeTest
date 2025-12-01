@@ -7,9 +7,10 @@ namespace View.UI.Menus
     {
         [SerializeField] private GameObject pauseMenuUI;
         [SerializeField] private string sceneName = "MainMenu";
-        
+        [SerializeField] private bool useLoadingScreen = true;
+
         private bool _isPaused;
-        
+
         public bool IsPaused => _isPaused;
 
         private void Start()
@@ -55,7 +56,15 @@ namespace View.UI.Menus
         public void ChangeScene()
         {
             Time.timeScale = 1f;
-            SceneManager.LoadScene(sceneName);
+
+            if (useLoadingScreen)
+            {
+                LoadingSceneManager.LoadScene(sceneName);
+            }
+            else
+            {
+                SceneManager.LoadScene(sceneName);
+            }
         }
 
         public void QuitGame()

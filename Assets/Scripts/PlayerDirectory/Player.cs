@@ -11,6 +11,7 @@ using PlayerDirectory.LevelingSystem;
 using PowerUps;
 using UnityEngine;
 using Utilities;
+using View.UI;
 using View.UI.Leveling;
 using View.UI.Menus;
 
@@ -60,15 +61,29 @@ namespace PlayerDirectory
 
         private void Awake()
         {
+            playerClassType = LoadingSceneManager.SelectedClass;
+            string selectedSubclass = LoadingSceneManager.SelectedSubclass;
+
             switch (playerClassType)
             {
                 case Classes.Warrior:
                     _playerClass = new Warrior();
                     _playerClass.Initialize(this);
+            
+                    // Apply subclass if selected
+                    if (selectedSubclass != "None")
+                    {
+                        ApplySubclass(selectedSubclass);
+                    }
                     break;
                 case Classes.Ranger:
                     _playerClass = new Ranger();
                     _playerClass.Initialize(this);
+            
+                    if (selectedSubclass != "None")
+                    {
+                        ApplySubclass(selectedSubclass);
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -195,20 +210,15 @@ namespace PlayerDirectory
             _transform.position += (Vector3)(direction.normalized * (speed * Time.deltaTime));
         }
         
-        private Vector2 GetTargetDirection()
+        private void ApplySubclass(string subclassName)
         {
-            Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(_transform.position, autoAttackRange);
-            if (nearestEnemy)
+            currentSubclass = subclassName;
+    
+            SubclassEvolutionManager evolutionManager = FindFirstObjectByType<SubclassEvolutionManager>();
+            if (evolutionManager)
             {
-                Vector2 direction = (Vector2)nearestEnemy.transform.position - (Vector2)_transform.position;
-                float sqrDistance = direction.sqrMagnitude;
-                if (sqrDistance > 0.01f)
-                {
-                    return direction / Mathf.Sqrt(sqrDistance);
-                }
+                evolutionManager.EvolveToSubclass(subclassName);
             }
-            
-            return Vector2.zero;
         }
 
         private IEnumerator AutoAttackCoroutine()
@@ -445,6 +455,23 @@ namespace PlayerDirectory
         }
         
          // Getters and Setters 
+         
+                 
+         private Vector2 GetTargetDirection()
+         {
+             Enemy nearestEnemy = CombatUtilities.GetNearestEnemy(_transform.position, autoAttackRange);
+             if (nearestEnemy)
+             {
+                 Vector2 direction = (Vector2)nearestEnemy.transform.position - (Vector2)_transform.position;
+                 float sqrDistance = direction.sqrMagnitude;
+                 if (sqrDistance > 0.01f)
+                 {
+                     return direction / Mathf.Sqrt(sqrDistance);
+                 }
+             }
+            
+             return Vector2.zero;
+         }
 
         public bool AutoTargetEnabled
         {

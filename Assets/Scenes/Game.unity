@@ -4709,6 +4709,8 @@ MonoBehaviour:
   enemyContainer: {fileID: 106815830}
   spawnRadius: 10
   maxEnemies: 20
+  eliteSpawnChance: 0.15
+  enemyScalingPerMinute: 0.2
   updateInterval: 0.07
   enemiesPerFrame: 10
 --- !u!114 &584674452
@@ -8270,6 +8272,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::View.UI.Menus.PauseManager
   pauseMenuUI: {fileID: 621458898}
   sceneName: MainMenu
+  useLoadingScreen: 0
 --- !u!4 &1185739594
 Transform:
   m_ObjectHideFlags: 0

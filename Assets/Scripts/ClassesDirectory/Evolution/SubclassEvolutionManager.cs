@@ -184,14 +184,12 @@ namespace ClassesDirectory.Evolution
                 _ => null
             };
 
-            
-            if (newClass != null)
-            {
-                _player.EvolveClass(newClass, subclassName);
-                evolutionUIPanel.SetActive(false);
-                Time.timeScale = 1;
-                Debug.Log($"Evolved to {subclassName}!");
-            }
+
+            if (newClass == null) return;
+            _player.EvolveClass(newClass, subclassName);
+            evolutionUIPanel.SetActive(false);
+            Time.timeScale = 1;
+            Debug.Log($"Evolved to {subclassName}!");
         }
 
         // Public methods for tracking stats
