@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Achievements;
 using TMPro;
 using UnityEngine;
@@ -10,9 +11,11 @@ namespace View.UI.Menus.Achievements
     public class ShopUI : MonoBehaviour
     {
         [Header("UI References")]
+        [SerializeField] private GameObject shopContainer;
         [SerializeField] private Transform shopItemsContainer;
         [SerializeField] private GameObject shopItemPrefab;
         [SerializeField] private TextMeshProUGUI totalCoinsText;
+        [SerializeField] private Button openButton;
         [SerializeField] private Button closeButton;
 
         [Header("Tabs")]
@@ -20,46 +23,153 @@ namespace View.UI.Menus.Achievements
         [SerializeField] private Button statsTab;
         [SerializeField] private Button skinsTab;
 
+        [Header("Popup")]
+        [SerializeField] private GameObject popupPanel;
+        [SerializeField] private TextMeshProUGUI popupText;
+        [SerializeField] private Button popupCloseButton;
+        
         private ShopUnlockType _currentTab = ShopUnlockType.Subclass;
+        private Dictionary<ShopUnlockType, int> _tabItemCounts = new();
 
         private void Start()
         {
+            openButton.onClick.AddListener(TryOpenShop);
             closeButton.onClick.AddListener(() => gameObject.SetActive(false));
-            subclassesTab.onClick.AddListener(() => ShowTab(ShopUnlockType.Subclass));
-            statsTab.onClick.AddListener(() => ShowTab(ShopUnlockType.StatBonus));
-            skinsTab.onClick.AddListener(() => ShowTab(ShopUnlockType.Skin));
+            subclassesTab.onClick.AddListener(() => TryShowTab(ShopUnlockType.Subclass));
+            statsTab.onClick.AddListener(() => TryShowTab(ShopUnlockType.StatBonus));
+            skinsTab.onClick.AddListener(() => TryShowTab(ShopUnlockType.Skin));
+
+            if (popupCloseButton)
+            {
+                popupCloseButton.onClick.AddListener(HidePopup);
+            }
+
+            if (popupPanel)
+            {
+                popupPanel.SetActive(false);
+            }
+        }
+
+        private void TryOpenShop()
+        {
+            if (_tabItemCounts.Values.Sum() == 0)
+            {
+                ShowShopUnavailablePopup();
+                return;
+            } 
+            shopContainer.SetActive(true);
         }
 
         private void OnEnable()
         {
-            TryShowTab();
+            TryInitializeShop();
         }
 
-        private void TryShowTab()
+        private void TryInitializeShop()
         {
             StopAllCoroutines();
             if (AchievementManager.Instance && ShopManager.Instance)
             {
-                UpdateCoinsDisplay();
-                ShowTab(_currentTab);
+                InitializeShop();
             }
             else
             {
-                StartCoroutine(WaitForManagersAndShow());
+                StartCoroutine(WaitForManagersAndInitialize());
             }
         }
 
-        private IEnumerator WaitForManagersAndShow()
+        private IEnumerator WaitForManagersAndInitialize()
         {
             yield return new WaitUntil(() => AchievementManager.Instance && ShopManager.Instance);
+            InitializeShop();
+        }
+
+        private void InitializeShop()
+        {
             UpdateCoinsDisplay();
-            ShowTab(_currentTab);
+            CountTabItems();
+
+            ShopUnlockType firstAvailableTab = GetFirstAvailableTab();
+            ShowTab(firstAvailableTab);
+        }
+
+        private void CountTabItems()
+        {
+            _tabItemCounts.Clear();
+            List<ShopUnlock> unlocks = ShopManager.Instance.GetAvailableUnlocks();
+
+            _tabItemCounts[ShopUnlockType.Subclass] = unlocks.Count(u => u.type == ShopUnlockType.Subclass);
+            _tabItemCounts[ShopUnlockType.StatBonus] = unlocks.Count(u => u.type == ShopUnlockType.StatBonus);
+            _tabItemCounts[ShopUnlockType.Skin] = unlocks.Count(u => u.type == ShopUnlockType.Skin);
+
+            UpdateTabVisuals();
+        }
+
+        private void UpdateTabVisuals()
+        {
+            UpdateTabButton(subclassesTab, ShopUnlockType.Subclass);
+            UpdateTabButton(statsTab, ShopUnlockType.StatBonus);
+            UpdateTabButton(skinsTab, ShopUnlockType.Skin);
+        }
+
+        private void UpdateTabButton(Button tabButton, ShopUnlockType type)
+        {
+            if (!tabButton) return;
+
+            bool hasItems = _tabItemCounts.ContainsKey(type) && _tabItemCounts[type] > 0;
+            
+            ColorBlock colors = tabButton.colors;
+            colors.normalColor = hasItems ? Color.white : new Color(0.7f, 0.7f, 0.7f);
+            colors.disabledColor = new Color(0.5f, 0.5f, 0.5f);
+            tabButton.colors = colors;
+        }
+
+        private ShopUnlockType GetFirstAvailableTab()
+        {
+            if (_tabItemCounts[ShopUnlockType.Subclass] > 0)
+                return ShopUnlockType.Subclass;
+            
+            if (_tabItemCounts[ShopUnlockType.StatBonus] > 0)
+                return ShopUnlockType.StatBonus;
+            
+            if (_tabItemCounts[ShopUnlockType.Skin] > 0)
+                return ShopUnlockType.Skin;
+
+            return ShopUnlockType.Subclass;
+        }
+
+        private void TryShowTab(ShopUnlockType tab)
+        {
+            if (!_tabItemCounts.ContainsKey(tab) || _tabItemCounts[tab] == 0)
+            {
+                ShowTabUnavailablePopup(tab);
+                return;
+            }
+
+            ShowTab(tab);
         }
 
         private void ShowTab(ShopUnlockType tab)
         {
             _currentTab = tab;
             PopulateShopItems(tab);
+            HighlightActiveTab();
+        }
+
+        private void HighlightActiveTab()
+        {
+            SetTabHighlight(subclassesTab, _currentTab == ShopUnlockType.Subclass);
+            SetTabHighlight(statsTab, _currentTab == ShopUnlockType.StatBonus);
+            SetTabHighlight(skinsTab, _currentTab == ShopUnlockType.Skin);
+        }
+
+        private void SetTabHighlight(Button button, bool highlighted)
+        {
+            if (!button) return;
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = highlighted ? new Color(0.2f, 0.6f, 1f) : Color.white;
+            button.colors = colors;
         }
 
         private void PopulateShopItems(ShopUnlockType filterType)
@@ -69,36 +179,90 @@ namespace View.UI.Menus.Achievements
                 Destroy(child.gameObject);
             }
 
-            List<ShopUnlock> unlocks = ShopManager.Instance.GetAvailableUnlocks();
-
-            foreach (ShopUnlock unlock in unlocks)
+            if (popupPanel)
             {
-                if (unlock.type != filterType) continue;
+                popupPanel.SetActive(false);
+            }
 
+            List<ShopUnlock> unlocks = ShopManager.Instance.GetAvailableUnlocks();
+            List<ShopUnlock> filteredUnlocks = unlocks.Where(u => u.type == filterType).ToList();
+            
+            foreach (ShopUnlock unlock in filteredUnlocks)
+            {
                 GameObject item = Instantiate(shopItemPrefab, shopItemsContainer);
                 ShopItemUI shopItem = item.GetComponent<ShopItemUI>();
 
                 shopItem.Setup(unlock, OnPurchaseItem);
             }
         }
+        
+        private void ShowShopUnavailablePopup()
+        {
+            ShowPopup("Shop Unavailable", "Complete achievements to unlock shop items!");
+            StartCoroutine(CloseShopAfterPopup());
+        }
 
-       private void OnPurchaseItem(ShopUnlock unlock)
+        private void ShowTabUnavailablePopup(ShopUnlockType tab)
+        {
+            string tabName = GetTabName(tab);
+            ShowPopup($"{tabName} Unavailable", $"Complete achievements to unlock {tabName.ToLower()}!");
+        }
+
+        private string GetTabName(ShopUnlockType type)
+        {
+            return type switch
+            {
+                ShopUnlockType.Subclass => "Subclasses",
+                ShopUnlockType.StatBonus => "Stat Bonuses",
+                ShopUnlockType.Skin => "Skins",
+                _ => "Items"
+            };
+        }
+
+        private void ShowPopup(string title, string message)
+        {
+            if (!popupPanel || !popupText) return;
+
+            popupText.text = $"<b>{title}</b>\n\n{message}";
+            popupPanel.SetActive(true);
+        }
+
+        private void HidePopup()
+        {
+            if (popupPanel)
+            {
+                popupPanel.SetActive(false);
+            }
+        }
+
+        private IEnumerator CloseShopAfterPopup()
+        {
+            yield return new WaitForSeconds(0.5f);
+            yield return new WaitUntil(() => !popupPanel.activeSelf);
+            gameObject.SetActive(false);
+        }
+
+        private void OnPurchaseItem(ShopUnlock unlock)
         {
             if (ShopManager.Instance.PurchaseItem(unlock.id))
             {
                 UpdateCoinsDisplay();
-                ShowTab(_currentTab); // Refresh display to show new price/level
+                CountTabItems();
+                ShowTab(_currentTab);
                 Debug.Log($"Purchased: {unlock.targetId} (Level {unlock.currentPurchases}/{unlock.maxPurchases})");
             }
             else
             {
-                Debug.Log("Purchase failed!");
+                ShowPopup("Purchase Failed", "Not enough coins or item is already max level!");
             }
         }
 
         private void UpdateCoinsDisplay()
         {
-            totalCoinsText.text = $"Coins: {AchievementManager.Instance.GetTotalCoins()}";
+            if (totalCoinsText)
+            {
+                totalCoinsText.text = $"Coins: {AchievementManager.Instance.GetTotalCoins()}";
+            }
         }
     }
 }
