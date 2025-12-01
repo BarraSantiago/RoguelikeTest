@@ -12,11 +12,12 @@ namespace View.UI.Menus.Achievements
         [SerializeField] private TextMeshProUGUI rewardText;
         [SerializeField] private Image completionCheckmark;
         [SerializeField] private TextMeshProUGUI percentageText;
+        [SerializeField] private TextMeshProUGUI sessionProgressText;
         [SerializeField] private Color completedColor = Color.green;
         [SerializeField] private Color incompleteColor = new Color(0.3f, 0.6f, 1f);
         [SerializeField] private Color progressBarBackgroundColor = new Color(0.2f, 0.2f, 0.2f);
 
-        public void Setup(AchievementMilestone milestone, float progress, float currentValue)
+        public void Setup(AchievementMilestone milestone, float progress, float currentValue, float sessionProgress = 0)
         {
             progressBar.value = progress;
 
@@ -26,7 +27,7 @@ namespace View.UI.Menus.Achievements
             targetText.text = $"{currentStr} / {targetStr}";
 
             // Show percentage
-            if (percentageText != null)
+            if (percentageText)
             {
                 percentageText.text = $"{(progress * 100):F0}%";
             }
@@ -46,13 +47,13 @@ namespace View.UI.Menus.Achievements
             completionCheckmark.gameObject.SetActive(isCompleted);
 
             Image fillImage = progressBar.fillRect.GetComponent<Image>();
-            if (fillImage != null)
+            if (fillImage)
             {
                 fillImage.color = isCompleted ? completedColor : incompleteColor;
             }
 
             Image backgroundImage = progressBar.GetComponentsInChildren<Image>()[0];
-            if (backgroundImage != null)
+            if (backgroundImage)
             {
                 backgroundImage.color = progressBarBackgroundColor;
             }
@@ -61,8 +62,18 @@ namespace View.UI.Menus.Achievements
             float alpha = isCompleted ? 0.6f : 1f;
             targetText.color = new Color(1, 1, 1, alpha);
             rewardText.color = new Color(1, 1, 1, alpha);
-            if (percentageText != null)
+            if (percentageText)
                 percentageText.color = new Color(1, 1, 1, alpha);
+            
+            if (sessionProgress > 0 && sessionProgressText)
+            {
+                sessionProgressText.gameObject.SetActive(true);
+                sessionProgressText.text = $"+{sessionProgress:F0} this session";
+            }
+            else if (sessionProgressText)
+            {
+                sessionProgressText.gameObject.SetActive(false);
+            }
         }
 
         private string FormatNumber(float value)

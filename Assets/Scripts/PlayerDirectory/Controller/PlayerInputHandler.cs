@@ -11,7 +11,7 @@ namespace PlayerDirectory.Controller
         private PauseManager _pauseManager;
         private Transform _transform;
 
-        [SerializeField] private FixedJoystick moveJoystick;
+        [SerializeField] private Joystick moveJoystick;
         [SerializeField] private bool useJoystick = true;
 
         private void Awake()
@@ -22,7 +22,7 @@ namespace PlayerDirectory.Controller
 
             if (!moveJoystick)
             {
-                moveJoystick = FindFirstObjectByType<FixedJoystick>();
+                moveJoystick = FindFirstObjectByType<Joystick>();
             }
         }
 

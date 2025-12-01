@@ -131,20 +131,55 @@ namespace View.UI.Menus
             {
                 Destroy(child.gameObject);
             }
-
+        
             Dictionary<string, Achievement> allAchievements = AchievementManager.Instance.GetAllAchievements();
             PersistentStats stats = AchievementManager.Instance.GetPersistentStats();
-
+        
             foreach (Achievement achievement in allAchievements.Values)
             {
+                float currentValue = GetCurrentValueForType(achievement.type, stats);
+                float sessionValue = GetSessionValueForType(achievement.type);
+                
+                // Skip if no progress was made this session
+                if (sessionValue <= 0) continue;
+                
+                // Check if any milestone was completed or progressed this session
+                bool hasProgress = false;
+                foreach (AchievementMilestone milestone in achievement.milestones)
+                {
+                    float previousValue = currentValue - sessionValue;
+                    if ((previousValue < milestone.targetValue && currentValue >= milestone.targetValue) || 
+                        (!milestone.isCompleted && currentValue > previousValue))
+                    {
+                        hasProgress = true;
+                        break;
+                    }
+                }
+                
+                if (!hasProgress) continue;
+        
                 GameObject item = Instantiate(achievementItemPrefab, achievementsContainer);
                 AchievementProgressItem achievementItem = item.GetComponent<AchievementProgressItem>();
-
-                float currentValue = GetCurrentValueForType(achievement.type, stats);
-                achievementItem.Setup(achievement, currentValue);
+                achievementItem.Setup(achievement, currentValue, sessionValue);
             }
-
+        
             totalCoinsEarnedText.text = $"Total Coins: {AchievementManager.Instance.GetTotalCoins()}";
+        }
+        
+        private float GetSessionValueForType(AchievementType type)
+        {
+            return type switch
+            {
+                AchievementType.TotalDamageDealt => _sessionStats.totalDamageDealt,
+                AchievementType.TotalEnemiesKilled => _sessionStats.totalKills,
+                AchievementType.TotalHealingReceived => _sessionStats.totalHealingReceived,
+                AchievementType.TotalCoinsCollected => _sessionStats.totalCoinsCollected,
+                AchievementType.TotalDistanceTraveled => _sessionStats.totalDistanceTraveled,
+                AchievementType.SurvivalTime => _sessionStats.survivalTime,
+                AchievementType.CriticalHits => _sessionStats.criticalHits,
+                AchievementType.LongestKillStreak => _sessionStats.longestKillStreak,
+                _ => 0
+            };
         }
 
         private float GetCurrentValueForType(AchievementType type, PersistentStats stats)

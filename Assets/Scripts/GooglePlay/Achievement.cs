@@ -61,5 +61,37 @@ namespace GooglePlay
             }
 #endif
         }
+        
+        public static void SubmitScore(string leaderboardId, long score)
+        {
+        #if UNITY_ANDROID
+            if (PlayGamesPlatform.Instance.IsAuthenticated())
+            {
+                PlayGamesPlatform.Instance.ReportScore(score, leaderboardId, success =>
+                {
+                    Debug.Log(success
+                        ? $"Score {score} submitted to leaderboard {leaderboardId}"
+                        : $"Failed to submit score to leaderboard {leaderboardId}");
+                });
+            }
+        #endif
+        }
+        
+        public static void ShowLeaderboardUI(string leaderboardId = null)
+        {
+        #if UNITY_ANDROID
+            if (PlayGamesPlatform.Instance.IsAuthenticated())
+            {
+                if (string.IsNullOrEmpty(leaderboardId))
+                {
+                    PlayGamesPlatform.Instance.ShowLeaderboardUI();
+                }
+                else
+                {
+                    PlayGamesPlatform.Instance.ShowLeaderboardUI(leaderboardId);
+                }
+            }
+        #endif
+        }
     }
 }

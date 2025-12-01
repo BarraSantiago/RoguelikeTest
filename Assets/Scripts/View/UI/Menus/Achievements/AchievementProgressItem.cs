@@ -13,12 +13,11 @@ namespace View.UI.Menus.Achievements
         [SerializeField] private Image completionIcon;
         [SerializeField] private TextMeshProUGUI milestoneCounterText;
 
-        public void Setup(Achievement achievement, float currentValue)
+        public void Setup(Achievement achievement, float currentValue, float sessionProgress = 0)
         {
             achievementNameText.text = achievement.name;
             achievementDescriptionText.text = achievement.description;
 
-            // Find current active milestone
             AchievementMilestone currentMilestone = null;
             int completedCount = 0;
 
@@ -34,10 +33,8 @@ namespace View.UI.Menus.Achievements
                 }
             }
 
-            // Update milestone counter
             milestoneCounterText.text = $"{completedCount}/{achievement.milestones.Count}";
 
-            // Display current milestone or show completion
             if (achievement.isUnlocked)
             {
                 currentMilestoneDisplay.gameObject.SetActive(false);
@@ -50,7 +47,7 @@ namespace View.UI.Menus.Achievements
                 completionIcon.gameObject.SetActive(false);
 
                 float progress = Mathf.Clamp01(currentValue / currentMilestone.targetValue);
-                currentMilestoneDisplay.Setup(currentMilestone, progress, currentValue);
+                currentMilestoneDisplay.Setup(currentMilestone, progress, currentValue, sessionProgress);
             }
         }
     }

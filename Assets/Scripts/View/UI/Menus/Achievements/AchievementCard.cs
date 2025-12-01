@@ -36,7 +36,7 @@ namespace View.UI.Menus.Achievements
             }
 
             // Show progress info
-            progressInfoText.text = $"Progress: {completedCount}/{achievement.milestones.Count} milestones";
+            progressInfoText.text = $"{completedCount}/{achievement.milestones.Count}";
 
             // Display current milestone or completion status
             if (achievement.isUnlocked)

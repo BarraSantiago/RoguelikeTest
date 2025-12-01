@@ -62,5 +62,21 @@ namespace GooglePlay
                     return false;
 #endif
         }
+        
+        public void SubmitKillsScore(int kills)
+        {
+            if (IsAuthenticated())
+            {
+                Achievement.SubmitScore(GPGSIds.leaderboard_kills_this_session, kills);
+            }
+        }
+        
+        public void ShowKillsLeaderboard()
+        {
+            if (IsAuthenticated())
+            {
+                Achievement.ShowLeaderboardUI(GPGSIds.leaderboard_kills_this_session);
+            }
+        }
     }
 }
