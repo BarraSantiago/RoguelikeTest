@@ -34,8 +34,8 @@ namespace PlayerDirectory
         [SerializeField] private string currentSubclass = "None";
 
         public Classes GetPlayerClassType() => playerClassType;
-        public PlayerStats PlayerStats;
-        public PlayerStatsModifier statsMod;
+        public PlayerBaseStats PlayerBaseStats;
+        public PlayerBaseStatsMod baseStatsMod;
         public List<PowerUp> powerUps;
         public LevelSystem levelSystem = new();
         public GameSessionStats sessionStats = new();
@@ -89,10 +89,10 @@ namespace PlayerDirectory
                     throw new ArgumentOutOfRangeException();
             }
 
-            PlayerStats = new PlayerStats(playerClassType);
-            statsMod = new PlayerStatsModifier();
+            PlayerBaseStats = new PlayerBaseStats(playerClassType);
+            baseStatsMod = new PlayerBaseStatsMod();
 
-            _currentHp = PlayerStats.Health;
+            _currentHp = PlayerBaseStats.Health;
             _levelUpManager = FindFirstObjectByType<LevelUpManager>();
             _levelUpUI = FindFirstObjectByType<LevelUpUI>();
             _transform = transform;
@@ -103,8 +103,8 @@ namespace PlayerDirectory
             
             ApplyShopBonuses();
             
-            PlayerStats.MaxHealth = PlayerStats.Health;
-            _currentHp = PlayerStats.MaxHealth;
+            PlayerBaseStats.MaxHealth = PlayerBaseStats.Health;
+            _currentHp = PlayerBaseStats.MaxHealth;
 
             StartCoroutine(AutoAttackCoroutine());
             StartCoroutine(DetectPickups());
@@ -132,7 +132,7 @@ namespace PlayerDirectory
 
         public void GainExperience(float amount)
         {
-            float totalGrowth = PlayerStats.Growth * statsMod.growthMod;
+            float totalGrowth = PlayerBaseStats.Growth * baseStatsMod.growthMod;
             bool leveledUp = levelSystem.AddExperience(amount * totalGrowth);
 
             if (leveledUp)
@@ -174,39 +174,39 @@ namespace PlayerDirectory
             }
         }
 
-        public Player(PlayerStats playerStats, IClass playerClass)
+        public Player(PlayerBaseStats playerBaseStats, IClass playerClass)
         {
-            this.PlayerStats = playerStats;
+            this.PlayerBaseStats = playerBaseStats;
             _playerClass = playerClass;
-            _lastAttackTime = -playerStats.AttackSpeed;
-            _lastSpecialAttackTime = -playerStats.SpecialAttackSpeed;
-            _lastDefenseTime = -playerStats.DefenseSpeed;
+            _lastAttackTime = -playerBaseStats.AttackSpeed;
+            _lastSpecialAttackTime = -playerBaseStats.SpecialAttackSpeed;
+            _lastDefenseTime = -playerBaseStats.DefenseSpeed;
         }
 
         public void BasicAttack()
         {
             if (!CanAttack()) return;
-            _playerClass.BasicAttack(PlayerStats, statsMod, _vec);
+            _playerClass.BasicAttack(PlayerBaseStats, baseStatsMod, _vec);
             _lastAttackTime = Time.time;
         }
 
         public void SpecialAttack()
         {
             if (!CanSpecialAttack()) return;
-            _playerClass.SpecialAttack(PlayerStats, statsMod, _vec);
+            _playerClass.SpecialAttack(PlayerBaseStats, baseStatsMod, _vec);
             _lastSpecialAttackTime = Time.time;
         }
 
         public void Defense()
         {
             if (!CanDefense()) return;
-            _playerClass.Defense(PlayerStats, statsMod, _vec);
+            _playerClass.Defense(PlayerBaseStats, baseStatsMod, _vec);
             _lastDefenseTime = Time.time;
         }
         
         public void Move(Vector2 direction)
         {
-            float speed = PlayerStats.Speed * statsMod.speedMod;
+            float speed = PlayerBaseStats.Speed * baseStatsMod.speedMod;
             _transform.position += (Vector3)(direction.normalized * (speed * Time.deltaTime));
         }
         
@@ -257,7 +257,7 @@ namespace PlayerDirectory
             {
                 yield return wait;
 
-                float totalRegen = (PlayerStats.HealthRegen + statsMod.healthRegenBonus);
+                float totalRegen = (PlayerBaseStats.HealthRegen + baseStatsMod.healthRegenBonus);
                 if (totalRegen > 0 && _currentHp < GetMaxHealth())
                 {
                     Heal(totalRegen);
@@ -273,7 +273,7 @@ namespace PlayerDirectory
             {
                 yield return wait;
 
-                float radius = PlayerStats.PickupRadius * statsMod.pickupRadiusMod;
+                float radius = PlayerBaseStats.PickupRadius * baseStatsMod.pickupRadiusMod;
                 Collider2D[] pickups = Physics2D.OverlapCircleAll(_transform.position, radius);
 
                 foreach (Collider2D pickup in pickups)
@@ -288,7 +288,7 @@ namespace PlayerDirectory
 
         private void AttractPickup(Transform pickup)
         {
-            float magnetForce = PlayerStats.Magnetism * statsMod.magnetismMod;
+            float magnetForce = PlayerBaseStats.Magnetism * baseStatsMod.magnetismMod;
             Vector2 direction = (_transform.position - pickup.position).normalized;
             pickup.position = Vector2.MoveTowards(pickup.position, _transform.position,
                 magnetForce * 5f * Time.deltaTime);
@@ -297,13 +297,15 @@ namespace PlayerDirectory
         public void TakeDamage(float attackDamage)
         {
             if (_isInvincible) return;
-
-            float totalArmor = PlayerStats.Armor + statsMod.armorBonus;
-            float finalDamage = Mathf.Max(0, (attackDamage - totalArmor) / (PlayerStats.Defense * statsMod.defenseMod));
-
+        
+            float totalArmor = PlayerBaseStats.Armor + baseStatsMod.armorBonus;
+            float finalDamage = Mathf.Max(0, (attackDamage - totalArmor) / (PlayerBaseStats.Defense * baseStatsMod.defenseMod));
+        
             _currentHp -= finalDamage;
             sessionStats.totalDamageTaken += finalDamage;
-
+        
+            VibrationManager.Instance?.VibrateLight();
+        
             if (!Alive)
             {
                 AttemptRevival();
@@ -313,11 +315,13 @@ namespace PlayerDirectory
                 StartCoroutine(InvincibilityFrames());
             }
         }
+        
+
 
         private IEnumerator InvincibilityFrames()
         {
             _isInvincible = true;
-            float duration = PlayerStats.InvincibilityDuration;
+            float duration = PlayerBaseStats.InvincibilityDuration;
 
             // Visual feedback
             SpriteRenderer sprite = GetComponent<SpriteRenderer>();
@@ -336,14 +340,14 @@ namespace PlayerDirectory
 
         private void AttemptRevival()
         {
-            int totalRevivals = PlayerStats.Revival + statsMod.revivalBonus;
+            int totalRevivals = PlayerBaseStats.Revival + baseStatsMod.revivalBonus;
 
             if (totalRevivals > 0)
             {
-                PlayerStats.Revival--;
-                _currentHp = GetMaxHealth() * 0.5f; // Revive with 50% HP
+                PlayerBaseStats.Revival--;
+                _currentHp = GetMaxHealth() * 0.5f;
                 StartCoroutine(InvincibilityFrames());
-                Debug.Log($"Revived! {PlayerStats.Revival} revivals remaining");
+                Debug.Log($"Revived! {PlayerBaseStats.Revival} revivals remaining");
             }
             else
             {
@@ -354,6 +358,9 @@ namespace PlayerDirectory
         private void Die()
         {
             Debug.Log("Player died!");
+            
+            // Add heavy vibration on death
+            VibrationManager.Instance?.VibrateHeavy();
             
             AchievementManager.Instance.OnSessionEnd(sessionStats);
             
@@ -367,34 +374,34 @@ namespace PlayerDirectory
             List<object> choices = _levelUpManager.GenerateLevelUpChoices(this);
 
             // Apply reroll/skip/banish charges
-            int rerolls = PlayerStats.Reroll + statsMod.rerollBonus;
-            int skips = PlayerStats.Skip + statsMod.skipBonus;
-            int banishes = PlayerStats.Banish + statsMod.banishBonus;
+            int rerolls = PlayerBaseStats.Reroll + baseStatsMod.rerollBonus;
+            int skips = PlayerBaseStats.Skip + baseStatsMod.skipBonus;
+            int banishes = PlayerBaseStats.Banish + baseStatsMod.banishBonus;
 
             _levelUpUI.ShowLevelUpChoices(this, choices, rerolls, skips, banishes);
         }
 
         private float GetModifiedCooldown(float baseCooldown, float cooldownMod)
         {
-            float totalReduction = PlayerStats.CooldownReduction + statsMod.cooldownReductionBonus;
+            float totalReduction = PlayerBaseStats.CooldownReduction + baseStatsMod.cooldownReductionBonus;
             return baseCooldown * cooldownMod * (1f - Mathf.Clamp01(totalReduction));
         }
 
         private bool CanAttack()
         {
-            float modifiedCooldown = GetModifiedCooldown(PlayerStats.AttackSpeed, statsMod.attackSpeedMod);
+            float modifiedCooldown = GetModifiedCooldown(PlayerBaseStats.AttackSpeed, baseStatsMod.attackSpeedMod);
             return Time.time >= _lastAttackTime + modifiedCooldown;
         }
 
         private bool CanSpecialAttack()
         {
-            float modifiedCooldown = GetModifiedCooldown(PlayerStats.SpecialAttackSpeed, statsMod.sAttackSpeedMod);
+            float modifiedCooldown = GetModifiedCooldown(PlayerBaseStats.SpecialAttackSpeed, baseStatsMod.sAttackSpeedMod);
             return Time.time >= _lastSpecialAttackTime + modifiedCooldown;
         }
         
         private bool CanDefense()
         {
-            return Time.time >= _lastDefenseTime + PlayerStats.DefenseSpeed * statsMod.defenseSpeedMod;
+            return Time.time >= _lastDefenseTime + PlayerBaseStats.DefenseSpeed * baseStatsMod.defenseSpeedMod;
         }
 
         private IEnumerator EvolutionEffect()
@@ -420,35 +427,35 @@ namespace PlayerDirectory
                 switch (bonus.Key)
                 {
                     case StatBonusType.Growth:
-                        statsMod.growthMod += bonus.Value;
+                        baseStatsMod.growthMod += bonus.Value;
                         break;
                     case StatBonusType.Reroll:
-                        PlayerStats.Reroll += (int)bonus.Value;
+                        PlayerBaseStats.Reroll += (int)bonus.Value;
                         break;
                     case StatBonusType.Skip:
-                        PlayerStats.Skip += (int)bonus.Value;
+                        PlayerBaseStats.Skip += (int)bonus.Value;
                         break;
                     case StatBonusType.Banish:
-                        PlayerStats.Banish += (int)bonus.Value;
+                        PlayerBaseStats.Banish += (int)bonus.Value;
                         break;
                     case StatBonusType.MaxHealth:
-                        PlayerStats.Health += bonus.Value;
-                        PlayerStats.MaxHealth += bonus.Value;
+                        PlayerBaseStats.Health += bonus.Value;
+                        PlayerBaseStats.MaxHealth += bonus.Value;
                         break;
                     case StatBonusType.Armor:
-                        statsMod.armorBonus += bonus.Value;
+                        baseStatsMod.armorBonus += bonus.Value;
                         break;
                     case StatBonusType.HealthRegen:
-                        statsMod.healthRegenBonus += bonus.Value;
+                        baseStatsMod.healthRegenBonus += bonus.Value;
                         break;
                     case StatBonusType.PickupRadius:
-                        statsMod.pickupRadiusMod += bonus.Value;
+                        baseStatsMod.pickupRadiusMod += bonus.Value;
                         break;
                     case StatBonusType.Luck:
-                        statsMod.luckMod += bonus.Value * 0.01f;
+                        baseStatsMod.luckMod += bonus.Value * 0.01f;
                         break;
                     case StatBonusType.CooldownReduction:
-                        PlayerStats.CooldownReduction += bonus.Value;
+                        PlayerBaseStats.CooldownReduction += bonus.Value;
                         break;
                 }
             }
@@ -487,18 +494,18 @@ namespace PlayerDirectory
         
         public float SpecialAttackCooldownProgress =>
             Mathf.Clamp01((Time.time - _lastSpecialAttackTime) /
-                          (PlayerStats.SpecialAttackSpeed * statsMod.sAttackSpeedMod));
+                          (PlayerBaseStats.SpecialAttackSpeed * baseStatsMod.sAttackSpeedMod));
 
         public float DefenseCooldownProgress =>
-            Mathf.Clamp01((Time.time - _lastDefenseTime) / (PlayerStats.DefenseSpeed * statsMod.defenseSpeedMod));
+            Mathf.Clamp01((Time.time - _lastDefenseTime) / (PlayerBaseStats.DefenseSpeed * baseStatsMod.defenseSpeedMod));
         // Getters for UI
         public void OnCoinCollected() => sessionStats.totalCoinsCollected++;
         public void OnProjectileFired() => sessionStats.projectilesFired++;
         public string GetCurrentSubclass() => currentSubclass;
-        public float GetMaxHealth() => PlayerStats.MaxHealth;
+        public float GetMaxHealth() => PlayerBaseStats.MaxHealth;
         public float GetCurrentHealth() => _currentHp;
         public float GetHealthPercentage() => _currentHp / GetMaxHealth();
-        public int GetRevivals() => PlayerStats.Revival + statsMod.revivalBonus;
-        public float GetPickupRadius() => PlayerStats.PickupRadius * statsMod.pickupRadiusMod;
+        public int GetRevivals() => PlayerBaseStats.Revival + baseStatsMod.revivalBonus;
+        public float GetPickupRadius() => PlayerBaseStats.PickupRadius * baseStatsMod.pickupRadiusMod;
     }
 }

@@ -122,7 +122,7 @@ namespace ClassesDirectory.Evolution
 
             if (availableSubclasses.Count > 0)
             {
-                ShowEvolutionUI(availableSubclasses);
+                //ShowEvolutionUI(availableSubclasses);
             }
         }
 

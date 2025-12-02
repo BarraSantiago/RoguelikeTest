@@ -45,8 +45,8 @@ namespace ClassesDirectory.RangerClass
 
         private HashSet<Enemy> _hitEnemies = new();
         public static ArrowPool _pool;
-        private static PlayerStats _playerStats;
-        private static PlayerStatsModifier _statsMod;
+        private static PlayerBaseStats _playerBaseStats;
+        private static PlayerBaseStatsMod _baseStatsMod;
 
         private void Awake()
         {
@@ -66,18 +66,18 @@ namespace ClassesDirectory.RangerClass
             NearestEnemy = null;
 
 
-            if(_playerStats == null || _statsMod == null)
+            if(_playerBaseStats == null || _baseStatsMod == null)
             {
                 Player player = FindFirstObjectByType<Player>();
                 if (player)
                 {
-                    _playerStats = player.PlayerStats;
-                    _statsMod = player.statsMod;
+                    _playerBaseStats = player.PlayerBaseStats;
+                    _baseStatsMod = player.baseStatsMod;
                 }
             }
             
-            _currentPierceCount = _playerStats.PierceCount;
-            lifetime = 5f * _playerStats.Duration * _statsMod.durationMod;
+            _currentPierceCount = _playerBaseStats.PierceCount;
+            lifetime = 5f * _playerBaseStats.Duration * _baseStatsMod.durationMod;
             // Rotate to face direction
             float angle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(0, 0, angle);
@@ -114,7 +114,7 @@ namespace ClassesDirectory.RangerClass
             _hitEnemies.Add(enemy);
 
             float finalDamage = damage;
-            bool isCrit = CombatUtilities.IsCriticalHit(_playerStats, _statsMod);
+            bool isCrit = CombatUtilities.IsCriticalHit(_playerBaseStats, _baseStatsMod);
 
             if (isSniper)
             {
@@ -128,7 +128,7 @@ namespace ClassesDirectory.RangerClass
             }
 
             // Use CombatUtilities to damage enemy
-            CombatUtilities.DamageEnemy(enemy, finalDamage, isCrit, _playerStats, _statsMod);
+            CombatUtilities.DamageEnemy(enemy, finalDamage, isCrit, _playerBaseStats, _baseStatsMod);
 
             // Apply slow effect
             if (slowChance > 0 && Random.value <= slowChance)
@@ -232,8 +232,8 @@ namespace ClassesDirectory.RangerClass
         private void OnDestroy()
         {
             _pool = null;
-            _playerStats = null;
-            _statsMod = null;
+            _playerBaseStats = null;
+            _baseStatsMod = null;
         }
     }
 }

@@ -1,0 +1,28 @@
+using System;
+
+namespace PlayerDirectory
+{
+    [Serializable]
+    public class PlayerBaseStatsMod : BaseStatsMod
+    {
+        public float speedMod = 1;
+        public float sAttackSpeedMod = 1;
+        public float defenseSpeedMod = 1;
+        public float defenseMod = 1;
+        public float knockbackMod = 1;
+        public float slowResistanceMod = 1;
+
+        public float healthRegenBonus = 0f;
+        public float armorBonus = 0f;
+        public float pickupRadiusMod = 1;
+        public float magnetismMod = 1;
+        public float luckMod = 1;
+        public float greedMod = 1;
+        public float growthMod = 1;
+        public float curseBonus = 0f;
+        public int revivalBonus = 0;
+        public int rerollBonus = 0;
+        public int skipBonus = 0;
+        public int banishBonus = 0;
+    }
+}

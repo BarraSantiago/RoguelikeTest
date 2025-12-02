@@ -10,8 +10,8 @@ namespace ClassesDirectory
     public interface IClass
     {
         public void Initialize(Player player);
-        public void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec);
-        public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec);
-        public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec);
+        public void BasicAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec);
+        public void SpecialAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec);
+        public void Defense(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec);
     }
 }

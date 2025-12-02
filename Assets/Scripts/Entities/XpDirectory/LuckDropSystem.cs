@@ -27,7 +27,7 @@ namespace Entities.XpDirectory
             if (!enemy.IsDead() || !_player) return;
 
             // Luck increases drop chance
-            float totalLuck = _player.PlayerStats.Luck * _player.statsMod.luckMod;
+            float totalLuck = _player.PlayerBaseStats.Luck * _player.baseStatsMod.luckMod;
             float finalChance = luckDropChance * totalLuck;
 
             if (Random.value < finalChance)

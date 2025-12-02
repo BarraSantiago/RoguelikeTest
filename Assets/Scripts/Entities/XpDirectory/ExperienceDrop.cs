@@ -43,7 +43,7 @@ namespace Entities.XpDirectory
             if (Player)
             {
                 expAmount = CombatUtilities.ApplyGreed(expAmount, 
-                    Player.PlayerStats.Greed, Player.statsMod.greedMod);
+                    Player.PlayerBaseStats.Greed, Player.baseStatsMod.greedMod);
             }
             
             experienceAmount = expAmount;

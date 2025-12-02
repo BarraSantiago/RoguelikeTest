@@ -11,12 +11,12 @@ namespace ClassesDirectory.RangerClass
         private List<GameObject> _activeTraps = new List<GameObject>();
         private const int MaxTraps = 3;
 
-        public override void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void BasicAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod);
-            float range = playerStats.Range * statsMod.rangeMod;
-            float speed = playerStats.ProjectileSpeed * statsMod.projectileSpeedMod;
-            int projectileCount = GetProjectileCount(playerStats, statsMod);
+            float damage = CombatUtilities.CalculateDamage(playerBaseStats, baseStatsMod);
+            float range = playerBaseStats.Range * baseStatsMod.rangeMod;
+            float speed = playerBaseStats.ProjectileSpeed * baseStatsMod.projectileSpeedMod;
+            int projectileCount = GetProjectileCount(playerBaseStats, baseStatsMod);
 
             ArrowPool.StartCoroutine(FireArrowsSequential(vec.Position, vec.Direction, speed, damage, range,
                 projectileCount, SpreadAngle, arrow =>
@@ -28,9 +28,9 @@ namespace ClassesDirectory.RangerClass
                 }));
         }
 
-        public override void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void SpecialAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            float rootRadius = playerStats.Range * statsMod.rangeMod * 0.4f;
+            float rootRadius = playerBaseStats.Range * baseStatsMod.rangeMod * 0.4f;
             GameObject trap = new GameObject("RootTrap");
             trap.transform.position = vec.Position;
 
@@ -40,9 +40,9 @@ namespace ClassesDirectory.RangerClass
             RegisterTrap(trap);
         }
 
-        public override void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void Defense(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            PerformDodge(2f, playerStats, statsMod, vec);
+            PerformDodge(2f, playerBaseStats, baseStatsMod, vec);
 
             GameObject trap = new GameObject("DodgeTrap");
             trap.transform.position = vec.Position;

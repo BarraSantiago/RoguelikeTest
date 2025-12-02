@@ -139,7 +139,7 @@ namespace PlayerDirectory.LevelingSystem
             int totalAvailable = upgradablePowerUps.Count;
             int actualChoices = Mathf.Min(numberOfChoices, totalAvailable + 100); // Always have stat options
 
-            float luckMod = player.statsMod.luckMod;
+            float luckMod = player.baseStatsMod.luckMod;
 
             for (int i = 0; i < actualChoices; i++)
             {
@@ -153,7 +153,7 @@ namespace PlayerDirectory.LevelingSystem
                 }
                 else
                 {
-                    StatUpgradeOption statOption = GenerateRandomStatUpgrade(player, player.PlayerStats.Luck * luckMod);
+                    StatUpgradeOption statOption = GenerateRandomStatUpgrade(player, player.PlayerBaseStats.Luck * luckMod);
                     if (statOption != null && !_banishedChoices.Contains(statOption))
                     {
                         choices.Add(statOption);
@@ -183,65 +183,65 @@ namespace PlayerDirectory.LevelingSystem
         
             // Common stats for all classes
             filtered.Add(CreateStatUpgrade("Increased Damage", "+20% Damage",
-                (p, mult) => p.statsMod.damageMod *= 1f + (0.2f * mult), rarity,
+                (p, mult) => p.baseStatsMod.damageMod *= 1f + (0.2f * mult), rarity,
                 (p, mult) => $"+{20f * mult:F0}% Damage"));
         
             filtered.Add(CreateStatUpgrade("Attack Speed", "+15% Attack Speed",
-                (p, mult) => p.statsMod.attackSpeedMod *= 1f - (0.15f * mult), rarity,
+                (p, mult) => p.baseStatsMod.attackSpeedMod *= 1f - (0.15f * mult), rarity,
                 (p, mult) => $"+{15f * mult:F0}% Attack Speed"));
         
             filtered.Add(CreateStatUpgrade("Increased Range", "+25% Range",
-                (p, mult) => p.statsMod.rangeMod *= 1f + (0.25f * mult), rarity,
+                (p, mult) => p.baseStatsMod.rangeMod *= 1f + (0.25f * mult), rarity,
                 (p, mult) => $"+{25f * mult:F0}% Range"));
         
             filtered.Add(CreateStatUpgrade("Critical Chance", "+5% Critical Chance",
-                (p, mult) => p.PlayerStats.CriticalChance += 0.05f * mult, rarity,
+                (p, mult) => p.PlayerBaseStats.CriticalChance += 0.05f * mult, rarity,
                 (p, mult) => $"+{5f * mult:F0}% Critical Chance"));
         
             filtered.Add(CreateStatUpgrade("Movement Speed", "+15% Speed",
-                (p, mult) => p.PlayerStats.Speed *= 1f + (0.15f * mult), rarity,
+                (p, mult) => p.PlayerBaseStats.Speed *= 1f + (0.15f * mult), rarity,
                 (p, mult) => $"+{15f * mult:F0}% Movement Speed"));
         
             filtered.Add(CreateStatUpgrade("Max Health", "+20% Health",
                 (p, mult) =>
                 {
-                    p.PlayerStats.Health *= 1f + (0.2f * mult);
-                    p.PlayerStats.MaxHealth = p.PlayerStats.Health;
+                    p.PlayerBaseStats.Health *= 1f + (0.2f * mult);
+                    p.PlayerBaseStats.MaxHealth = p.PlayerBaseStats.Health;
                 }, rarity,
                 (p, mult) => $"+{20f * mult:F0}% Max Health"));
         
             filtered.Add(CreateStatUpgrade("Health Regeneration", "+1 HP/s Regen",
-                (p, mult) => p.statsMod.healthRegenBonus += 1f * mult, rarity,
+                (p, mult) => p.baseStatsMod.healthRegenBonus += 1f * mult, rarity,
                 (p, mult) => $"+{1f * mult:F1} HP/s Regeneration"));
         
             filtered.Add(CreateStatUpgrade("Armor", "+5 Armor",
-                (p, mult) => p.statsMod.armorBonus += 5f * mult, rarity,
+                (p, mult) => p.baseStatsMod.armorBonus += 5f * mult, rarity,
                 (p, mult) => $"+{5f * mult:F0} Armor"));
         
             filtered.Add(CreateStatUpgrade("Cooldown Reduction", "+10% CDR",
-                (p, mult) => p.statsMod.cooldownReductionBonus += 0.1f * mult, rarity,
+                (p, mult) => p.baseStatsMod.cooldownReductionBonus += 0.1f * mult, rarity,
                 (p, mult) => $"+{10f * mult:F0}% Cooldown Reduction"));
         
             filtered.Add(CreateStatUpgrade("Pickup Radius", "+25% Pickup Range",
-                (p, mult) => p.statsMod.pickupRadiusMod *= 1f + (0.25f * mult), rarity,
+                (p, mult) => p.baseStatsMod.pickupRadiusMod *= 1f + (0.25f * mult), rarity,
                 (p, mult) => $"+{25f * mult:F0}% Pickup Radius"));
         
             filtered.Add(CreateStatUpgrade("Magnetism", "+30% Attraction Speed",
-                (p, mult) => p.statsMod.magnetismMod *= 1f + (0.3f * mult), rarity,
+                (p, mult) => p.baseStatsMod.magnetismMod *= 1f + (0.3f * mult), rarity,
                 (p, mult) => $"+{30f * mult:F0}% Magnetism"));
         
             filtered.Add(CreateStatUpgrade("Experience Gain", "+20% XP",
-                (p, mult) => p.statsMod.growthMod *= 1f + (0.2f * mult), rarity,
+                (p, mult) => p.baseStatsMod.growthMod *= 1f + (0.2f * mult), rarity,
                 (p, mult) => $"+{20f * mult:F0}% Experience Gain"));
         
             filtered.Add(CreateStatUpgrade("Luck", "+15% Luck",
-                (p, mult) => p.statsMod.luckMod *= 1f + (0.15f * mult), rarity,
+                (p, mult) => p.baseStatsMod.luckMod *= 1f + (0.15f * mult), rarity,
                 (p, mult) => $"+{15f * mult:F0}% Luck"));
         
             if (rarity == StatRarity.Legendary)
             {
                 filtered.Add(CreateStatUpgrade("Revival", "+1 Extra Life",
-                    (p, mult) => p.statsMod.revivalBonus += Mathf.RoundToInt(mult), rarity,
+                    (p, mult) => p.baseStatsMod.revivalBonus += Mathf.RoundToInt(mult), rarity,
                     (p, mult) => $"+{Mathf.RoundToInt(mult)} Revival"));
             }
         
@@ -249,29 +249,29 @@ namespace PlayerDirectory.LevelingSystem
             if (classType == Classes.Warrior)
             {
                 filtered.Add(CreateStatUpgrade("Increased Area", "+25% Attack Area",
-                    (p, mult) => p.statsMod.areaMod *= 1f + (0.25f * mult), rarity,
+                    (p, mult) => p.baseStatsMod.areaMod *= 1f + (0.25f * mult), rarity,
                     (p, mult) => $"+{25f * mult:F0}% Area"));
         
                 filtered.Add(CreateStatUpgrade("Attack Count", "+1 Multi-Attack",
-                    (p, mult) => p.statsMod.projectileCountBonus += Mathf.RoundToInt(mult), rarity,
+                    (p, mult) => p.baseStatsMod.projectileCountBonus += Mathf.RoundToInt(mult), rarity,
                     (p, mult) => $"+{Mathf.RoundToInt(mult)} Attack Count"));
         
                 filtered.Add(CreateStatUpgrade("Knockback", "+25% Knockback",
-                    (p, mult) => p.statsMod.knockbackMod *= 1f + (0.25f * mult), rarity,
+                    (p, mult) => p.baseStatsMod.knockbackMod *= 1f + (0.25f * mult), rarity,
                     (p, mult) => $"+{25f * mult:F0}% Knockback"));
             }
             else if (classType == Classes.Ranger)
             {
                 filtered.Add(CreateStatUpgrade("Projectile Count", "+1 Projectile",
-                    (p, mult) => p.statsMod.projectileCountBonus += Mathf.RoundToInt(mult), rarity,
+                    (p, mult) => p.baseStatsMod.projectileCountBonus += Mathf.RoundToInt(mult), rarity,
                     (p, mult) => $"+{Mathf.RoundToInt(mult)} Projectile"));
         
                 filtered.Add(CreateStatUpgrade("Pierce", "+1 Pierce",
-                    (p, mult) => p.statsMod.pierceCountBonus += Mathf.RoundToInt(mult), rarity,
+                    (p, mult) => p.baseStatsMod.pierceCountBonus += Mathf.RoundToInt(mult), rarity,
                     (p, mult) => $"+{Mathf.RoundToInt(mult)} Pierce"));
         
                 filtered.Add(CreateStatUpgrade("Projectile Speed", "+20% Projectile Speed",
-                    (p, mult) => p.statsMod.projectileSpeedMod *= 1f + (0.2f * mult), rarity,
+                    (p, mult) => p.baseStatsMod.projectileSpeedMod *= 1f + (0.2f * mult), rarity,
                     (p, mult) => $"+{20f * mult:F0}% Projectile Speed"));
             }
         

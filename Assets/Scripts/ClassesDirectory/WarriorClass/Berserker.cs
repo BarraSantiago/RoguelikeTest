@@ -18,7 +18,7 @@ namespace ClassesDirectory.WarriorClass
         public void Initialize(Player player)
         {
             _player = player;
-            _baseAttackSpeed = player.statsMod.attackSpeedMod;
+            _baseAttackSpeed = player.baseStatsMod.attackSpeedMod;
             _multiAttackController = player.gameObject.GetComponent<MultiAttackController>();
             
             if (!_multiAttackController)
@@ -27,31 +27,31 @@ namespace ClassesDirectory.WarriorClass
             }
         }
 
-        public void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public void BasicAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            UpdateRageStacks(statsMod);
+            UpdateRageStacks(baseStatsMod);
 
             if (!_multiAttackController.CanAttack()) return;
 
-            int attackCount = 1 + statsMod.projectileCountBonus;
+            int attackCount = 1 + baseStatsMod.projectileCountBonus;
             float intervalBetweenAttacks = 0.08f;
             float rageBonus = 1f + (_rageStacks * 0.1f);
 
             _player.StartCoroutine(
                 _multiAttackController.ExecuteMultiAttack(
                     (attackIndex, angleOffset) =>
-                        PerformSingleBasicAttack(playerStats, statsMod, vec, angleOffset, rageBonus),
+                        PerformSingleBasicAttack(playerBaseStats, baseStatsMod, vec, angleOffset, rageBonus),
                     attackCount,
                     intervalBetweenAttacks
                 )
             );
         }
 
-        private void PerformSingleBasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec,
+        private void PerformSingleBasicAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec,
             float angleOffset, float rageBonus)
         {
-            float enhancedArea = playerStats.Area * statsMod.areaMod * 1.3f;
-            float range = playerStats.Range * statsMod.rangeMod;
+            float enhancedArea = playerBaseStats.Area * baseStatsMod.areaMod * 1.3f;
+            float range = playerBaseStats.Range * baseStatsMod.rangeMod;
 
             Vector2 direction = RotateVector(vec.Direction, angleOffset * 15f);
 
@@ -60,67 +60,67 @@ namespace ClassesDirectory.WarriorClass
             CombatEvents.TriggerAttack(vec.Position, direction, range, enhancedArea, AttackType.WarriorBasic);
 
             CombatUtilities.KnockbackEnemies(enemies, vec.Position,
-                playerStats.Knockback * 0.2f * statsMod.knockbackMod * rageBonus);
-            CombatUtilities.DamageEnemies(enemies, playerStats, statsMod);
+                playerBaseStats.Knockback * 0.2f * baseStatsMod.knockbackMod * rageBonus);
+            CombatUtilities.DamageEnemies(enemies, playerBaseStats, baseStatsMod);
 
             foreach (Enemy enemy in enemies)
             {
                 if (enemy.IsDead())
                 {
-                    OnEnemyKilled(statsMod);
+                    OnEnemyKilled(baseStatsMod);
                 }
             }
         }
 
-        public void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public void SpecialAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            UpdateRageStacks(statsMod);
+            UpdateRageStacks(baseStatsMod);
 
             if (!_multiAttackController.CanAttack()) return;
 
-            int attackCount = 1 + Mathf.FloorToInt(statsMod.projectileCountBonus * 0.5f);
+            int attackCount = 1 + Mathf.FloorToInt(baseStatsMod.projectileCountBonus * 0.5f);
             float intervalBetweenAttacks = 0.12f;
 
             _player.StartCoroutine(
                 _multiAttackController.ExecuteMultiAttack(
-                    (attackIndex, angleOffset) => PerformSingleSpecialAttack(playerStats, statsMod, vec, angleOffset),
+                    (attackIndex, angleOffset) => PerformSingleSpecialAttack(playerBaseStats, baseStatsMod, vec, angleOffset),
                     attackCount,
                     intervalBetweenAttacks
                 )
             );
         }
 
-        private void PerformSingleSpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec,
+        private void PerformSingleSpecialAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec,
             float angleOffset)
         {
-            float radius = playerStats.Range * statsMod.rangeMod * 1.2f * (1f + angleOffset * 0.1f);
+            float radius = playerBaseStats.Range * baseStatsMod.rangeMod * 1.2f * (1f + angleOffset * 0.1f);
 
             Enemy[] enemies = CombatUtilities.GetEnemiesInRadius(vec.Position, radius);
             CombatEvents.TriggerRadialAttack(vec.Position, radius, AttackType.WarriorSpecial);
 
-            CombatUtilities.DamageEnemies(enemies, playerStats, statsMod);
+            CombatUtilities.DamageEnemies(enemies, playerBaseStats, baseStatsMod);
 
             foreach (Enemy enemy in enemies)
             {
                 if (enemy.IsDead())
                 {
-                    OnEnemyKilled(statsMod);
+                    OnEnemyKilled(baseStatsMod);
                 }
             }
         }
 
-        public void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public void Defense(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            float radius = playerStats.Range * statsMod.rangeMod * 0.8f;
+            float radius = playerBaseStats.Range * baseStatsMod.rangeMod * 0.8f;
 
             Enemy[] enemies = CombatUtilities.GetEnemiesInRadius(vec.Position, radius);
             CombatEvents.TriggerRadialAttack(vec.Position, radius, AttackType.WarriorDefense);
 
             CombatUtilities.KnockbackEnemies(enemies, vec.Position,
-                playerStats.Knockback * statsMod.knockbackMod * 0.5f);
+                playerBaseStats.Knockback * baseStatsMod.knockbackMod * 0.5f);
         }
 
-        private void OnEnemyKilled(PlayerStatsModifier statsMod)
+        private void OnEnemyKilled(PlayerBaseStatsMod baseStatsMod)
         {
             _killStreak++;
             _lastKillTime = Time.time;
@@ -130,12 +130,12 @@ namespace ClassesDirectory.WarriorClass
                 _rageStacks++;
                 _rageStacksEndTime = Time.time + 5f;
 
-                ApplyRageBuffs(statsMod);
+                ApplyRageBuffs(baseStatsMod);
                 Debug.Log($"Rage Stack! Level: {_rageStacks} (+{_rageStacks * 10}% attack speed)");
             }
         }
 
-        private void UpdateRageStacks(PlayerStatsModifier statsMod)
+        private void UpdateRageStacks(PlayerBaseStatsMod baseStatsMod)
         {
             int previousStacks = _rageStacks;
 
@@ -152,23 +152,23 @@ namespace ClassesDirectory.WarriorClass
 
             if (previousStacks != _rageStacks)
             {
-                ApplyRageBuffs(statsMod);
+                ApplyRageBuffs(baseStatsMod);
             }
         }
 
-        private void ApplyRageBuffs(PlayerStatsModifier statsMod)
+        private void ApplyRageBuffs(PlayerBaseStatsMod baseStatsMod)
         {
             if (_baseAttackSpeed > 0)
             {
-                statsMod.attackSpeedMod = _baseAttackSpeed;
+                baseStatsMod.attackSpeedMod = _baseAttackSpeed;
             }
             else
             {
-                _baseAttackSpeed = statsMod.attackSpeedMod;
+                _baseAttackSpeed = baseStatsMod.attackSpeedMod;
             }
 
             float attackSpeedBonus = 1f + (_rageStacks * 0.1f);
-            statsMod.attackSpeedMod = _baseAttackSpeed * attackSpeedBonus;
+            baseStatsMod.attackSpeedMod = _baseAttackSpeed * attackSpeedBonus;
 
             if (_rageStacks == 0)
             {

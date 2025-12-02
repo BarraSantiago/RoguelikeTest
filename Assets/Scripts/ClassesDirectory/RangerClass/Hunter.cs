@@ -9,12 +9,12 @@ namespace ClassesDirectory.RangerClass
     {
         private const float SpreadAngle = 15f;
 
-        public override void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void BasicAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod);
-            float range = playerStats.Range * statsMod.rangeMod;
-            float speed = playerStats.ProjectileSpeed * statsMod.projectileSpeedMod;
-            int projectileCount = GetProjectileCount(playerStats, statsMod);
+            float damage = CombatUtilities.CalculateDamage(playerBaseStats, baseStatsMod);
+            float range = playerBaseStats.Range * baseStatsMod.rangeMod;
+            float speed = playerBaseStats.ProjectileSpeed * baseStatsMod.projectileSpeedMod;
+            int projectileCount = GetProjectileCount(playerBaseStats, baseStatsMod);
 
             ArrowPool.StartCoroutine(FireArrowsSequential(vec.Position, vec.Direction, speed, damage, range,
                 projectileCount, SpreadAngle, arrow =>
@@ -25,18 +25,18 @@ namespace ClassesDirectory.RangerClass
                 }));
         }
 
-        public override void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void SpecialAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod, 0.8f);
-            float range = playerStats.Range * statsMod.rangeMod;
-            float speed = playerStats.ProjectileSpeed * statsMod.projectileSpeedMod;
+            float damage = CombatUtilities.CalculateDamage(playerBaseStats, baseStatsMod, 0.8f);
+            float range = playerBaseStats.Range * baseStatsMod.rangeMod;
+            float speed = playerBaseStats.ProjectileSpeed * baseStatsMod.projectileSpeedMod;
 
             ArrowPool.StartCoroutine(FireThreeWayAttack(vec.Position, vec.Direction, speed, damage, range));
         }
 
-        public override void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void Defense(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            PerformDodge(2.5f, playerStats, statsMod, vec);
+            PerformDodge(2.5f, playerBaseStats, baseStatsMod, vec);
         }
 
         private IEnumerator FireThreeWayAttack(Vector2 position, Vector2 direction, float speed, float damage,

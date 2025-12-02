@@ -135,18 +135,18 @@ namespace Entities.EnemyDirectory
         private void UpdateEnemyBehaviorsBatched()
         {
             if (!_playerTransform || _activeEnemies.Count == 0) return;
-
+        
             Vector2 playerPosition = _playerTransform.position;
             int enemiesThisFrame = Mathf.Min(enemiesPerFrame, _activeEnemies.Count);
-
+        
             for (int i = 0; i < enemiesThisFrame; i++)
             {
                 _currentUpdateIndex = (_currentUpdateIndex + 1) % _activeEnemies.Count;
                 Enemy enemy = _activeEnemies[_currentUpdateIndex];
-
-                if (!enemy || !enemy.gameObject.activeInHierarchy)
+        
+                if (enemy == null || !enemy.gameObject || !enemy.gameObject.activeInHierarchy)
                     continue;
-
+        
                 UpdateSingleEnemy(enemy, playerPosition);
             }
         }
@@ -177,21 +177,29 @@ namespace Entities.EnemyDirectory
         {
             Enemy nearest = null;
             float minSqrDistance = maxRange * maxRange;
-
-            foreach (Enemy enemy in _activeEnemies)
+        
+            // Clean up null references while iterating
+            for (int i = _activeEnemies.Count - 1; i >= 0; i--)
             {
+                if (!_activeEnemies[i] || !_activeEnemies[i].gameObject)
+                {
+                    _activeEnemies.RemoveAt(i);
+                    continue;
+                }
+        
+                Enemy enemy = _activeEnemies[i];
                 if (!enemy.gameObject.activeInHierarchy) continue;
-
+        
                 Vector2 offset = (Vector2)enemy.transform.position - position;
                 float sqrDistance = offset.sqrMagnitude;
-
+        
                 if (sqrDistance < minSqrDistance)
                 {
                     minSqrDistance = sqrDistance;
                     nearest = enemy;
                 }
             }
-
+        
             return nearest;
         }
 
@@ -199,7 +207,7 @@ namespace Entities.EnemyDirectory
         {
             if (!_playerTransform || !_player) return;
 
-            float curseMultiplier = 1f + _player.PlayerStats.Curse + _player.statsMod.curseBonus;
+            float curseMultiplier = 1f + _player.PlayerBaseStats.Curse + _player.baseStatsMod.curseBonus;
             int cursedCount = Mathf.RoundToInt(count * curseMultiplier);
 
             for (int i = 0; i < cursedCount; i++)
@@ -215,11 +223,16 @@ namespace Entities.EnemyDirectory
                 {
                     enemy.data.health = CombatUtilities.ApplyCurse(
                         enemy.data.health,
-                        _player.PlayerStats.Curse,
-                        _player.statsMod.curseBonus
+                        _player.PlayerBaseStats.Curse,
+                        _player.baseStatsMod.curseBonus
                     );
                 }
             }
+        }
+        
+        private void OnDestroy()
+        {
+            _activeEnemies.Clear();
         }
     }
 }

@@ -10,16 +10,16 @@ namespace ClassesDirectory.RangerClass
         private const float SpreadAngle = 10f;
         private const float LongRangeThreshold = 0.7f;
 
-        public override void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void BasicAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            float maxRange = playerStats.Range * statsMod.rangeMod;
+            float maxRange = playerBaseStats.Range * baseStatsMod.rangeMod;
 
             Enemy[] nearbyEnemies = CombatUtilities.GetEnemiesInRadius(vec.Position, 3f);
             float critMultiplier = nearbyEnemies.Length == 0 ? 2f : 1f;
 
-            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod) * critMultiplier;
-            float speed = playerStats.ProjectileSpeed * statsMod.projectileSpeedMod;
-            int projectileCount = GetProjectileCount(playerStats, statsMod);
+            float damage = CombatUtilities.CalculateDamage(playerBaseStats, baseStatsMod) * critMultiplier;
+            float speed = playerBaseStats.ProjectileSpeed * baseStatsMod.projectileSpeedMod;
+            int projectileCount = GetProjectileCount(playerBaseStats, baseStatsMod);
 
             ArrowPool.StartCoroutine(FireArrowsSequential(vec.Position, vec.Direction, speed, damage, maxRange,
                 projectileCount, SpreadAngle, arrow =>
@@ -29,11 +29,11 @@ namespace ClassesDirectory.RangerClass
                 }));
         }
 
-        public override void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void SpecialAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            float damage = CombatUtilities.CalculateDamage(playerStats, statsMod, 2f);
-            float range = playerStats.Range * statsMod.rangeMod * 1.5f;
-            float speed = playerStats.ProjectileSpeed * statsMod.projectileSpeedMod * 1.5f;
+            float damage = CombatUtilities.CalculateDamage(playerBaseStats, baseStatsMod, 2f);
+            float range = playerBaseStats.Range * baseStatsMod.rangeMod * 1.5f;
+            float speed = playerBaseStats.ProjectileSpeed * baseStatsMod.projectileSpeedMod * 1.5f;
             Vector2 velocity = vec.Direction.normalized * speed;
 
             Arrow arrow = ArrowPool.GetArrowWithSetup(vec.Position, velocity, damage, range);
@@ -43,9 +43,9 @@ namespace ClassesDirectory.RangerClass
             arrow.sniperThreshold = range * LongRangeThreshold;
         }
 
-        public override void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        public override void Defense(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
-            PerformDodge(3f, playerStats, statsMod, vec);
+            PerformDodge(3f, playerBaseStats, baseStatsMod, vec);
         }
     }
 }

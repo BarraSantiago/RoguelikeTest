@@ -1,0 +1,21 @@
+# ninja log v5
+6	2321	7863813882874460	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	f822acb3850cf072
+87	411	7863813863829620	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	4d030110d3b0c3da
+412	684	7863813866238633	E:/PortfolioProjects/RoguelikeTest/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6g1t2k47/obj/armeabi-v7a/libswappywrapper.so	9a1e8dfd891acb75
+44	1775	7863813877354427	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	3d989b52f3deed43
+36	1745	7863813877067156	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	a5e14cdddf99863d
+74	2058	7863813880196781	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	61e77f704f5e34a
+17	1758	7863813877209124	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	7f52bd3f8b479e48
+26	1860	7863813878219325	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	96fc774d11ccf5d0
+63	1847	7863813878102702	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	af005f4356d32215
+53	2182	7863813881462369	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	d990c41350b20505
+2321	2456	7863813884259266	E:/PortfolioProjects/RoguelikeTest/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6g1t2k47/obj/armeabi-v7a/libgame.so	800819cc151cc994
+56	1624	7863821366741137	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	3d989b52f3deed43
+33	1666	7863821367158258	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	7f52bd3f8b479e48
+71	1677	7863821367251575	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	a5e14cdddf99863d
+84	1717	7863821367701151	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	af005f4356d32215
+8	1723	7863821367756328	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	96fc774d11ccf5d0
+97	1889	7863821369417370	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	61e77f704f5e34a
+45	2023	7863821370785404	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	d990c41350b20505
+20	2151	7863821372092026	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	f822acb3850cf072
+2152	2300	7863821373568806	E:/PortfolioProjects/RoguelikeTest/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6g1t2k47/obj/armeabi-v7a/libgame.so	800819cc151cc994

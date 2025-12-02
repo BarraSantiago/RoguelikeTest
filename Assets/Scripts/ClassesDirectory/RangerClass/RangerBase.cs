@@ -19,15 +19,15 @@ namespace ClassesDirectory.RangerClass
             }
         }
 
-        public abstract void BasicAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec);
-        public abstract void SpecialAttack(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec);
-        public abstract void Defense(PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec);
+        public abstract void BasicAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec);
+        public abstract void SpecialAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec);
+        public abstract void Defense(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec);
 
-        protected int GetProjectileCount(PlayerStats playerStats, PlayerStatsModifier statsMod, bool applyLuck = true)
+        protected int GetProjectileCount(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, bool applyLuck = true)
         {
-            int count = playerStats.ProjectileCount + statsMod.projectileCountBonus;
+            int count = playerBaseStats.ProjectileCount + baseStatsMod.projectileCountBonus;
 
-            if (applyLuck && CombatUtilities.RollLuck(playerStats.Luck, statsMod.luckMod))
+            if (applyLuck && CombatUtilities.RollLuck(playerBaseStats.Luck, baseStatsMod.luckMod))
             {
                 count++;
             }
@@ -56,7 +56,7 @@ namespace ClassesDirectory.RangerClass
             }
         }
 
-        protected void PerformDodge(float speedMultiplier, PlayerStats playerStats, PlayerStatsModifier statsMod, Vec vec)
+        protected void PerformDodge(float speedMultiplier, PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec)
         {
             GameObject player = GameObject.FindWithTag("Player");
             if (!player) return;
@@ -68,7 +68,7 @@ namespace ClassesDirectory.RangerClass
                 dodgeDirection = vec.Direction != Vector2.zero ? -vec.Direction : Vector2.right;
             }
 
-            player.transform.position += (Vector3)dodgeDirection * playerStats.Speed * speedMultiplier * statsMod.speedMod;
+            player.transform.position += (Vector3)dodgeDirection * playerBaseStats.Speed * speedMultiplier * baseStatsMod.speedMod;
         }
 
         protected Vector2 RotateVector(Vector2 vector, float degrees)
