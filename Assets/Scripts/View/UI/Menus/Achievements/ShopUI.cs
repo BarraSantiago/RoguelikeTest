@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +29,10 @@ namespace View.UI.Menus.Achievements
         [SerializeField] private TextMeshProUGUI popupText;
         [SerializeField] private Button popupCloseButton;
         
+        [Header("Debug (Remove in Production)")]
+        [SerializeField] private Button debugUnlockAllButton;
+        [SerializeField] private Button debugClearAllButton;
+        
         private ShopUnlockType _currentTab = ShopUnlockType.Subclass;
         private Dictionary<ShopUnlockType, int> _tabItemCounts = new();
 
@@ -48,8 +53,31 @@ namespace View.UI.Menus.Achievements
             {
                 popupPanel.SetActive(false);
             }
+            
+            if (debugUnlockAllButton)
+            {
+                debugUnlockAllButton.onClick.AddListener(DebugUnlockAll);
+            }
+
+            if (debugClearAllButton)
+            {
+                debugClearAllButton.onClick.AddListener(DebugClearAll);
+            }
         }
 
+        private void OnEnable()
+        {
+            TryInitializeShop();
+        }
+
+        private void OnDisable()
+        {
+            if (AchievementManager.Instance != null)
+            {
+                AchievementManager.Instance.onShopItemUnlocked.RemoveListener(OnShopItemUnlocked);
+            }
+        }
+        
         private void TryOpenShop()
         {
             if (_tabItemCounts.Values.Sum() == 0)
@@ -60,24 +88,33 @@ namespace View.UI.Menus.Achievements
             shopContainer.SetActive(true);
         }
 
-        private void OnEnable()
-        {
-            TryInitializeShop();
-        }
-
         private void TryInitializeShop()
         {
             StopAllCoroutines();
             if (AchievementManager.Instance && ShopManager.Instance)
             {
                 InitializeShop();
+                
+                if (AchievementManager.Instance != null)
+                {
+                    AchievementManager.Instance.onShopItemUnlocked.AddListener(OnShopItemUnlocked);
+                }
             }
             else
             {
                 StartCoroutine(WaitForManagersAndInitialize());
             }
         }
-
+        
+        private void OnShopItemUnlocked()
+        {
+            if (gameObject.activeInHierarchy)
+            {
+                // Refresh if shop is open
+                TryInitializeShop();
+            }
+        }
+        
         private IEnumerator WaitForManagersAndInitialize()
         {
             yield return new WaitUntil(() => AchievementManager.Instance && ShopManager.Instance);
@@ -178,22 +215,56 @@ namespace View.UI.Menus.Achievements
             {
                 Destroy(child.gameObject);
             }
-
+        
             if (popupPanel)
             {
                 popupPanel.SetActive(false);
             }
-
+        
             List<ShopUnlock> unlocks = ShopManager.Instance.GetAvailableUnlocks();
             List<ShopUnlock> filteredUnlocks = unlocks.Where(u => u.type == filterType).ToList();
-            
+        
             foreach (ShopUnlock unlock in filteredUnlocks)
             {
                 GameObject item = Instantiate(shopItemPrefab, shopItemsContainer);
                 ShopItemUI shopItem = item.GetComponent<ShopItemUI>();
-
+        
                 shopItem.Setup(unlock, OnPurchaseItem);
             }
+        
+            // Resize container after adding items
+            StartCoroutine(ResizeContainerAfterFrame());
+        }
+        
+        private IEnumerator ResizeContainerAfterFrame()
+        {
+            // Wait for layout to update
+            yield return new WaitForEndOfFrame();
+            
+            RectTransform containerRect = shopItemsContainer.GetComponent<RectTransform>();
+            
+            float totalHeight = 0f;
+            
+            // Calculate total height of all children
+            foreach (RectTransform child in shopItemsContainer)
+            {
+                totalHeight += child.sizeDelta.y;
+            }
+            
+            // Add spacing if using VerticalLayoutGroup
+            VerticalLayoutGroup layoutGroup = shopItemsContainer.GetComponent<VerticalLayoutGroup>();
+            if (layoutGroup)
+            {
+                int childCount = shopItemsContainer.childCount;
+                if (childCount > 1)
+                {
+                    totalHeight += layoutGroup.spacing * (childCount - 1);
+                }
+                totalHeight += layoutGroup.padding.top + layoutGroup.padding.bottom;
+            }
+            
+            // Set the container size
+            containerRect.sizeDelta = new Vector2(containerRect.sizeDelta.x, totalHeight);
         }
         
         private void ShowShopUnavailablePopup()
@@ -205,7 +276,15 @@ namespace View.UI.Menus.Achievements
         private void ShowTabUnavailablePopup(ShopUnlockType tab)
         {
             string tabName = GetTabName(tab);
-            ShowPopup($"{tabName} Unavailable", $"Complete achievements to unlock {tabName.ToLower()}!");
+    
+            if (tab == ShopUnlockType.Skin)
+            {
+                ShowPopup($"{tabName}", "Coming soon!");
+            }
+            else
+            {
+                ShowPopup($"{tabName} Unavailable", $"Complete achievements to unlock {tabName.ToLower()}!");
+            }
         }
 
         private string GetTabName(ShopUnlockType type)
@@ -263,6 +342,38 @@ namespace View.UI.Menus.Achievements
             {
                 totalCoinsText.text = $"Coins: {AchievementManager.Instance.GetTotalCoins()}";
             }
+        }
+        
+        private void DebugUnlockAll()
+        {
+            if (AchievementManager.Instance)
+            {
+                AchievementManager.Instance.DebugUnlockAllAchievements();
+            }
+
+            if (ShopManager.Instance)
+            {
+                ShopManager.Instance.DebugUnlockAllShopItems();
+            }
+
+            TryInitializeShop();
+            ShowPopup("Debug", "All achievements and shop items unlocked!");
+        }
+
+        private void DebugClearAll()
+        {
+            if (AchievementManager.Instance)
+            {
+                AchievementManager.Instance.DebugClearAllProgress();
+            }
+
+            if (ShopManager.Instance)
+            {
+                ShopManager.Instance.DebugClearAllPurchases();
+            }
+
+            TryInitializeShop();
+            ShowPopup("Debug", "All progress and purchases cleared!");
         }
     }
 }

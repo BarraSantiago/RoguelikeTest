@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Entities.XpDirectory;
+using Entities.Pickables;
 using PlayerDirectory;
 using UnityEngine;
 using Utilities;
@@ -25,6 +25,13 @@ namespace Entities.EnemyDirectory
         [SerializeField] private float updateInterval = 0.1f;
         [SerializeField] private int enemiesPerFrame = 10;
 
+        [Header("Coin Drops")]
+        [SerializeField] private float coinDropChance = 0.02f;
+        [SerializeField] private float coinBaseValue = 1f;
+        
+        private CoinPool _coinPool;
+
+        
         public int ActiveEnemyCount => _activeEnemies.Count;
         public Transform PlayerTransform => _playerTransform;
 
@@ -45,6 +52,7 @@ namespace Entities.EnemyDirectory
             InitializePools();
             Enemy.EnemyManager = this;
             Enemy.ExperiencePool = FindFirstObjectByType<ExperiencePool>();
+            _coinPool = FindFirstObjectByType<CoinPool>();
             _gameStartTime = Time.time;
         }
 
@@ -122,8 +130,11 @@ namespace Entities.EnemyDirectory
         public void HandleEnemyDeath(Enemy enemy)
         {
             if (!_activeEnemies.Contains(enemy)) return;
+            
+            HandleCoinDrop(enemy);
+            
             _activeEnemies.Remove(enemy);
-
+        
             for (int i = 0; i < enemyPrefabs.Length; i++)
             {
                 if (!enemy.gameObject.name.Contains(enemyPrefabs[i].name)) continue;
@@ -144,7 +155,7 @@ namespace Entities.EnemyDirectory
                 _currentUpdateIndex = (_currentUpdateIndex + 1) % _activeEnemies.Count;
                 Enemy enemy = _activeEnemies[_currentUpdateIndex];
         
-                if (enemy == null || !enemy.gameObject || !enemy.gameObject.activeInHierarchy)
+                if (!enemy || !enemy.gameObject || !enemy.gameObject.activeInHierarchy)
                     continue;
         
                 UpdateSingleEnemy(enemy, playerPosition);
@@ -227,6 +238,22 @@ namespace Entities.EnemyDirectory
                         _player.baseStatsMod.curseBonus
                     );
                 }
+            }
+        }
+        
+        private void HandleCoinDrop(Enemy enemy)
+        {
+            if (!_player || !_coinPool) return;
+        
+            float totalLuck = _player.PlayerBaseStats.Luck * _player.baseStatsMod.luckMod;
+            float totalGreed = _player.PlayerBaseStats.Greed * _player.baseStatsMod.greedMod;
+        
+            float finalDropChance = coinDropChance * totalLuck;
+        
+            if (Random.value < finalDropChance)
+            {
+                float coinValue = coinBaseValue * totalGreed;
+                _coinPool.SpawnCoinDrop(enemy.transform.position, coinValue);
             }
         }
         

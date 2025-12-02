@@ -1,27 +1,25 @@
-using UnityEngine;
+using Achievements;
 using PlayerDirectory;
-using Utilities;
+using UnityEngine;
 
-namespace Entities.XpDirectory
+namespace Entities.Pickables
 {
-    public class ExperienceDrop : MonoBehaviour
+    public class CoinDrop : MonoBehaviour
     {
-        public float experienceAmount = 1f;
-        public float attractRadius = 5f;
-        public float moveSpeed = 5f;
-        public float accelerationRate = 0.5f;
+        [SerializeField] private float attractRadius = 5f;
+        [SerializeField] private float moveSpeed = 5f;
+        [SerializeField] private float accelerationRate = 0.5f;
 
+        private CoinPool _pool;
+        private float _coinValue = 1f;
         private bool _isAttracting = false;
         private float _currentSpeed;
-        public static Player Player;
-        private ExperiencePool _pool;
-
+        private Player _player;
         private Rigidbody2D _rb;
         private Vector3 _targetPosition;
 
         private void Awake()
         {
-            // Ensure a Rigidbody2D exists so triggers/collisions work when player has no Rigidbody2D
             _rb = GetComponent<Rigidbody2D>();
             if (_rb == null)
             {
@@ -31,35 +29,23 @@ namespace Entities.XpDirectory
             _rb.bodyType = RigidbodyType2D.Kinematic;
             _rb.gravityScale = 0f;
             _rb.simulated = true;
-            // optional: _rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+            _player = FindFirstObjectByType<Player>();
         }
 
-        // Add to ExperienceDrop.cs Initialize method
-        public void Initialize(Vector3 position, float expAmount, ExperiencePool expPool)
+        public void Initialize(float value)
         {
-            transform.position = position;
-            
-            // Apply greed multiplier
-            if (Player)
-            {
-                expAmount = CombatUtilities.ApplyGreed(expAmount, 
-                    Player.PlayerBaseStats.Greed, Player.baseStatsMod.greedMod);
-            }
-            
-            experienceAmount = expAmount;
-            _pool = expPool;
+            _coinValue = value;
             _isAttracting = false;
             _currentSpeed = moveSpeed;
-            gameObject.SetActive(true);
         }
 
         private void Update()
         {
-            if (!Player) return;
+            if (!_player) return;
 
-            float distance = Vector3.Distance(transform.position, Player.transform.position);
+            float distance = Vector3.Distance(transform.position, _player.transform.position);
 
-            // Start attracting when within radius
             if (distance <= attractRadius)
             {
                 _isAttracting = true;
@@ -67,7 +53,7 @@ namespace Entities.XpDirectory
 
             if (_isAttracting)
             {
-                _targetPosition = Player.transform.position;
+                _targetPosition = _player.transform.position;
                 _currentSpeed += accelerationRate * Time.deltaTime;
             }
         }
@@ -81,6 +67,14 @@ namespace Entities.XpDirectory
             _rb.MovePosition(next);
         }
 
+        public void Initialize(float value, CoinPool pool = null)
+        {
+            _coinValue = value;
+            _isAttracting = false;
+            _currentSpeed = moveSpeed;
+            _pool = pool;
+        }
+
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (!other.CompareTag("Player")) return;
@@ -89,7 +83,8 @@ namespace Entities.XpDirectory
 
             if (playerComponent)
             {
-                playerComponent.GainExperience(experienceAmount);
+                int coinAmount = Mathf.RoundToInt(_coinValue);
+                playerComponent.OnCoinCollected(coinAmount);
             }
 
             ReturnToPool();
@@ -97,8 +92,15 @@ namespace Entities.XpDirectory
 
         private void ReturnToPool()
         {
-            gameObject.SetActive(false);
-            _pool.Return(this);
+            if (_pool != null)
+            {
+                gameObject.SetActive(false);
+                _pool.Return(this);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

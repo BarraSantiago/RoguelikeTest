@@ -31,10 +31,10 @@ namespace PlayerDirectory
                     Health = 150;
                     Speed = 1.5f;
                     Damage = 20;
-                    AttackSpeed = 1.3f;
+                    AttackSpeed = 1.5f;
                     SpecialAttackSpeed = 3f;
                     DefenseSpeed = 1.5f;
-                    Range = 2.5f;
+                    Range = 1.5f;
                     Defense = 0.8f;
                     CriticalChance = 0.09f;
                     CriticalDamage = 2.15f;

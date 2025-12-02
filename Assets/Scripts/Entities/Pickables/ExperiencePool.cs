@@ -1,7 +1,7 @@
 using PlayerDirectory;
 using UnityEngine;
 
-namespace Entities.XpDirectory
+namespace Entities.Pickables
 {
     public class ExperiencePool : GenericPool<ExperienceDrop>
     {

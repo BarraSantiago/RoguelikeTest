@@ -32,6 +32,16 @@ namespace Achievements
 
             InitializeStatBonuses();
             LoadShopData();
+            
+            if (AchievementManager.Instance != null)
+            {
+                AchievementManager.Instance.onShopItemUnlocked.AddListener(RefreshShopData);
+            }
+        }
+        
+        public void RefreshShopData()
+        {
+            LoadShopData();
         }
 
         private void InitializeStatBonuses()
@@ -122,6 +132,57 @@ namespace Achievements
             return true;
         }
 
+        public void DebugUnlockAllShopItems()
+        {
+            Dictionary<string, Achievement> achievements = AchievementManager.Instance.GetAllAchievements();
+        
+            foreach (Achievement achievement in achievements.Values)
+            {
+                foreach (AchievementMilestone milestone in achievement.milestones)
+                {
+                    if (milestone.shopUnlock != null)
+                    {
+                        string key = $"ShopUnlock_{milestone.shopUnlock.id}";
+                        PlayerPrefs.SetInt(key, 1);
+                    }
+                }
+            }
+        
+            PlayerPrefs.Save();
+            RefreshShopData();
+            Debug.Log("[DEBUG] All shop items unlocked");
+        }
+        
+        public void DebugClearAllPurchases()
+        {
+            // Clear all shop purchases
+            foreach (ShopUnlock unlock in _availableUnlocks.Values)
+            {
+                PlayerPrefs.DeleteKey($"ShopPurchaseCount_{unlock.id}");
+                PlayerPrefs.DeleteKey($"ShopPurchased_{unlock.id}");
+                PlayerPrefs.DeleteKey($"SubclassUnlocked_{unlock.targetId}");
+                PlayerPrefs.DeleteKey($"StatBonus_{unlock.targetId}");
+                PlayerPrefs.DeleteKey($"SkinUnlocked_{unlock.targetId}");
+            }
+        
+            // Clear all stat bonuses
+            foreach (string bonusId in _statBonuses.Keys)
+            {
+                PlayerPrefs.DeleteKey($"StatBonus_{bonusId}");
+            }
+        
+            // Clear subclass unlocks
+            string[] subclasses = { "Berserker", "Paladin", "Reaver", "Sniper", "Hunter", "Trapper" };
+            foreach (string subclass in subclasses)
+            {
+                PlayerPrefs.DeleteKey($"SubclassUnlocked_{subclass}");
+            }
+        
+            PlayerPrefs.Save();
+            RefreshShopData();
+            Debug.Log("[DEBUG] All purchases cleared");
+        }
+        
         private void ApplyPurchase(ShopUnlock unlock)
         {
             switch (unlock.type)

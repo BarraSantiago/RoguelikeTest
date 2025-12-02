@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using ClassesDirectory.Evolution;
-using Entities.XpDirectory;
+using Entities.Pickables;
 using UnityEngine;
 
 namespace Entities.EnemyDirectory

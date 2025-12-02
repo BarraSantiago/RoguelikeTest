@@ -10,8 +10,10 @@ namespace Achievements
     {
         public static AchievementManager Instance { get; private set; }
 
-        [Header("Events")] public UnityEvent<Achievement> onAchievementUnlocked;
+        [Header("Events")] 
+        public UnityEvent<Achievement> onAchievementUnlocked;
         public UnityEvent<int> onCoinsEarned;
+        public UnityEvent onShopItemUnlocked;
 
         private PersistentStats _persistentStats;
         private Dictionary<string, Achievement> _achievements;
@@ -36,6 +38,7 @@ namespace Achievements
             _persistentStats = PersistentStats.Load();
             _totalCoins = PlayerPrefs.GetInt("TotalCoins", 0);
             _achievements = new Dictionary<string, Achievement>();
+            onShopItemUnlocked = new UnityEvent();
 
             InitializeAchievements();
             LoadAchievementProgress();
@@ -187,10 +190,96 @@ namespace Achievements
         {
             _persistentStats.AddSessionStats(sessionStats);
             _persistentStats.Save();
-
+        
+            // Add session coins to total
+            AddCoins(sessionStats.totalCoinsCollected);
+        
             CheckAchievementProgress();
         }
 
+        private void AddCoins(int totalCoins)
+        {
+            _totalCoins += totalCoins;
+            PlayerPrefs.SetInt("TotalCoins", _totalCoins);
+            PlayerPrefs.Save();
+            onCoinsEarned?.Invoke(totalCoins);
+        }
+
+        public void DebugUnlockAllAchievements()
+        {
+            foreach (Achievement achievement in _achievements.Values)
+            {
+                foreach (AchievementMilestone milestone in achievement.milestones)
+                {
+                    if (!milestone.isCompleted)
+                    {
+                        milestone.isCompleted = true;
+        
+                        if (milestone.shopUnlock != null)
+                        {
+                            string key = $"ShopUnlock_{milestone.shopUnlock.id}";
+                            PlayerPrefs.SetInt(key, 1);
+                        }
+                    }
+                }
+        
+                if (!achievement.isUnlocked)
+                {
+                    achievement.isUnlocked = true;
+                    _totalCoins += achievement.coinReward;
+                }
+            }
+        
+            PlayerPrefs.SetInt("TotalCoins", _totalCoins);
+            SaveAchievementProgress();
+            PlayerPrefs.Save();
+        
+            onShopItemUnlocked?.Invoke();
+            Debug.Log("[DEBUG] All achievements unlocked (without Google Play sync)");
+        }
+        
+        public void DebugClearAllProgress()
+        {
+            // Clear all achievement progress
+            foreach (string key in _achievements.Keys)
+            {
+                PlayerPrefs.DeleteKey($"Achievement_{key}");
+            }
+        
+            // Clear all shop unlocks
+            List<string> keysToDelete = new List<string>();
+            for (int i = 0; i < PlayerPrefs.GetInt("ShopUnlockCount", 0); i++)
+            {
+                string key = $"ShopUnlock_{i}";
+                if (PlayerPrefs.HasKey(key))
+                {
+                    keysToDelete.Add(key);
+                }
+            }
+        
+            foreach (string key in keysToDelete)
+            {
+                PlayerPrefs.DeleteKey(key);
+            }
+        
+            // Reset coins
+            _totalCoins = 0;
+            PlayerPrefs.SetInt("TotalCoins", 0);
+        
+            // Reinitialize achievements
+            foreach (Achievement achievement in _achievements.Values)
+            {
+                achievement.isUnlocked = false;
+                foreach (AchievementMilestone milestone in achievement.milestones)
+                {
+                    milestone.isCompleted = false;
+                }
+            }
+        
+            PlayerPrefs.Save();
+            Debug.Log("[DEBUG] All progress cleared");
+        }
+        
         private void CheckAchievementProgress()
         {
             foreach (Achievement achievement in _achievements.Values)
@@ -340,6 +429,8 @@ namespace Achievements
             PlayerPrefs.SetInt(key, 1);
             PlayerPrefs.Save();
             Debug.Log($"Unlocked shop item: {unlock.id}");
+            
+            onShopItemUnlocked?.Invoke();
         }
 
         private void SaveAchievementProgress()

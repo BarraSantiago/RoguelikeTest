@@ -47,7 +47,7 @@ namespace View.UI.Menus.Achievements
             {
                 costText.text = $"{unlock.currentCost} coins";
                 purchaseCountText.gameObject.SetActive(false);
-                if (purchaseIndicatorsContainer != null)
+                if (purchaseIndicatorsContainer)
                     purchaseIndicatorsContainer.gameObject.SetActive(false);
             }
 
@@ -62,7 +62,7 @@ namespace View.UI.Menus.Achievements
 
             // Update button text
             TextMeshProUGUI buttonText = purchaseButton.GetComponentInChildren<TextMeshProUGUI>();
-            if (buttonText != null)
+            if (buttonText)
             {
                 if (fullyPurchased)
                     buttonText.text = "MAXED";
@@ -75,7 +75,7 @@ namespace View.UI.Menus.Achievements
 
         private void SetupPurchaseIndicators(ShopUnlock unlock)
         {
-            if (purchaseIndicatorsContainer == null || purchaseIndicatorPrefab == null)
+            if (!purchaseIndicatorsContainer || !purchaseIndicatorPrefab)
                 return;
 
             // Clear existing indicators
@@ -90,7 +90,7 @@ namespace View.UI.Menus.Achievements
                 GameObject indicator = Instantiate(purchaseIndicatorPrefab, purchaseIndicatorsContainer);
                 Image indicatorImage = indicator.GetComponent<Image>();
 
-                if (indicatorImage != null)
+                if (indicatorImage)
                 {
                     indicatorImage.color = i < unlock.currentPurchases
                         ? purchasedIndicatorColor

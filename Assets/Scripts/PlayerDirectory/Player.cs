@@ -499,7 +499,10 @@ namespace PlayerDirectory
         public float DefenseCooldownProgress =>
             Mathf.Clamp01((Time.time - _lastDefenseTime) / (PlayerBaseStats.DefenseSpeed * baseStatsMod.defenseSpeedMod));
         // Getters for UI
-        public void OnCoinCollected() => sessionStats.totalCoinsCollected++;
+        public void OnCoinCollected(int coinValue)
+        {
+            sessionStats.totalCoinsCollected += coinValue;
+        }
         public void OnProjectileFired() => sessionStats.projectilesFired++;
         public string GetCurrentSubclass() => currentSubclass;
         public float GetMaxHealth() => PlayerBaseStats.MaxHealth;

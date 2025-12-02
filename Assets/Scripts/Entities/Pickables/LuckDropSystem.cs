@@ -1,8 +1,8 @@
 using Entities.EnemyDirectory;
-using UnityEngine;
 using PlayerDirectory;
+using UnityEngine;
 
-namespace Entities.XpDirectory
+namespace Entities.Pickables
 {
     public class LuckDropSystem : MonoBehaviour
     {
