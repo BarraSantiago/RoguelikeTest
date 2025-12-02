@@ -1,11 +1,13 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace View.UI.Menus
 {
     public class PauseManager : MonoBehaviour
     {
         [SerializeField] private GameObject pauseMenuUI;
+        [SerializeField] private Button pauseButton;
         [SerializeField] private string sceneName = "MainMenu";
         [SerializeField] private bool useLoadingScreen = true;
 
@@ -18,6 +20,7 @@ namespace View.UI.Menus
             if (pauseMenuUI)
             {
                 pauseMenuUI.SetActive(false);
+                if(pauseButton) pauseButton.onClick.AddListener(TogglePause);
             }
         }
 

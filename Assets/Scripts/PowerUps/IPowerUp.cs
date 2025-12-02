@@ -23,23 +23,23 @@ namespace PowerUps
 
     public abstract class PowerUp : ScriptableObject, IPowerUp
     {
-        [SerializeField] protected StatsModifier powerUpStatsMod;
-        [SerializeField] protected Stats powerUpStats;
+        [SerializeField] protected BaseStatsMod powerUpBaseStatsMod;
+        [SerializeField] protected BaseStats _powerUpBaseStats;
         [SerializeField] protected PowerUpLevel powerUpLevel = new PowerUpLevel();
 
         private float _lastAttackTime;
-        private StatsModifier _baseStatsMod;
-        private Stats _baseStats;
+        private BaseStatsMod _baseBaseStatsMod;
+        private BaseStats _baseBaseStats;
 
-        public Stats PowerUpStats => powerUpStats;
-        public StatsModifier PowerUpStatsMod => powerUpStatsMod;
+        public BaseStats PowerUpBaseStats => _powerUpBaseStats;
+        public BaseStatsMod PowerUpBaseStatsMod => powerUpBaseStatsMod;
         public PowerUpLevel Level => powerUpLevel;
 
         public virtual void OnPickup(Player player)
         {
             // Store base values
-            _baseStats = new Stats();
-            _baseStatsMod = new StatsModifier();
+            _baseBaseStats = new BaseStats();
+            _baseBaseStatsMod = new BaseStatsMod();
 
             player.powerUps.Add(this);
             _lastAttackTime = Time.time;
@@ -53,7 +53,7 @@ namespace PowerUps
 
         public virtual bool CanActivate()
         {
-            return Time.time >= _lastAttackTime + PowerUpStats.AttackSpeed;
+            return Time.time >= _lastAttackTime + PowerUpBaseStats.AttackSpeed;
         }
 
         public virtual bool CanUpgrade()
@@ -68,10 +68,10 @@ namespace PowerUps
             powerUpLevel.level++;
 
             // Apply stat increases
-            powerUpStats.Damage = _baseStats.Damage * (1 + powerUpLevel.damageIncrease * (powerUpLevel.level - 1));
-            powerUpStats.AttackSpeed = _baseStats.AttackSpeed *
+            _powerUpBaseStats.Damage = _baseBaseStats.Damage * (1 + powerUpLevel.damageIncrease * (powerUpLevel.level - 1));
+            _powerUpBaseStats.AttackSpeed = _baseBaseStats.AttackSpeed *
                                        (1 - powerUpLevel.attackSpeedDecrease * (powerUpLevel.level - 1));
-            powerUpStats.Range = _baseStats.Range * (1 + powerUpLevel.rangeIncrease * (powerUpLevel.level - 1));
+            _powerUpBaseStats.Range = _baseBaseStats.Range * (1 + powerUpLevel.rangeIncrease * (powerUpLevel.level - 1));
         }
     }
 }

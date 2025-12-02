@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
+using Utilities;
 
 namespace View.UI.Menus
 {
@@ -8,34 +10,73 @@ namespace View.UI.Menus
         [SerializeField] private PauseManager pauseManager;
         [SerializeField] private GameObject mainPanel;
         [SerializeField] private GameObject settingsPanel;
+        [SerializeField] private Button _resumeButton;
         [SerializeField] private Toggle musicToggle;
         [SerializeField] private Toggle sfxToggle;
-
+        [SerializeField] private Toggle vibrationToggle;
+        
         private void Start()
         {
             if (settingsPanel)
             {
                 settingsPanel.SetActive(false);
             }
-
+        
             if (musicToggle && AudioManager.Instance)
             {
                 musicToggle.isOn = AudioManager.Instance.MusicEnabled;
                 musicToggle.onValueChanged.AddListener(OnMusicToggled);
             }
-
+        
             if (sfxToggle && AudioManager.Instance)
             {
                 sfxToggle.isOn = AudioManager.Instance.SFXEnabled;
                 sfxToggle.onValueChanged.AddListener(OnSFXToggled);
             }
+        
+            // Add vibration toggle initialization
+            if (vibrationToggle && VibrationManager.Instance)
+            {
+                vibrationToggle.isOn = VibrationManager.Instance.VibrationEnabled;
+                vibrationToggle.onValueChanged.AddListener(OnVibrationToggled);
+            }
+            
+            if(_resumeButton)
+            {
+                _resumeButton.onClick.AddListener(OnResumeClicked);
+            }
         }
 
+        private void OnEnable()
+        {
+            Time.timeScale = 0f;
+        }
+
+        private void OnDisable()
+        {
+            Time.timeScale = 1f;
+        }
+
+        private void OnDestroy()
+        {
+            musicToggle?.onValueChanged.RemoveListener(OnMusicToggled);
+            sfxToggle?.onValueChanged.RemoveListener(OnSFXToggled);
+            vibrationToggle?.onValueChanged.RemoveListener(OnVibrationToggled);
+        }
+        
         public void OnResumeClicked()
         {
             pauseManager?.Resume();
         }
-
+        
+        private void OnVibrationToggled(bool value)
+        {
+            if (VibrationManager.Instance)
+            {
+                VibrationManager.Instance.VibrationEnabled = value;
+            }
+        }
+        
         public void OnSettingsClicked()
         {
             mainPanel?.SetActive(false);
@@ -72,12 +113,6 @@ namespace View.UI.Menus
             {
                 AudioManager.Instance.SFXEnabled = value;
             }
-        }
-
-        private void OnDestroy()
-        {
-            musicToggle?.onValueChanged.RemoveListener(OnMusicToggled);
-            sfxToggle?.onValueChanged.RemoveListener(OnSFXToggled);
         }
     }
 }

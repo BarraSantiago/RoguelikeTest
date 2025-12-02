@@ -55,7 +55,7 @@ namespace Utilities
             return result;
         }
 
-        public static float DamageEnemies(Enemy[] enemies, Stats playerStats, StatsModifier statsMod)
+        public static float DamageEnemies(Enemy[] enemies, BaseStats playerBaseStats, BaseStatsMod baseStatsMod)
         {
             float totalDamage = 0f;
         
@@ -63,12 +63,12 @@ namespace Utilities
             {
                 if (enemies[i])
                 {
-                    float damage = CalculateDamage(playerStats, statsMod);
-                    bool isCrit = IsCriticalHit(playerStats, statsMod);
+                    float damage = CalculateDamage(playerBaseStats, baseStatsMod);
+                    bool isCrit = IsCriticalHit(playerBaseStats, baseStatsMod);
                     
                     if (isCrit)
                     {
-                        damage *= playerStats.CriticalDamage * statsMod.criticalDamageMod;
+                        damage *= playerBaseStats.CriticalDamage * baseStatsMod.criticalDamageMod;
                     }
                     
                     enemies[i].TakeDamage(damage, isCrit);
@@ -110,21 +110,21 @@ namespace Utilities
             return closest;
         }
 
-        public static float CalculateDamage(Stats playerStats, StatsModifier statsMod, float extraMod = 1.0f)
+        public static float CalculateDamage(BaseStats playerBaseStats, BaseStatsMod baseStatsMod, float extraMod = 1.0f)
         {
-            float baseDamage = playerStats.Damage * statsMod.damageMod;
+            float baseDamage = playerBaseStats.Damage * baseStatsMod.damageMod;
 
-            if (IsCriticalHit(playerStats, statsMod))
+            if (IsCriticalHit(playerBaseStats, baseStatsMod))
             {
-                baseDamage *= playerStats.CriticalDamage * statsMod.criticalDamageMod;
+                baseDamage *= playerBaseStats.CriticalDamage * baseStatsMod.criticalDamageMod;
             }
 
             return baseDamage * extraMod;
         }
 
-        public static bool IsCriticalHit(Stats playerStats, StatsModifier statsMod)
+        public static bool IsCriticalHit(BaseStats playerBaseStats, BaseStatsMod baseStatsMod)
         {
-            return Random.value < playerStats.CriticalChance * statsMod.criticalChanceMod;
+            return Random.value < playerBaseStats.CriticalChance * baseStatsMod.criticalChanceMod;
         }
 
         public static Enemy GetNearestEnemy(Vector2 position, float maxRange)
@@ -152,7 +152,7 @@ namespace Utilities
         }
         
         // In DamageEnemy method:
-        public static void DamageEnemy(Enemy enemy, float damage, bool isCrit, Stats playerStats, StatsModifier statsMod)
+        public static void DamageEnemy(Enemy enemy, float damage, bool isCrit, BaseStats playerBaseStats, BaseStatsMod baseStatsMod)
         {
             if (!enemy || enemy.IsDead()) return;
         
@@ -160,7 +160,7 @@ namespace Utilities
             
             if (isCrit)
             {
-                finalDamage *= playerStats.CriticalDamage * statsMod.criticalDamageMod;
+                finalDamage *= playerBaseStats.CriticalDamage * baseStatsMod.criticalDamageMod;
             }
             
             enemy.TakeDamage(finalDamage, isCrit);

@@ -122,7 +122,7 @@ namespace View.UI.Leveling
             statIncreaseText.text = GetPowerUpIncreaseText(powerUp);
 
             // Use power-up icon if available
-            if (iconImage != null && powerUp.PowerUpStats != null)
+            if (iconImage != null && powerUp.PowerUpBaseStats != null)
             {
                 // TODO: Set icon from PowerUpStats
             }
@@ -131,56 +131,56 @@ namespace View.UI.Leveling
         private string GetStatIncreaseText(StatUpgradeOption upgrade)
         {
             if (upgrade.name.Contains("Damage"))
-                return $"Damage: {_player.statsMod.damageMod:F2} → {_player.statsMod.damageMod * 1.2f:F2}";
+                return $"Damage: {_player.baseStatsMod.damageMod:F2} → {_player.baseStatsMod.damageMod * 1.2f:F2}";
 
             if (upgrade.name.Contains("Attack Speed"))
                 return
-                    $"Attack Speed: {_player.statsMod.attackSpeedMod:F2} → {_player.statsMod.attackSpeedMod * 0.85f:F2}";
+                    $"Attack Speed: {_player.baseStatsMod.attackSpeedMod:F2} → {_player.baseStatsMod.attackSpeedMod * 0.85f:F2}";
 
             if (upgrade.name.Contains("Range"))
-                return $"Range: {_player.statsMod.rangeMod:F2} → {_player.statsMod.rangeMod * 1.25f:F2}";
+                return $"Range: {_player.baseStatsMod.rangeMod:F2} → {_player.baseStatsMod.rangeMod * 1.25f:F2}";
 
             if (upgrade.name.Contains("Critical"))
                 return
-                    $"Crit: {_player.PlayerStats.CriticalChance:P0} → {(_player.PlayerStats.CriticalChance + 0.05f):P0}";
+                    $"Crit: {_player.PlayerBaseStats.CriticalChance:P0} → {(_player.PlayerBaseStats.CriticalChance + 0.05f):P0}";
 
             if (upgrade.name.Contains("Movement"))
-                return $"Speed: {_player.PlayerStats.Speed:F1} → {_player.PlayerStats.Speed * 1.15f:F1}";
+                return $"Speed: {_player.PlayerBaseStats.Speed:F1} → {_player.PlayerBaseStats.Speed * 1.15f:F1}";
 
             if (upgrade.name.Contains("Health") && !upgrade.name.Contains("Regeneration"))
-                return $"HP: {_player.PlayerStats.Health:F0} → {_player.PlayerStats.Health * 1.2f:F0}";
+                return $"HP: {_player.PlayerBaseStats.Health:F0} → {_player.PlayerBaseStats.Health * 1.2f:F0}";
 
             if (upgrade.name.Contains("Regeneration"))
                 return
-                    $"Regen: {_player.PlayerStats.HealthRegen + _player.statsMod.healthRegenBonus:F1}/s → {_player.PlayerStats.HealthRegen + _player.statsMod.healthRegenBonus + 1f:F1}/s";
+                    $"Regen: {_player.PlayerBaseStats.HealthRegen + _player.baseStatsMod.healthRegenBonus:F1}/s → {_player.PlayerBaseStats.HealthRegen + _player.baseStatsMod.healthRegenBonus + 1f:F1}/s";
 
             if (upgrade.name.Contains("Armor"))
-                return $"Armor: {_player.statsMod.armorBonus:F0} → {_player.statsMod.armorBonus + 5f:F0}";
+                return $"Armor: {_player.baseStatsMod.armorBonus:F0} → {_player.baseStatsMod.armorBonus + 5f:F0}";
 
             if (upgrade.name.Contains("Cooldown"))
                 return
-                    $"CDR: {_player.statsMod.cooldownReductionBonus:P0} → {_player.statsMod.cooldownReductionBonus + 0.1f:P0}";
+                    $"CDR: {_player.baseStatsMod.cooldownReductionBonus:P0} → {_player.baseStatsMod.cooldownReductionBonus + 0.1f:P0}";
 
             if (upgrade.name.Contains("Pickup"))
                 return
-                    $"Radius: {_player.PlayerStats.PickupRadius * _player.statsMod.pickupRadiusMod:F1} → {_player.PlayerStats.PickupRadius * _player.statsMod.pickupRadiusMod * 1.25f:F1}";
+                    $"Radius: {_player.PlayerBaseStats.PickupRadius * _player.baseStatsMod.pickupRadiusMod:F1} → {_player.PlayerBaseStats.PickupRadius * _player.baseStatsMod.pickupRadiusMod * 1.25f:F1}";
 
             if (upgrade.name.Contains("Magnetism"))
-                return $"Magnet: {_player.statsMod.magnetismMod:F2} → {_player.statsMod.magnetismMod * 1.3f:F2}";
+                return $"Magnet: {_player.baseStatsMod.magnetismMod:F2} → {_player.baseStatsMod.magnetismMod * 1.3f:F2}";
 
             if (upgrade.name.Contains("Experience"))
-                return $"XP: {_player.statsMod.growthMod:P0} → {_player.statsMod.growthMod * 1.2f:P0}";
+                return $"XP: {_player.baseStatsMod.growthMod:P0} → {_player.baseStatsMod.growthMod * 1.2f:P0}";
 
             if (upgrade.name.Contains("Luck"))
-                return $"Luck: {_player.statsMod.luckMod:F2} → {_player.statsMod.luckMod * 1.15f:F2}";
+                return $"Luck: {_player.baseStatsMod.luckMod:F2} → {_player.baseStatsMod.luckMod * 1.15f:F2}";
 
             if (upgrade.name.Contains("Projectile"))
                 return
-                    $"Projectiles: {_player.PlayerStats.ProjectileCount + _player.statsMod.projectileCountBonus} → {_player.PlayerStats.ProjectileCount + _player.statsMod.projectileCountBonus + 1}";
+                    $"Projectiles: {_player.PlayerBaseStats.ProjectileCount + _player.baseStatsMod.projectileCountBonus} → {_player.PlayerBaseStats.ProjectileCount + _player.baseStatsMod.projectileCountBonus + 1}";
 
             if (upgrade.name.Contains("Pierce"))
                 return
-                    $"Pierce: {_player.PlayerStats.PierceCount + _player.statsMod.pierceCountBonus} → {_player.PlayerStats.PierceCount + _player.statsMod.pierceCountBonus + 1}";
+                    $"Pierce: {_player.PlayerBaseStats.PierceCount + _player.baseStatsMod.pierceCountBonus} → {_player.PlayerBaseStats.PierceCount + _player.baseStatsMod.pierceCountBonus + 1}";
 
             if (upgrade.name.Contains("Revival"))
                 return $"Revivals: {_player.GetRevivals()} → {_player.GetRevivals() + 1}";
@@ -190,7 +190,7 @@ namespace View.UI.Leveling
 
         private string GetPowerUpIncreaseText(PowerUp powerUp)
         {
-            float currentDamage = powerUp.PowerUpStats.Damage;
+            float currentDamage = powerUp.PowerUpBaseStats.Damage;
             float nextDamage = currentDamage * (1 + powerUp.Level.damageIncrease);
 
             return $"Damage: {currentDamage:F1} → {nextDamage:F1}";
@@ -264,21 +264,21 @@ namespace View.UI.Leveling
         private string GeneratePowerUpTooltip(PowerUp powerUp)
         {
             return $"<b>{powerUp.name} - Level {powerUp.Level.level + 1}</b>\n\n" +
-                   $"Damage: {powerUp.PowerUpStats.Damage:F1} → " +
-                   $"{powerUp.PowerUpStats.Damage * (1 + powerUp.Level.damageIncrease):F1}\n" +
-                   $"Attack Speed: {powerUp.PowerUpStats.AttackSpeed:F2}s → " +
-                   $"{powerUp.PowerUpStats.AttackSpeed * (1 - powerUp.Level.attackSpeedDecrease):F2}s\n" +
-                   $"Range: {powerUp.PowerUpStats.Range:F1} → " +
-                   $"{powerUp.PowerUpStats.Range * (1 + powerUp.Level.rangeIncrease):F1}";
+                   $"Damage: {powerUp.PowerUpBaseStats.Damage:F1} → " +
+                   $"{powerUp.PowerUpBaseStats.Damage * (1 + powerUp.Level.damageIncrease):F1}\n" +
+                   $"Attack Speed: {powerUp.PowerUpBaseStats.AttackSpeed:F2}s → " +
+                   $"{powerUp.PowerUpBaseStats.AttackSpeed * (1 - powerUp.Level.attackSpeedDecrease):F2}s\n" +
+                   $"Range: {powerUp.PowerUpBaseStats.Range:F1} → " +
+                   $"{powerUp.PowerUpBaseStats.Range * (1 + powerUp.Level.rangeIncrease):F1}";
         }
 
         private float CalculateCurrentDPS()
         {
-            float baseDamage = _player.PlayerStats.Damage * _player.statsMod.damageMod;
-            float attacksPerSecond = 1f / (_player.PlayerStats.AttackSpeed * _player.statsMod.attackSpeedMod);
+            float baseDamage = _player.PlayerBaseStats.Damage * _player.baseStatsMod.damageMod;
+            float attacksPerSecond = 1f / (_player.PlayerBaseStats.AttackSpeed * _player.baseStatsMod.attackSpeedMod);
 
-            float critMultiplier = 1f + (_player.PlayerStats.CriticalChance *
-                                         (_player.PlayerStats.CriticalDamage - 1f));
+            float critMultiplier = 1f + (_player.PlayerBaseStats.CriticalChance *
+                                         (_player.PlayerBaseStats.CriticalDamage - 1f));
 
             return baseDamage * attacksPerSecond * critMultiplier;
         }
@@ -286,40 +286,40 @@ namespace View.UI.Leveling
         private void RevertStatUpgrade(StatUpgradeOption upgrade)
         {
             if (upgrade.name.Contains("Damage"))
-                _player.statsMod.damageMod /= 1.2f;
+                _player.baseStatsMod.damageMod /= 1.2f;
             else if (upgrade.name.Contains("Attack Speed"))
-                _player.statsMod.attackSpeedMod /= 0.85f;
+                _player.baseStatsMod.attackSpeedMod /= 0.85f;
             else if (upgrade.name.Contains("Range"))
-                _player.statsMod.rangeMod /= 1.25f;
+                _player.baseStatsMod.rangeMod /= 1.25f;
             else if (upgrade.name.Contains("Critical"))
-                _player.PlayerStats.CriticalChance -= 0.05f;
+                _player.PlayerBaseStats.CriticalChance -= 0.05f;
             else if (upgrade.name.Contains("Movement"))
-                _player.PlayerStats.Speed /= 1.15f;
+                _player.PlayerBaseStats.Speed /= 1.15f;
             else if (upgrade.name.Contains("Health") && !upgrade.name.Contains("Regeneration"))
             {
-                _player.PlayerStats.Health /= 1.2f;
-                _player.PlayerStats.MaxHealth = _player.PlayerStats.Health;
+                _player.PlayerBaseStats.Health /= 1.2f;
+                _player.PlayerBaseStats.MaxHealth = _player.PlayerBaseStats.Health;
             }
             else if (upgrade.name.Contains("Regeneration"))
-                _player.statsMod.healthRegenBonus -= 1f;
+                _player.baseStatsMod.healthRegenBonus -= 1f;
             else if (upgrade.name.Contains("Armor"))
-                _player.statsMod.armorBonus -= 5f;
+                _player.baseStatsMod.armorBonus -= 5f;
             else if (upgrade.name.Contains("Cooldown"))
-                _player.statsMod.cooldownReductionBonus -= 0.1f;
+                _player.baseStatsMod.cooldownReductionBonus -= 0.1f;
             else if (upgrade.name.Contains("Pickup"))
-                _player.statsMod.pickupRadiusMod /= 1.25f;
+                _player.baseStatsMod.pickupRadiusMod /= 1.25f;
             else if (upgrade.name.Contains("Magnetism"))
-                _player.statsMod.magnetismMod /= 1.3f;
+                _player.baseStatsMod.magnetismMod /= 1.3f;
             else if (upgrade.name.Contains("Experience"))
-                _player.statsMod.growthMod /= 1.2f;
+                _player.baseStatsMod.growthMod /= 1.2f;
             else if (upgrade.name.Contains("Luck"))
-                _player.statsMod.luckMod /= 1.15f;
+                _player.baseStatsMod.luckMod /= 1.15f;
             else if (upgrade.name.Contains("Projectile"))
-                _player.statsMod.projectileCountBonus--;
+                _player.baseStatsMod.projectileCountBonus--;
             else if (upgrade.name.Contains("Pierce"))
-                _player.statsMod.pierceCountBonus--;
+                _player.baseStatsMod.pierceCountBonus--;
             else if (upgrade.name.Contains("Revival"))
-                _player.statsMod.revivalBonus--;
+                _player.baseStatsMod.revivalBonus--;
         }
 
         private void OnSelectClicked()

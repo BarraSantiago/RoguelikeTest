@@ -34,7 +34,7 @@ namespace View.UI.Menus.Achievements
         private void Start()
         {
             openButton.onClick.AddListener(TryOpenShop);
-            closeButton.onClick.AddListener(() => gameObject.SetActive(false));
+            closeButton.onClick.AddListener(() => shopContainer.SetActive(false));
             subclassesTab.onClick.AddListener(() => TryShowTab(ShopUnlockType.Subclass));
             statsTab.onClick.AddListener(() => TryShowTab(ShopUnlockType.StatBonus));
             skinsTab.onClick.AddListener(() => TryShowTab(ShopUnlockType.Skin));

@@ -126,7 +126,7 @@ namespace View.UI
 
             List<string> unlockedSubclasses = GetUnlockedSubclasses(classType);
 
-            Button noneButton = CreateSubclassButton("None (Base Class)", true);
+            Button noneButton = CreateSubclassButton("Base Class", true);
             noneButton.onClick.AddListener(() => OnSubclassSelected("None", noneButton));
             noneButton.interactable = true;
             SetSubclassButtonSelected(noneButton, true);
@@ -195,26 +195,28 @@ namespace View.UI
         private List<string> GetUnlockedSubclasses(Classes classType)
         {
             List<string> unlocked = new();
-
+        
             switch (classType)
             {
                 case Classes.Warrior:
-                    if (PlayerPrefs.GetInt("Unlocked_Berserker", 0) == 1)
+                    if (PlayerPrefs.GetInt("SubclassUnlocked_Berserker", 0) == 1)
                         unlocked.Add("Berserker");
-                    if (PlayerPrefs.GetInt("Unlocked_Paladin", 0) == 1)
+                    if (PlayerPrefs.GetInt("SubclassUnlocked_Paladin", 0) == 1)
                         unlocked.Add("Paladin");
+                    if (PlayerPrefs.GetInt("SubclassUnlocked_Reaver", 0) == 1)
+                        unlocked.Add("Reaver");
                     break;
-
+        
                 case Classes.Ranger:
-                    if (PlayerPrefs.GetInt("Unlocked_Sniper", 0) == 1)
+                    if (PlayerPrefs.GetInt("SubclassUnlocked_Sniper", 0) == 1)
                         unlocked.Add("Sniper");
-                    if (PlayerPrefs.GetInt("Unlocked_Hunter", 0) == 1)
+                    if (PlayerPrefs.GetInt("SubclassUnlocked_Hunter", 0) == 1)
                         unlocked.Add("Hunter");
-                    if (PlayerPrefs.GetInt("Unlocked_Trapper", 0) == 1)
+                    if (PlayerPrefs.GetInt("SubclassUnlocked_Trapper", 0) == 1)
                         unlocked.Add("Trapper");
                     break;
             }
-
+        
             return unlocked;
         }
 
@@ -230,6 +232,8 @@ namespace View.UI
                         locked.Add("Berserker");
                     if (!unlocked.Contains("Paladin"))
                         locked.Add("Paladin");
+                    if (!unlocked.Contains("Reaver"))
+                        locked.Add("Reaver");
                     break;
 
                 case Classes.Ranger:

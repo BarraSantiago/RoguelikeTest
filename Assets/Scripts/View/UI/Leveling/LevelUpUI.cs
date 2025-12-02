@@ -197,7 +197,7 @@ namespace View.UI.Leveling
             if (_skipCharges <= 0) return;
 
             _skipCharges--;
-            _player.PlayerStats.Skip = Mathf.Max(0, _player.PlayerStats.Skip - 1);
+            _player.PlayerBaseStats.Skip = Mathf.Max(0, _player.PlayerBaseStats.Skip - 1);
             CloseLevelUpUI();
         }
 
@@ -216,7 +216,7 @@ namespace View.UI.Leveling
                 // Confirm banish
                 _levelUpManager.BanishChoice(_selectedForBanish);
                 _banishCharges--;
-                _player.PlayerStats.Banish = Mathf.Max(0, _player.PlayerStats.Banish - 1);
+                _player.PlayerBaseStats.Banish = Mathf.Max(0, _player.PlayerBaseStats.Banish - 1);
 
                 // Generate new choices without the banished option
                 List<object> newChoices = _levelUpManager.GenerateLevelUpChoices(_player);
@@ -229,7 +229,7 @@ namespace View.UI.Leveling
             if (_rerollCharges <= 0) return;
 
             _rerollCharges--;
-            _player.PlayerStats.Reroll = Mathf.Max(0, _player.PlayerStats.Reroll - 1);
+            _player.PlayerBaseStats.Reroll = Mathf.Max(0, _player.PlayerBaseStats.Reroll - 1);
 
             List<object> newChoices = _levelUpManager.GenerateLevelUpChoices(_player);
             ShowLevelUpChoices(_player, newChoices, _rerollCharges, _skipCharges, _banishCharges);
