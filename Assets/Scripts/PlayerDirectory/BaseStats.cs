@@ -1,5 +1,8 @@
+using System;
+
 namespace PlayerDirectory
 {
+    [Serializable]
     public class BaseStats 
     {
         public float Damage;

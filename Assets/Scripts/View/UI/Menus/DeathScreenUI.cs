@@ -3,12 +3,14 @@ using System.Linq;
 using Achievements;
 using ClassesDirectory;
 using ClassesDirectory.Evolution;
+using GooglePlay;
 using PlayerDirectory;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using View.UI.Menus.Achievements;
+using Achievement = Achievements.Achievement;
 
 namespace View.UI.Menus
 {
@@ -64,6 +66,7 @@ namespace View.UI.Menus
 
             gameObject.SetActive(true);
             ShowStatsScreen();
+            GooglePlayManager.Instance.SubmitKillsScore(stats.totalKills);
         }
 
         private void ShowStatsScreen()

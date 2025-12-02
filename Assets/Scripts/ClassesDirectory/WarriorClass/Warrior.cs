@@ -40,16 +40,19 @@ namespace ClassesDirectory.WarriorClass
         private void PerformSingleBasicAttack(PlayerBaseStats playerBaseStats, PlayerBaseStatsMod baseStatsMod, Vec vec,
             float angleOffset)
         {
-            float range = playerBaseStats.Range * baseStatsMod.rangeMod;
-            float area = playerBaseStats.Area * baseStatsMod.areaMod;
-
-            // Apply angle offset to direction
+            // Merge range and area for cone - both contribute to effectiveness
+            float combinedStat = (playerBaseStats.Range * baseStatsMod.rangeMod + 
+                                  playerBaseStats.Area * baseStatsMod.areaMod) * 0.5f;
+            
+            float range = combinedStat;
+            float coneAngle = Mathf.Clamp(60f + (combinedStat * 5f), 45f, 120f); // Wider cone with more stats
+        
             Vector2 direction = RotateVector(vec.Direction, angleOffset * 15f);
-
-            Enemy[] enemies = CombatUtilities.GetEnemiesInCone(vec.Position, direction, range, area);
-
-            CombatEvents.TriggerAttack(vec.Position, direction, range, area, AttackType.WarriorBasic);
-
+        
+            Enemy[] enemies = CombatUtilities.GetEnemiesInCone(vec.Position, direction, range, coneAngle);
+        
+            CombatEvents.TriggerAttack(vec.Position, direction, range, coneAngle, AttackType.WarriorBasic);
+        
             CombatUtilities.KnockbackEnemies(enemies, vec.Position,
                 playerBaseStats.Knockback * 0.2f * baseStatsMod.knockbackMod);
             CombatUtilities.DamageEnemies(enemies, playerBaseStats, baseStatsMod);

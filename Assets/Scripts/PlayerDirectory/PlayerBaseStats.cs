@@ -1,7 +1,9 @@
+using System;
 using ClassesDirectory;
 
 namespace PlayerDirectory
 {
+    [Serializable]
     public class PlayerBaseStats : BaseStats
     {
         public PlayerBaseStats(Classes classType)
@@ -29,14 +31,14 @@ namespace PlayerDirectory
                     Health = 150;
                     Speed = 1.5f;
                     Damage = 20;
-                    AttackSpeed = 0.8f;
+                    AttackSpeed = 1.3f;
                     SpecialAttackSpeed = 3f;
                     DefenseSpeed = 1.5f;
-                    Range = 1.5f;
+                    Range = 2.5f;
                     Defense = 0.8f;
                     CriticalChance = 0.09f;
                     CriticalDamage = 2.15f;
-                    Area = 30f;
+                    Area = 40f;
                     Knockback = 15f;
                     break;
                 //case Classes.Mage:

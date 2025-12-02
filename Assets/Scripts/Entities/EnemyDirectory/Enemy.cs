@@ -39,6 +39,12 @@ namespace Entities.EnemyDirectory
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _rigidbody = GetComponent<Rigidbody2D>();
             _collider = GetComponent<Collider2D>();
+
+            if (!_rigidbody) return;
+            _rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
+            _rigidbody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            _rigidbody.sleepMode = RigidbodySleepMode2D.NeverSleep;
+            _rigidbody.interpolation = RigidbodyInterpolation2D.Interpolate;
         }
 
         private void OnEnable()
@@ -183,8 +189,19 @@ namespace Entities.EnemyDirectory
         public void Move(Vector2 direction)
         {
             if (!_canMove) return;
+            
+            _rigidbody.linearVelocity = Vector2.zero;
+            
             Vector2 movement = direction * (data.speed * Time.fixedDeltaTime);
             _rigidbody.MovePosition(_rigidbody.position + movement);
+        }
+        
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (collision.gameObject.CompareTag("Enemy"))
+            {
+                _rigidbody.linearVelocity = Vector2.zero;
+            }
         }
 
         public void Knockback(Vector2 direction, float knockback)
