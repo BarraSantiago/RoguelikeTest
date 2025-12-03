@@ -488,6 +488,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::View.UI.Menus.PauseManager
   pauseMenuUI: {fileID: 573706051}
   pauseButton: {fileID: 0}
+  changeSceneButton: {fileID: 2038219989}
   sceneName: Game
   useLoadingScreen: 1
 --- !u!114 &37400001
@@ -3754,6 +3755,7 @@ MonoBehaviour:
   musicToggle: {fileID: 451956894}
   sfxToggle: {fileID: 96519643}
   vibrationToggle: {fileID: 0}
+  performanceDropdown: {fileID: 0}
 --- !u!114 &573706054
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11216,19 +11218,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2038219990}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 37400000}
-        m_TargetAssemblyTypeName: View.UI.Menus.PauseManager, Assembly-CSharp
-        m_MethodName: ChangeScene
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &2038219990
 MonoBehaviour:
   m_ObjectHideFlags: 0

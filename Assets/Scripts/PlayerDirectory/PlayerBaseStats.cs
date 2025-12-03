@@ -34,7 +34,7 @@ namespace PlayerDirectory
                     AttackSpeed = 1.5f;
                     SpecialAttackSpeed = 3f;
                     DefenseSpeed = 1.5f;
-                    Range = 1.5f;
+                    Range = .5f;
                     Defense = 0.8f;
                     CriticalChance = 0.09f;
                     CriticalDamage = 2.15f;

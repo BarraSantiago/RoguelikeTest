@@ -188,12 +188,12 @@ namespace Entities.EnemyDirectory
 
         public void Move(Vector2 direction)
         {
-            if (!_canMove) return;
+            if (!_canMove || !_rigidbody) return;
             
-            _rigidbody.linearVelocity = Vector2.zero;
-            
-            Vector2 movement = direction * (data.speed * Time.fixedDeltaTime);
-            _rigidbody.MovePosition(_rigidbody.position + movement);
+            // Use MovePosition for frame-rate independent movement
+            Vector2 currentPosition = _rigidbody.position;
+            Vector2 targetPosition = currentPosition + direction * (data.speed * Time.fixedDeltaTime);
+            _rigidbody.MovePosition(targetPosition);
         }
         
         private void OnCollisionEnter2D(Collision2D collision)

@@ -198,10 +198,6 @@ public class UnityConsoleLogger : MonoBehaviour
 
     public string GetAllLogs()
     {
-        for (int i = 0; i < 50; i++)
-        {
-            Debug.Log("Test log" + i);
-        }
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (!isInitialized || loggerInstance == null)
             return "Logger not initialized";

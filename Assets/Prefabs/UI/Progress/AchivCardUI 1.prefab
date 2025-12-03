@@ -79,7 +79,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 4616390811444284679}
   m_FillRect: {fileID: 5366675501580088693}
   m_HandleRect: {fileID: 4544872250293886066}
@@ -1587,6 +1587,7 @@ MonoBehaviour:
   rewardText: {fileID: 2484517645787741557}
   completionCheckmark: {fileID: 6793037675613778273}
   percentageText: {fileID: 0}
+  sessionProgressText: {fileID: 0}
   completedColor: {r: 0, g: 1, b: 0, a: 1}
   incompleteColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   progressBarBackgroundColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}

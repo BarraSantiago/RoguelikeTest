@@ -8,6 +8,7 @@ namespace View.UI.Menus
     {
         [SerializeField] private GameObject pauseMenuUI;
         [SerializeField] private Button pauseButton;
+        [SerializeField] private Button changeSceneButton;
         [SerializeField] private string sceneName = "MainMenu";
         [SerializeField] private bool useLoadingScreen = true;
 
@@ -21,6 +22,11 @@ namespace View.UI.Menus
             {
                 pauseMenuUI.SetActive(false);
                 if(pauseButton) pauseButton.onClick.AddListener(TogglePause);
+            }
+            
+            if(changeSceneButton)
+            {
+                changeSceneButton.onClick.AddListener(ChangeScene);
             }
         }
 

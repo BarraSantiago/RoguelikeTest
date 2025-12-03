@@ -179,13 +179,6 @@
 		{
 			"isExternal" : true,
 			"path" : "E:/PortfolioProjects/RoguelikeTest/.utmp/RelWithDebInfo/6g1t2k47/prefab/x86_64/prefab/lib/x86_64-linux-android/cmake/game-activity/game-activityConfig.cmake"
-		},
-		{
-			"path" : "FramePacing/CMakeLists.txt"
-		},
-		{
-			"isExternal" : true,
-			"path" : "E:/PortfolioProjects/RoguelikeTest/.utmp/RelWithDebInfo/6g1t2k47/prefab/x86_64/prefab/lib/x86_64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfig.cmake"
 		}
 	],
 	"kind" : "cmakeFiles",

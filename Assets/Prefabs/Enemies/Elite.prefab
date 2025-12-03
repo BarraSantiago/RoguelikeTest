@@ -107,13 +107,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data:
     health: 50
-    speed: 8
+    speed: 2
     attackCooldown: 2
     attackDamage: 20
     attackRange: 1
     lastAttackTime: 0
-  frameImmunity: 10
-  inmmune: 0
   experienceValue: 10
 --- !u!61 &-5760152942318983730
 BoxCollider2D:

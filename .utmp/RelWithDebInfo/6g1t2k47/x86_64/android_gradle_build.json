@@ -1,7 +1,6 @@
 {
   "buildFiles": [
     "E:\\PortfolioProjects\\RoguelikeTest\\Library\\Bee\\Android\\Prj\\IL2CPP\\Gradle\\unityLibrary\\src\\main\\cpp\\CMakeLists.txt",
-    "E:\\PortfolioProjects\\RoguelikeTest\\Library\\Bee\\Android\\Prj\\IL2CPP\\Gradle\\unityLibrary\\src\\main\\cpp\\FramePacing\\CMakeLists.txt",
     "E:\\PortfolioProjects\\RoguelikeTest\\Library\\Bee\\Android\\Prj\\IL2CPP\\Gradle\\unityLibrary\\src\\main\\cpp\\GameActivity\\CMakeLists.txt"
   ],
   "cleanCommandsComponents": [
@@ -24,13 +23,6 @@
       "abi": "x86_64",
       "artifactName": "game",
       "output": "E:\\PortfolioProjects\\RoguelikeTest\\Library\\Bee\\Android\\Prj\\IL2CPP\\Gradle\\unityLibrary\\build\\intermediates\\cxx\\RelWithDebInfo\\6g1t2k47\\obj\\x86_64\\libgame.so",
-      "runtimeFiles": []
-    },
-    "swappywrapper::@7e25bd1f32ce224db4e9": {
-      "toolchain": "toolchain",
-      "abi": "x86_64",
-      "artifactName": "swappywrapper",
-      "output": "E:\\PortfolioProjects\\RoguelikeTest\\Library\\Bee\\Android\\Prj\\IL2CPP\\Gradle\\unityLibrary\\build\\intermediates\\cxx\\RelWithDebInfo\\6g1t2k47\\obj\\x86_64\\libswappywrapper.so",
       "runtimeFiles": []
     }
   },

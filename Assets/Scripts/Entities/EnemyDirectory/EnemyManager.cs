@@ -70,12 +70,32 @@ namespace Entities.EnemyDirectory
 
         private void Update()
         {
-            if (Time.time - _lastUpdateTime < updateInterval)
+            float interval = PerformanceManager.Instance ? 
+                PerformanceManager.Instance.GetUpdateInterval() : updateInterval;
+                
+            if (Time.time - _lastUpdateTime < interval)
                 return;
-
+        
             _lastUpdateTime = Time.time;
             UpdateEnemyBehaviorsBatched();
         }
+        
+        private void FixedUpdate()
+        {
+            if (!_playerTransform || _activeEnemies.Count == 0) return;
+        
+            Vector2 playerPosition = _playerTransform.position;
+        
+            foreach (Enemy enemy in _activeEnemies)
+            {
+                if (!enemy || !enemy.gameObject || !enemy.gameObject.activeInHierarchy)
+                    continue;
+        
+                UpdateSingleEnemyMovement(enemy, playerPosition);
+            }
+        }
+        
+        
 
         private void InitializePools()
         {
@@ -162,13 +182,32 @@ namespace Entities.EnemyDirectory
             }
         }
 
+        private void UpdateSingleEnemyMovement(Enemy enemy, Vector2 playerPosition)
+        {
+            Vector2 enemyPosition = enemy.transform.position;
+            Vector2 toPlayer = playerPosition - enemyPosition;
+            float sqrDistance = toPlayer.sqrMagnitude;
+            float attackRangeSqr = enemy.data.attackRange * enemy.data.attackRange;
+        
+            if (sqrDistance > attackRangeSqr)
+            {
+                // Normalize the direction properly
+                Vector2 direction = toPlayer.normalized;
+                enemy.Move(direction);
+            }
+            else
+            {
+                enemy.Move(Vector2.zero);
+            }
+        }
+        
         private void UpdateSingleEnemy(Enemy enemy, Vector2 playerPosition)
         {
             Vector2 enemyPosition = enemy.transform.position;
             Vector2 toPlayer = playerPosition - enemyPosition;
             float sqrDistance = toPlayer.sqrMagnitude;
             float attackRangeSqr = enemy.data.attackRange * enemy.data.attackRange;
-
+        
             if (sqrDistance <= attackRangeSqr)
             {
                 if (Time.time >= enemy.data.lastAttackTime + enemy.data.attackCooldown)
@@ -176,11 +215,6 @@ namespace Entities.EnemyDirectory
                     _player.TakeDamage(enemy.data.attackDamage);
                     enemy.data.lastAttackTime = Time.time;
                 }
-            }
-            else
-            {
-                Vector2 direction = toPlayer / Mathf.Sqrt(sqrDistance);
-                enemy.Move(direction);
             }
         }
 

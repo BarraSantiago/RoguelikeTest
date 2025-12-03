@@ -58,8 +58,11 @@ MonoBehaviour:
   targetText: {fileID: 2899790204902178195}
   rewardText: {fileID: 8958785383173933263}
   completionCheckmark: {fileID: 1130546342089437799}
+  percentageText: {fileID: 0}
+  sessionProgressText: {fileID: 0}
   completedColor: {r: 0, g: 1, b: 0, a: 1}
   incompleteColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  progressBarBackgroundColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
 --- !u!222 &7853395644218402172
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -287,7 +290,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 7952314914657894899}
   m_FillRect: {fileID: 6864271334265317147}
   m_HandleRect: {fileID: 7294148619966147893}
