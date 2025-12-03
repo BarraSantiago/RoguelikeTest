@@ -44,10 +44,40 @@ namespace View
         
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
             vfx.transform.rotation = Quaternion.Euler(0, 0, angle);
-            vfx.transform.localScale = new Vector3(1f, range, 1f);
+            
+            // Scale both width and height to match the cone dimensions
+            float coneWidthAtEnd = range * Mathf.Tan(area * 0.5f * Mathf.Deg2Rad) * 2f;
+            vfx.transform.localScale = new Vector3(coneWidthAtEnd, range, 1f);
         
             vfx.Renderer.sortingOrder = -1;
-            vfx.Initialize(CreateConeSprite(area), GetColorForAttackType(type), vfxDuration);
+            vfx.Initialize(CreateConeSprite(), GetColorForAttackType(type), vfxDuration);
+        }
+        
+        private Sprite CreateConeSprite()
+        {
+            Texture2D texture = new Texture2D(64, 64);
+            Color[] pixels = new Color[64 * 64];
+        
+            for (int y = 0; y < 64; y++)
+            {
+                for (int x = 0; x < 64; x++)
+                {
+                    float normalizedY = y / 64f;
+                    float centerX = 32f;
+                    
+                    // Cone expands linearly from point (0,0.5) to full width at top
+                    float widthAtY = normalizedY * 32f;
+                    float distFromCenter = Mathf.Abs(x - centerX);
+        
+                    // Create smooth cone shape
+                    float alpha = distFromCenter < widthAtY ? 0.5f * (1f - normalizedY * 0.3f) : 0f;
+                    pixels[y * 64 + x] = new Color(1f, 1f, 1f, alpha);
+                }
+            }
+        
+            texture.SetPixels(pixels);
+            texture.Apply();
+            return Sprite.Create(texture, new Rect(0, 0, 64, 64), new Vector2(0.5f, 0f));
         }
 
         private void CreateCircleVFX(Vector2 position, float radius, AttackType type)
