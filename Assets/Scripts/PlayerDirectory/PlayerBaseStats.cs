@@ -38,7 +38,7 @@ namespace PlayerDirectory
                     Defense = 0.8f;
                     CriticalChance = 0.09f;
                     CriticalDamage = 2.15f;
-                    Area = 40f;
+                    Area = 4f;
                     Knockback = 15f;
                     break;
                 //case Classes.Mage:

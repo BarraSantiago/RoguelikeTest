@@ -76,6 +76,20 @@ namespace View.UI.Menus
             }
         }
 
+        public void ChangeScene(string _sceneName, bool _useLoadingScreen = true)
+        {
+            Time.timeScale = 1f;
+
+            if (_useLoadingScreen)
+            {
+                LoadingSceneManager.LoadScene(_sceneName);
+            }
+            else
+            {
+                SceneManager.LoadScene(_sceneName);
+            }
+        }
+        
         public void QuitGame()
         {
             #if UNITY_EDITOR

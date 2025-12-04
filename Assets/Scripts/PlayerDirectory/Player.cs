@@ -10,6 +10,7 @@ using Entities.EnemyDirectory;
 using PlayerDirectory.LevelingSystem;
 using PowerUps;
 using UnityEngine;
+using UnityEngine.UI;
 using Utilities;
 using View.UI;
 using View.UI.Leveling;
@@ -32,6 +33,8 @@ namespace PlayerDirectory
         [SerializeField] private bool autoAttackEnabled = true;
         [SerializeField] private float autoAttackRange = 10f;
         [SerializeField] private string currentSubclass = "None";
+        [SerializeField] private Button defenseButton;
+        
 
         public Classes GetPlayerClassType() => playerClassType;
         public PlayerBaseStats PlayerBaseStats;
@@ -109,6 +112,8 @@ namespace PlayerDirectory
             StartCoroutine(AutoAttackCoroutine());
             StartCoroutine(DetectPickups());
             StartCoroutine(HealthRegeneration());
+            
+            defenseButton.onClick.AddListener(Defense);
         }
 
         private void Update()
@@ -229,8 +234,7 @@ namespace PlayerDirectory
                 
                 Vector2 targetDirection = GetTargetDirection();
                 
-                // Only attack if we have a valid target
-                if (targetDirection == Vector2.zero) continue;
+                if (targetDirection.Equals(Vector2.zero)) continue;
                 _vec = new Vec
                 {
                     Position = _transform.position,
