@@ -7,22 +7,21 @@ namespace UI
 {
     public class LeaderboardUI : MonoBehaviour
     {
-        [Header("UI References")]
-        [SerializeField] private Button showLeaderboardButton;
+        [Header("UI References")] [SerializeField] private Button showLeaderboardButton;
         [SerializeField] private TextMeshProUGUI buttonText;
         [SerializeField] private GameObject notAuthenticatedMessage;
 
         private void Start()
         {
             showLeaderboardButton.onClick.AddListener(OnShowLeaderboardClicked);
-            UpdateButtonState();
+            //UpdateButtonState();
         }
 
         private void UpdateButtonState()
         {
             bool isAuthenticated = GooglePlayManager.Instance.IsAuthenticated();
             showLeaderboardButton.interactable = isAuthenticated;
-            
+
             if (notAuthenticatedMessage != null)
             {
                 notAuthenticatedMessage.SetActive(!isAuthenticated);
@@ -36,12 +35,22 @@ namespace UI
 
         private void OnShowLeaderboardClicked()
         {
-            GooglePlayManager.Instance.ShowKillsLeaderboard();
+            bool isAuthenticated = GooglePlayManager.Instance.IsAuthenticated();
+            showLeaderboardButton.interactable = isAuthenticated;
+
+            if (notAuthenticatedMessage != null)
+            {
+                OnSignInClicked();
+            }
+            else
+            {
+                GooglePlayManager.Instance.ShowKillsLeaderboard();
+            }
         }
 
         public void OnSignInClicked()
         {
-            GooglePlayManager.Instance.SignIn();
+            GooglePlayManager.Instance.SignInManual();
             Invoke(nameof(UpdateButtonState), 1f);
         }
     }
