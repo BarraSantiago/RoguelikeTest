@@ -119,5 +119,13 @@ namespace GooglePlay
                 Achievement.ShowLeaderboardUI(GPGSIds.leaderboard_kills_this_session);
             }
         }
+        
+        public void ShowAchievementsUI()
+        {
+            if (PlayGamesPlatform.Instance.IsAuthenticated())
+            {
+                PlayGamesPlatform.Instance.ShowAchievementsUI();
+            }
+        }
     }
 }

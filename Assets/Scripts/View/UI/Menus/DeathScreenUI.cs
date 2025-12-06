@@ -127,7 +127,7 @@ namespace View.UI.Menus
                 progressItem.Setup(kvp.Key, kvp.Value.description, progress, isUnlocked);
             }
         }
-
+        
         private void PopulateAchievementsList()
         {
             foreach (Transform child in achievementsContainer)
@@ -142,23 +142,21 @@ namespace View.UI.Menus
             {
                 float currentValue = GetCurrentValueForType(achievement.type, stats);
                 float sessionValue = GetSessionValueForType(achievement.type);
-                
-                // Skip if no progress was made this session
+        
                 if (sessionValue <= 0) continue;
-                
-                // Check if any milestone was completed or progressed this session
+        
                 bool hasProgress = false;
                 foreach (AchievementMilestone milestone in achievement.milestones)
                 {
                     float previousValue = currentValue - sessionValue;
-                    if ((previousValue < milestone.targetValue && currentValue >= milestone.targetValue) || 
+                    if ((previousValue < milestone.targetValue && currentValue >= milestone.targetValue) ||
                         (!milestone.isCompleted && currentValue > previousValue))
                     {
                         hasProgress = true;
                         break;
                     }
                 }
-                
+        
                 if (!hasProgress) continue;
         
                 GameObject item = Instantiate(achievementItemPrefab, achievementsContainer);
@@ -167,6 +165,15 @@ namespace View.UI.Menus
             }
         
             totalCoinsEarnedText.text = $"Total Coins: {AchievementManager.Instance.GetTotalCoins()}";
+            
+            // Update content size
+            Canvas.ForceUpdateCanvases();
+            HorizontalLayoutGroup layoutGroup = achievementsContainer.GetComponent<HorizontalLayoutGroup>();
+            if (layoutGroup != null)
+            {
+                RectTransform rectTransform = achievementsContainer.GetComponent<RectTransform>();
+                rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, layoutGroup.preferredHeight);
+            }
         }
         
         private float GetSessionValueForType(AchievementType type)
