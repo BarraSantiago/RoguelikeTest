@@ -1,6 +1,7 @@
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
 using UnityEngine;
+using GooglePlayGames;
 
 namespace GooglePlay
 {
@@ -11,7 +12,7 @@ namespace GooglePlay
 
         private void Awake()
         {
-            if (_instance && _instance!= this)
+            if (_instance && _instance != this)
             {
                 Destroy(gameObject);
                 return;
@@ -21,7 +22,7 @@ namespace GooglePlay
             DontDestroyOnLoad(gameObject);
 
             InitializeGooglePlay();
-            
+
             // Intentamos el login silencioso automáticamente al arrancar
             SignInSilent();
         }
@@ -103,7 +104,7 @@ namespace GooglePlay
             return false;
 #endif
         }
-        
+
         public void SubmitKillsScore(int kills)
         {
             if (IsAuthenticated())
@@ -111,7 +112,7 @@ namespace GooglePlay
                 Achievement.SubmitScore(GPGSIds.leaderboard_kills_this_session, kills);
             }
         }
-        
+
         public void ShowKillsLeaderboard()
         {
             if (IsAuthenticated())
@@ -119,12 +120,12 @@ namespace GooglePlay
                 Achievement.ShowLeaderboardUI(GPGSIds.leaderboard_kills_this_session);
             }
         }
-        
+
         public void ShowAchievementsUI()
         {
-            if (PlayGamesPlatform.Instance.IsAuthenticated())
+            if (_instance.IsAuthenticated())
             {
-                PlayGamesPlatform.Instance.ShowAchievementsUI();
+                _instance.ShowAchievementsUI();
             }
         }
     }

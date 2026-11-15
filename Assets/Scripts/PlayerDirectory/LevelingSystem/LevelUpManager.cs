@@ -183,15 +183,15 @@ namespace PlayerDirectory.LevelingSystem
         
             // Common stats for all classes
             filtered.Add(CreateStatUpgrade("Increased Damage", "+20% Damage",
-                (p, mult) => p.baseStatsMod.damageMod *= 1f + (0.2f * mult), rarity,
+                (p, mult) => p.baseStatsMod.damageMod += (0.2f * mult), rarity,
                 (p, mult) => $"+{20f * mult:F0}% Damage"));
         
             filtered.Add(CreateStatUpgrade("Attack Speed", "+15% Attack Speed",
-                (p, mult) => p.baseStatsMod.attackSpeedMod *= 1f - (0.15f * mult), rarity,
+                (p, mult) => p.baseStatsMod.attackSpeedMod += (0.15f * mult), rarity,
                 (p, mult) => $"+{15f * mult:F0}% Attack Speed"));
         
             filtered.Add(CreateStatUpgrade("Increased Range", "+25% Range",
-                (p, mult) => p.baseStatsMod.rangeMod *= 1f + (0.25f * mult), rarity,
+                (p, mult) => p.baseStatsMod.rangeMod += (0.25f * mult), rarity,
                 (p, mult) => $"+{25f * mult:F0}% Range"));
         
             filtered.Add(CreateStatUpgrade("Critical Chance", "+5% Critical Chance",
@@ -199,13 +199,13 @@ namespace PlayerDirectory.LevelingSystem
                 (p, mult) => $"+{5f * mult:F0}% Critical Chance"));
         
             filtered.Add(CreateStatUpgrade("Movement Speed", "+15% Speed",
-                (p, mult) => p.PlayerBaseStats.Speed *= 1f + (0.15f * mult), rarity,
+                (p, mult) => p.PlayerBaseStats.Speed += (0.15f * mult), rarity,
                 (p, mult) => $"+{15f * mult:F0}% Movement Speed"));
         
             filtered.Add(CreateStatUpgrade("Max Health", "+20% Health",
                 (p, mult) =>
                 {
-                    p.PlayerBaseStats.Health *= 1f + (0.2f * mult);
+                    p.PlayerBaseStats.Health += (0.2f * mult);
                     p.PlayerBaseStats.MaxHealth = p.PlayerBaseStats.Health;
                 }, rarity,
                 (p, mult) => $"+{20f * mult:F0}% Max Health"));
@@ -223,19 +223,19 @@ namespace PlayerDirectory.LevelingSystem
                 (p, mult) => $"+{10f * mult:F0}% Cooldown Reduction"));
         
             filtered.Add(CreateStatUpgrade("Pickup Radius", "+25% Pickup Range",
-                (p, mult) => p.baseStatsMod.pickupRadiusMod *= 1f + (0.25f * mult), rarity,
+                (p, mult) => p.baseStatsMod.pickupRadiusMod += (0.25f * mult), rarity,
                 (p, mult) => $"+{25f * mult:F0}% Pickup Radius"));
         
             filtered.Add(CreateStatUpgrade("Magnetism", "+30% Attraction Speed",
-                (p, mult) => p.baseStatsMod.magnetismMod *= 1f + (0.3f * mult), rarity,
+                (p, mult) => p.baseStatsMod.magnetismMod += (0.3f * mult), rarity,
                 (p, mult) => $"+{30f * mult:F0}% Magnetism"));
         
             filtered.Add(CreateStatUpgrade("Experience Gain", "+20% XP",
-                (p, mult) => p.baseStatsMod.growthMod *= 1f + (0.2f * mult), rarity,
+                (p, mult) => p.baseStatsMod.growthMod += (0.2f * mult), rarity,
                 (p, mult) => $"+{20f * mult:F0}% Experience Gain"));
         
             filtered.Add(CreateStatUpgrade("Luck", "+15% Luck",
-                (p, mult) => p.baseStatsMod.luckMod *= 1f + (0.15f * mult), rarity,
+                (p, mult) => p.baseStatsMod.luckMod += (0.15f * mult), rarity,
                 (p, mult) => $"+{15f * mult:F0}% Luck"));
         
             if (rarity == StatRarity.Legendary)
@@ -249,7 +249,7 @@ namespace PlayerDirectory.LevelingSystem
             if (classType == Classes.Warrior)
             {
                 filtered.Add(CreateStatUpgrade("Increased Area", "+25% Attack Area",
-                    (p, mult) => p.baseStatsMod.areaMod *= 1f + (0.25f * mult), rarity,
+                    (p, mult) => p.baseStatsMod.areaMod += (0.25f * mult), rarity,
                     (p, mult) => $"+{25f * mult:F0}% Area"));
         
                 filtered.Add(CreateStatUpgrade("Attack Count", "+1 Multi-Attack",
@@ -257,7 +257,7 @@ namespace PlayerDirectory.LevelingSystem
                     (p, mult) => $"+{Mathf.RoundToInt(mult)} Attack Count"));
         
                 filtered.Add(CreateStatUpgrade("Knockback", "+25% Knockback",
-                    (p, mult) => p.baseStatsMod.knockbackMod *= 1f + (0.25f * mult), rarity,
+                    (p, mult) => p.baseStatsMod.knockbackMod += (0.25f * mult), rarity,
                     (p, mult) => $"+{25f * mult:F0}% Knockback"));
             }
             else if (classType == Classes.Ranger)
@@ -271,7 +271,7 @@ namespace PlayerDirectory.LevelingSystem
                     (p, mult) => $"+{Mathf.RoundToInt(mult)} Pierce"));
         
                 filtered.Add(CreateStatUpgrade("Projectile Speed", "+20% Projectile Speed",
-                    (p, mult) => p.baseStatsMod.projectileSpeedMod *= 1f + (0.2f * mult), rarity,
+                    (p, mult) => p.baseStatsMod.projectileSpeedMod += (0.2f * mult), rarity,
                     (p, mult) => $"+{20f * mult:F0}% Projectile Speed"));
             }
         
