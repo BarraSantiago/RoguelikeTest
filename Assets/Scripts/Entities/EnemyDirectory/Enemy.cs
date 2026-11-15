@@ -30,12 +30,29 @@ namespace Entities.EnemyDirectory
         private float _rootEndTime;
         private float _originalSpeed;
         private Coroutine _knockbackCoroutine;
+        private Vector3 _baseScale;
+        private float _baseExperienceValue;
+        private bool _hasDied;
+        private static SubclassEvolutionManager _evolutionManager;
         
         public Vector2 Position => _transform.position;
+
+        /// <summary>Approximate body radius in world units (includes elite/boss scaling).</summary>
+        public float HitRadius
+        {
+            get
+            {
+                if (!_collider) return 0.5f * _transform.localScale.x;
+                Vector3 extents = _collider.bounds.extents;
+                return Mathf.Max(extents.x, extents.y);
+            }
+        }
 
         private void Awake()
         {
             _transform = transform;
+            _baseScale = _transform.localScale;
+            _baseExperienceValue = experienceValue;
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _rigidbody = GetComponent<Rigidbody2D>();
             _collider = GetComponent<Collider2D>();
@@ -149,16 +166,20 @@ namespace Entities.EnemyDirectory
 
         public void TakeDamage(float damage, bool isCritical = false)
         {
+            // Ignore hits on enemies that already died this frame or are back in the pool
+            if (_hasDied || !gameObject.activeInHierarchy) return;
+
             data.health -= damage;
             
             OnEnemyDamaged?.Invoke(this, damage, isCritical);
-            
-            StartCoroutine(DamageFlash());
         
             if (data.health <= 0)
             {
                 Die();
+                return;
             }
+
+            StartCoroutine(DamageFlash());
         }
 
         private IEnumerator DamageFlash()
@@ -229,17 +250,34 @@ namespace Entities.EnemyDirectory
 
         public void Die()
         {
+            if (_hasDied) return;
+            _hasDied = true;
+
+            // Capture before the enemy is returned to the pool and deactivated
+            Vector3 deathPosition = _transform.position;
+
             OnDeath?.Invoke(this);
             EnemyManager.HandleEnemyDeath(this);
-            ExperiencePool.SpawnExperienceDrop(transform.position, experienceValue);
+            ExperiencePool.SpawnExperienceDrop(deathPosition, experienceValue);
 
-            SubclassEvolutionManager evolutionManager = FindFirstObjectByType<SubclassEvolutionManager>();
-            evolutionManager?.OnEnemyKilled();
+            if (!_evolutionManager)
+            {
+                _evolutionManager = FindFirstObjectByType<SubclassEvolutionManager>();
+            }
+
+            if (_evolutionManager)
+            {
+                _evolutionManager.OnEnemyKilled();
+            }
         }
 
         public void ResetEnemy(EnemyData defaultData)
         {
             data = defaultData;
+            _hasDied = false;
+            _enemyType = EnemyType.Normal;
+            _transform.localScale = _baseScale;
+            experienceValue = _baseExperienceValue;
             _originalSpeed = data.speed;
             _originalColor = GetEnemyTypeColor();
             _spriteRenderer.color = _originalColor;

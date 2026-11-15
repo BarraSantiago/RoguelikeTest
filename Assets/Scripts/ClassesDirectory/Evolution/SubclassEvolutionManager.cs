@@ -105,7 +105,7 @@ namespace ClassesDirectory.Evolution
 
         private void UpdateGameStats()
         {
-            _gameStats.survivalTime = Time.time;
+            // survivalTime is accumulated by Player.Update (same GameSessionStats instance)
             _gameStats.timeSinceLastDeath += Time.deltaTime;
 
             // Reset kill window if needed

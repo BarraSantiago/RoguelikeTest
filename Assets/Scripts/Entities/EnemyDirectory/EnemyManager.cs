@@ -18,8 +18,6 @@ namespace Entities.EnemyDirectory
         [Header("Spawn Settings")]
         [SerializeField] public float spawnRadius = 10f;
         [SerializeField] public int maxEnemies = 20;
-        [SerializeField] private float eliteSpawnChance = 0.15f;
-        [SerializeField] private float enemyScalingPerMinute = 0.2f;
 
         [Header("Performance Settings")]
         [SerializeField] private float updateInterval = 0.1f;
@@ -43,7 +41,6 @@ namespace Entities.EnemyDirectory
         private Dictionary<int, EnemyFactory> _enemyFactories = new();
         private Dictionary<int, EnemyData> _enemyDataTemplates = new();
         private static List<Enemy> _activeEnemies = new();
-        private float _gameStartTime;
 
         public static List<Enemy> Enemies => _activeEnemies;
 
@@ -53,7 +50,6 @@ namespace Entities.EnemyDirectory
             Enemy.EnemyManager = this;
             Enemy.ExperiencePool = FindFirstObjectByType<ExperiencePool>();
             _coinPool = FindFirstObjectByType<CoinPool>();
-            _gameStartTime = Time.time;
         }
 
         private void Start()
@@ -114,12 +110,6 @@ namespace Entities.EnemyDirectory
             }
         }
 
-        private float GetEnemyScaling()
-        {
-            float minutesElapsed = (Time.time - _gameStartTime) / 60f;
-            return 1f + (minutesElapsed * enemyScalingPerMinute);
-        }
-
         public Enemy SpawnEnemy(int enemyType, Vector3 position)
         {
             if (_activeEnemies.Count >= maxEnemies) return null;
@@ -129,18 +119,8 @@ namespace Entities.EnemyDirectory
 
             if (!enemy) return null;
 
+            // Scaling, elite and boss rolls are applied by WaveSystem.ApplyScaling only
             enemy.ResetEnemy(_enemyDataTemplates[enemyType]);
-
-            float scaling = GetEnemyScaling();
-            enemy.data.health *= scaling;
-            enemy.data.attackDamage *= scaling;
-
-            if (Random.value < eliteSpawnChance)
-            {
-                enemy.SetEnemyType(EnemyType.Elite);
-                enemy.data.health *= 2f;
-                enemy.data.attackDamage *= 1.5f;
-            }
 
             _activeEnemies.Add(enemy);
 

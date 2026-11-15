@@ -4,6 +4,7 @@ using ClassesDirectory;
 using PowerUps;
 using UnityEngine;
 using Utilities;
+using WeaponsDirectory;
 
 namespace PlayerDirectory.LevelingSystem
 {
@@ -56,12 +57,32 @@ namespace PlayerDirectory.LevelingSystem
         [SerializeField] private float epicChance = 0.08f;
         [SerializeField] private float legendaryChance = 0.02f;
 
+        [Header("Weapons")]
+        [Tooltip("Weapons that can be offered. Leave empty to load every WeaponDefinition in Resources/Weapons.")]
+        [SerializeField] private List<WeaponDefinition> weaponPool = new();
+        [Tooltip("Chance for each card to be a weapon (new or upgrade) instead of a stat, when one is available.")]
+        [SerializeField, Range(0f, 1f)] private float weaponChoiceChance = 0.5f;
+        [Tooltip("Make sure every level-up offers at least one weapon when one is available.")]
+        [SerializeField] private bool guaranteeWeaponChoice = true;
+
         private List<StatUpgradeOption> _availableStatUpgrades;
-        private HashSet<object> _banishedChoices = new();
+        // Power-ups are long-lived objects, so they can be banished by reference.
+        // Stat options are rebuilt on every roll, so they are banished by name.
+        private readonly HashSet<PowerUp> _banishedPowerUps = new();
+        private readonly HashSet<string> _banishedStatNames = new();
+        private readonly HashSet<WeaponDefinition> _banishedWeapons = new();
 
         private void Awake()
         {
             InitializeStatUpgrades();
+
+            if (weaponPool.Count == 0)
+            {
+                weaponPool.AddRange(Resources.LoadAll<WeaponDefinition>("Weapons"));
+                weaponPool.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+            }
+
+            weaponPool.RemoveAll(weapon => !weapon);
         }
 
         private void InitializeStatUpgrades()
@@ -134,39 +155,76 @@ namespace PlayerDirectory.LevelingSystem
             List<object> choices = new List<object>();
             List<PowerUp> upgradablePowerUps = player.powerUps.FindAll(p => p.CanUpgrade());
 
-            upgradablePowerUps.RemoveAll(powerUp => _banishedChoices.Contains(powerUp));
+            upgradablePowerUps.RemoveAll(powerUp => _banishedPowerUps.Contains(powerUp));
 
-            int totalAvailable = upgradablePowerUps.Count;
-            int actualChoices = Mathf.Min(numberOfChoices, totalAvailable + 100); // Always have stat options
+            // Weapons and legacy power-ups share the "special" slots; stats fill the rest
+            List<object> specials = new List<object>(upgradablePowerUps);
+            specials.AddRange(GetAvailableWeaponChoices(player));
 
-            float luckMod = player.baseStatsMod.luckMod;
+            float luck = player.PlayerBaseStats.Luck * player.baseStatsMod.luckMod;
+            HashSet<string> offeredStatNames = new HashSet<string>();
+            bool offeredSpecial = false;
 
-            for (int i = 0; i < actualChoices; i++)
+            for (int i = 0; i < numberOfChoices; i++)
             {
-                bool choosePowerUp = upgradablePowerUps.Count > 0 && UnityEngine.Random.value > 0.7f;
+                bool chooseSpecial = specials.Count > 0 && UnityEngine.Random.value < weaponChoiceChance;
 
-                if (choosePowerUp)
+                if (!chooseSpecial)
                 {
-                    int randomIndex = UnityEngine.Random.Range(0, upgradablePowerUps.Count);
-                    choices.Add(upgradablePowerUps[randomIndex]);
-                    upgradablePowerUps.RemoveAt(randomIndex);
-                }
-                else
-                {
-                    StatUpgradeOption statOption = GenerateRandomStatUpgrade(player, player.PlayerBaseStats.Luck * luckMod);
-                    if (statOption != null && !_banishedChoices.Contains(statOption))
+                    StatUpgradeOption statOption = GenerateRandomStatUpgrade(player, luck, offeredStatNames);
+                    if (statOption != null)
                     {
                         choices.Add(statOption);
+                        offeredStatNames.Add(statOption.name);
+                        continue;
                     }
+
+                    // Every stat is banished or already offered: fall back to a weapon if one is left
                 }
+
+                if (specials.Count == 0) break;
+
+                choices.Add(TakeRandom(specials));
+                offeredSpecial = true;
+            }
+
+            if (guaranteeWeaponChoice && !offeredSpecial && specials.Count > 0)
+            {
+                object special = TakeRandom(specials);
+                if (choices.Count < numberOfChoices) choices.Add(special);
+                else choices[UnityEngine.Random.Range(0, choices.Count)] = special;
             }
 
             return choices;
         }
 
-        private StatUpgradeOption GenerateRandomStatUpgrade(Player player, float luckMod)
+        private List<WeaponChoice> GetAvailableWeaponChoices(Player player)
         {
-            List<StatUpgradeOption> availableStats = GetClassFilteredStats(player, luckMod);
+            List<WeaponChoice> available = new List<WeaponChoice>();
+            if (player.Weapons == null) return available;
+
+            foreach (WeaponDefinition weapon in weaponPool)
+            {
+                if (_banishedWeapons.Contains(weapon)) continue;
+                if (!player.Weapons.CanUpgrade(weapon)) continue;
+                available.Add(new WeaponChoice(weapon, player.Weapons.GetLevel(weapon)));
+            }
+
+            return available;
+        }
+
+        private static object TakeRandom(List<object> options)
+        {
+            int index = UnityEngine.Random.Range(0, options.Count);
+            object option = options[index];
+            options.RemoveAt(index);
+            return option;
+        }
+
+        private StatUpgradeOption GenerateRandomStatUpgrade(Player player, float luck, HashSet<string> excludedNames)
+        {
+            List<StatUpgradeOption> availableStats = GetClassFilteredStats(player, luck);
+            availableStats.RemoveAll(stat => _banishedStatNames.Contains(stat.name) || excludedNames.Contains(stat.name));
 
             if (availableStats.Count == 0) return null;
 
@@ -187,7 +245,8 @@ namespace PlayerDirectory.LevelingSystem
                 (p, mult) => $"+{20f * mult:F0}% Damage"));
         
             filtered.Add(CreateStatUpgrade("Attack Speed", "+15% Attack Speed",
-                (p, mult) => p.baseStatsMod.attackSpeedMod += (0.15f * mult), rarity,
+                // attackSpeedMod multiplies the cooldown, so dividing makes attacks faster
+                (p, mult) => p.baseStatsMod.attackSpeedMod /= 1f + 0.15f * mult, rarity,
                 (p, mult) => $"+{15f * mult:F0}% Attack Speed"));
         
             filtered.Add(CreateStatUpgrade("Increased Range", "+25% Range",
@@ -199,14 +258,17 @@ namespace PlayerDirectory.LevelingSystem
                 (p, mult) => $"+{5f * mult:F0}% Critical Chance"));
         
             filtered.Add(CreateStatUpgrade("Movement Speed", "+15% Speed",
-                (p, mult) => p.PlayerBaseStats.Speed += (0.15f * mult), rarity,
+                (p, mult) => p.baseStatsMod.speedMod += 0.15f * mult, rarity,
                 (p, mult) => $"+{15f * mult:F0}% Movement Speed"));
         
             filtered.Add(CreateStatUpgrade("Max Health", "+20% Health",
                 (p, mult) =>
                 {
-                    p.PlayerBaseStats.Health += (0.2f * mult);
-                    p.PlayerBaseStats.MaxHealth = p.PlayerBaseStats.Health;
+                    // Was "+0.2 HP" flat; now +20% of max HP, and the new HP is granted immediately
+                    float bonus = p.PlayerBaseStats.MaxHealth * 0.2f * mult;
+                    p.PlayerBaseStats.MaxHealth += bonus;
+                    p.PlayerBaseStats.Health = p.PlayerBaseStats.MaxHealth;
+                    p.Heal(bonus);
                 }, rarity,
                 (p, mult) => $"+{20f * mult:F0}% Max Health"));
         
@@ -285,6 +347,11 @@ namespace PlayerDirectory.LevelingSystem
                 statUpgrade.ApplyUpgrade(player);
                 Debug.Log($"Applied {statUpgrade.rarity} stat upgrade: {statUpgrade.name}");
             }
+            else if (choice is WeaponChoice weaponChoice)
+            {
+                player.Weapons.AddOrUpgrade(weaponChoice.Definition);
+                Debug.Log($"{(weaponChoice.IsNew ? "Acquired" : "Upgraded")} weapon: {weaponChoice.Definition.DisplayName}");
+            }
             else if (choice is PowerUp powerUp)
             {
                 powerUp.Upgrade();
@@ -292,23 +359,33 @@ namespace PlayerDirectory.LevelingSystem
             }
         }
 
-        public void BanishChoice(object choice)
+        /// <returns>True if the choice was a banishable option.</returns>
+        public bool BanishChoice(object choice)
         {
-            _banishedChoices.Add(choice);
-
-            string choiceName = choice switch
+            switch (choice)
             {
-                StatUpgradeOption stat => stat.name,
-                PowerUp powerUp => powerUp.name,
-                _ => "Unknown"
-            };
-
-            Debug.Log($"Banished choice: {choiceName}");
+                case StatUpgradeOption stat:
+                    _banishedStatNames.Add(stat.name);
+                    Debug.Log($"Banished choice: {stat.name}");
+                    return true;
+                case WeaponChoice weaponChoice:
+                    _banishedWeapons.Add(weaponChoice.Definition);
+                    Debug.Log($"Banished choice: {weaponChoice.Definition.DisplayName}");
+                    return true;
+                case PowerUp powerUp:
+                    _banishedPowerUps.Add(powerUp);
+                    Debug.Log($"Banished choice: {powerUp.name}");
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         public void ResetBanishedChoices()
         {
-            _banishedChoices.Clear();
+            _banishedPowerUps.Clear();
+            _banishedStatNames.Clear();
+            _banishedWeapons.Clear();
             Debug.Log("Banished choices reset");
         }
     }

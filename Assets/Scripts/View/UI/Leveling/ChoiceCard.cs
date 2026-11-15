@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using WeaponsDirectory;
 
 namespace View.UI.Leveling
 {
@@ -24,6 +25,8 @@ namespace View.UI.Leveling
         [SerializeField] private Color normalColor = Color.white;
         [SerializeField] private Color hoverColor = new(1f, 1f, 0.8f);
         [SerializeField] private Color banishColor = new(1f, 0.3f, 0.3f);
+        [SerializeField] private Color newWeaponColor = new(1f, 0.8f, 0.35f);
+        [SerializeField] private Color weaponUpgradeColor = new(0.4f, 0.8f, 0.4f);
 
         private object _choice;
         private Player _player;
@@ -52,10 +55,54 @@ namespace View.UI.Leveling
                 SetupStatUpgrade(statUpgrade);
                 ApplyRarityColor(statUpgrade.rarity);
             }
+            else if (_choice is WeaponChoice weaponChoice)
+            {
+                SetupWeaponChoice(weaponChoice);
+                ApplyBackgroundColor(weaponChoice.IsNew ? newWeaponColor : weaponUpgradeColor);
+            }
             else if (_choice is PowerUp powerUp)
             {
                 SetupPowerUpUpgrade(powerUp);
                 ApplyPowerUpColor();
+            }
+        }
+
+        private void ApplyBackgroundColor(Color color)
+        {
+            if (!backgroundImage) return;
+            backgroundImage.color = color;
+            normalColor = color;
+        }
+
+        private void SetupWeaponChoice(WeaponChoice choice)
+        {
+            WeaponDefinition weapon = choice.Definition;
+            titleText.text = weapon.DisplayName;
+
+            if (choice.IsNew)
+            {
+                descriptionText.text = weapon.Description;
+                statIncreaseText.text = weapon.DescribeLevel(1);
+            }
+            else
+            {
+                descriptionText.text = weapon.GetLevel(choice.NextLevel).description;
+                statIncreaseText.text = weapon.DescribeUpgrade(choice.CurrentLevel, choice.NextLevel);
+            }
+
+            if (levelText)
+            {
+                levelText.text = choice.IsNew
+                    ? "NEW!"
+                    : $"Lvl {choice.CurrentLevel} → {choice.NextLevel}";
+                levelText.gameObject.SetActive(true);
+            }
+
+            if (iconImage)
+            {
+                iconImage.sprite = weapon.Icon;
+                iconImage.color = weapon.Color;
+                iconImage.preserveAspect = true;
             }
         }
         
@@ -233,6 +280,10 @@ namespace View.UI.Leveling
             {
                 return GenerateStatTooltip(statUpgrade);
             }
+            else if (_choice is WeaponChoice weaponChoice)
+            {
+                return GenerateWeaponTooltip(weaponChoice);
+            }
             else if (_choice is PowerUp powerUp)
             {
                 return GeneratePowerUpTooltip(powerUp);
@@ -245,20 +296,33 @@ namespace View.UI.Leveling
         {
             float currentDPS = CalculateCurrentDPS();
 
-            // Temporarily apply upgrade to calculate new DPS
+            // Preview the upgrade, then restore every stat exactly. (The old name-based revert used
+            // different math from the upgrade, so each tap on a card permanently changed stats.)
+            Player.StatSnapshot snapshot = _player.CaptureStats();
             upgrade.ApplyUpgrade(_player);
             float newDPS = CalculateCurrentDPS();
+            _player.RestoreStats(snapshot);
 
-            // Revert the upgrade
-            RevertStatUpgrade(upgrade);
-
-            float dpsIncrease = ((newDPS - currentDPS) / currentDPS) * 100f;
+            float dpsIncrease = currentDPS > 0f ? (newDPS - currentDPS) / currentDPS * 100f : 0f;
 
             return $"<b>{upgrade.name}</b>\n\n" +
                    $"{upgrade.description}\n\n" +
                    $"Current DPS: {currentDPS:F1}\n" +
                    $"New DPS: {newDPS:F1}\n" +
                    $"DPS Increase: <color=green>+{dpsIncrease:F1}%</color>";
+        }
+
+        private static string GenerateWeaponTooltip(WeaponChoice choice)
+        {
+            WeaponDefinition weapon = choice.Definition;
+            string header = choice.IsNew
+                ? $"<b>{weapon.DisplayName}</b> (new weapon)"
+                : $"<b>{weapon.DisplayName} - Level {choice.NextLevel}/{weapon.MaxLevel}</b>";
+            string body = choice.IsNew
+                ? $"{weapon.Description}\n\n{weapon.DescribeLevel(1)}"
+                : $"{weapon.GetLevel(choice.NextLevel).description}\n\n{weapon.DescribeUpgrade(choice.CurrentLevel, choice.NextLevel)}";
+
+            return $"{header}\n\n{body}";
         }
 
         private string GeneratePowerUpTooltip(PowerUp powerUp)
@@ -281,45 +345,6 @@ namespace View.UI.Leveling
                                          (_player.PlayerBaseStats.CriticalDamage - 1f));
 
             return baseDamage * attacksPerSecond * critMultiplier;
-        }
-
-        private void RevertStatUpgrade(StatUpgradeOption upgrade)
-        {
-            if (upgrade.name.Contains("Damage"))
-                _player.baseStatsMod.damageMod /= 1.2f;
-            else if (upgrade.name.Contains("Attack Speed"))
-                _player.baseStatsMod.attackSpeedMod /= 0.85f;
-            else if (upgrade.name.Contains("Range"))
-                _player.baseStatsMod.rangeMod /= 1.25f;
-            else if (upgrade.name.Contains("Critical"))
-                _player.PlayerBaseStats.CriticalChance -= 0.05f;
-            else if (upgrade.name.Contains("Movement"))
-                _player.PlayerBaseStats.Speed /= 1.15f;
-            else if (upgrade.name.Contains("Health") && !upgrade.name.Contains("Regeneration"))
-            {
-                _player.PlayerBaseStats.Health /= 1.2f;
-                _player.PlayerBaseStats.MaxHealth = _player.PlayerBaseStats.Health;
-            }
-            else if (upgrade.name.Contains("Regeneration"))
-                _player.baseStatsMod.healthRegenBonus -= 1f;
-            else if (upgrade.name.Contains("Armor"))
-                _player.baseStatsMod.armorBonus -= 5f;
-            else if (upgrade.name.Contains("Cooldown"))
-                _player.baseStatsMod.cooldownReductionBonus -= 0.1f;
-            else if (upgrade.name.Contains("Pickup"))
-                _player.baseStatsMod.pickupRadiusMod /= 1.25f;
-            else if (upgrade.name.Contains("Magnetism"))
-                _player.baseStatsMod.magnetismMod /= 1.3f;
-            else if (upgrade.name.Contains("Experience"))
-                _player.baseStatsMod.growthMod /= 1.2f;
-            else if (upgrade.name.Contains("Luck"))
-                _player.baseStatsMod.luckMod /= 1.15f;
-            else if (upgrade.name.Contains("Projectile"))
-                _player.baseStatsMod.projectileCountBonus--;
-            else if (upgrade.name.Contains("Pierce"))
-                _player.baseStatsMod.pierceCountBonus--;
-            else if (upgrade.name.Contains("Revival"))
-                _player.baseStatsMod.revivalBonus--;
         }
 
         private void OnSelectClicked()

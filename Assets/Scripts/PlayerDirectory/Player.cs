@@ -15,6 +15,7 @@ using Utilities;
 using View.UI;
 using View.UI.Leveling;
 using View.UI.Menus;
+using WeaponsDirectory;
 
 namespace PlayerDirectory
 {
@@ -42,6 +43,7 @@ namespace PlayerDirectory
         public List<PowerUp> powerUps;
         public LevelSystem levelSystem = new();
         public GameSessionStats sessionStats = new();
+        public WeaponInventory Weapons { get; private set; }
         
         private DeathScreenUI _deathScreenUI;
         private Vector2 _lastPosition;
@@ -61,6 +63,9 @@ namespace PlayerDirectory
         private static readonly int MaxPowerUps = 10; // Reasonable limit
         private int _powerUpCount;
         private bool _isInvincible;
+        private readonly List<Collider2D> _pickupHits = new();
+        private readonly List<Transform> _attractedPickups = new();
+        private ContactFilter2D _pickupFilter;
 
         private void Awake()
         {
@@ -109,6 +114,8 @@ namespace PlayerDirectory
             PlayerBaseStats.MaxHealth = PlayerBaseStats.Health;
             _currentHp = PlayerBaseStats.MaxHealth;
 
+            Weapons = new WeaponInventory(this);
+
             StartCoroutine(AutoAttackCoroutine());
             StartCoroutine(DetectPickups());
             StartCoroutine(HealthRegeneration());
@@ -124,10 +131,19 @@ namespace PlayerDirectory
                 powerUps[i].Activate(this);
             }
             
-            sessionStats.survivalTime = Time.time;
+            if (Alive) Weapons.Tick(Time.deltaTime);
+
+            // Time.time counts from app launch (menus, previous runs), so accumulate run time instead
+            sessionStats.survivalTime += Time.deltaTime;
+            AttractPickups();
             float distThisFrame = Vector2.Distance(_transform.position, _lastPosition);
             sessionStats.totalDistanceTraveled += distThisFrame;
             _lastPosition = _transform.position;
+        }
+
+        private void OnDestroy()
+        {
+            Weapons?.Dispose();
         }
 
         public void Heal(float amount)
@@ -269,33 +285,44 @@ namespace PlayerDirectory
             }
         }
 
+        // Detection runs every 0.1s (physics query); the actual movement runs every frame in Update.
         private IEnumerator DetectPickups()
         {
             WaitForSeconds wait = new WaitForSeconds(0.1f);
+            _pickupFilter = new ContactFilter2D();
+            _pickupFilter.NoFilter();
 
             while (Alive)
             {
                 yield return wait;
 
                 float radius = PlayerBaseStats.PickupRadius * baseStatsMod.pickupRadiusMod;
-                Collider2D[] pickups = Physics2D.OverlapCircleAll(_transform.position, radius);
+                Physics2D.OverlapCircle(_transform.position, radius, _pickupFilter, _pickupHits);
 
-                foreach (Collider2D pickup in pickups)
+                _attractedPickups.Clear();
+                foreach (Collider2D pickup in _pickupHits)
                 {
                     if (pickup.CompareTag("Experience") || pickup.CompareTag("Coin"))
                     {
-                        AttractPickup(pickup.transform);
+                        _attractedPickups.Add(pickup.transform);
                     }
                 }
             }
         }
 
-        private void AttractPickup(Transform pickup)
+        private void AttractPickups()
         {
-            float magnetForce = PlayerBaseStats.Magnetism * baseStatsMod.magnetismMod;
-            Vector2 direction = (_transform.position - pickup.position).normalized;
-            pickup.position = Vector2.MoveTowards(pickup.position, _transform.position,
-                magnetForce * 5f * Time.deltaTime);
+            if (_attractedPickups.Count == 0) return;
+
+            float step = PlayerBaseStats.Magnetism * baseStatsMod.magnetismMod * 5f * Time.deltaTime;
+            Vector3 target = _transform.position;
+
+            foreach (Transform pickup in _attractedPickups)
+            {
+                // Skip pickups that were collected and returned to their pool since the last scan
+                if (!pickup || !pickup.gameObject.activeInHierarchy) continue;
+                pickup.position = Vector2.MoveTowards(pickup.position, target, step);
+            }
         }
 
         public void TakeDamage(float attackDamage)
@@ -514,5 +541,30 @@ namespace PlayerDirectory
         public float GetHealthPercentage() => _currentHp / GetMaxHealth();
         public int GetRevivals() => PlayerBaseStats.Revival + baseStatsMod.revivalBonus;
         public float GetPickupRadius() => PlayerBaseStats.PickupRadius * baseStatsMod.pickupRadiusMod;
+
+        /// <summary>Copy of all upgradable stats, used to preview an upgrade and then undo it exactly.</summary>
+        public readonly struct StatSnapshot
+        {
+            internal readonly string Stats;
+            internal readonly string Mods;
+            internal readonly float CurrentHp;
+
+            internal StatSnapshot(string stats, string mods, float currentHp)
+            {
+                Stats = stats;
+                Mods = mods;
+                CurrentHp = currentHp;
+            }
+        }
+
+        public StatSnapshot CaptureStats() =>
+            new(JsonUtility.ToJson(PlayerBaseStats), JsonUtility.ToJson(baseStatsMod), _currentHp);
+
+        public void RestoreStats(StatSnapshot snapshot)
+        {
+            JsonUtility.FromJsonOverwrite(snapshot.Stats, PlayerBaseStats);
+            JsonUtility.FromJsonOverwrite(snapshot.Mods, baseStatsMod);
+            _currentHp = snapshot.CurrentHp;
+        }
     }
 }

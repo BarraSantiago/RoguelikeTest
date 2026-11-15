@@ -6,6 +6,21 @@ namespace Utilities
 {
     public static class CombatUtilities
     {
+        private static Player _cachedPlayer;
+
+        private static Player CachedPlayer
+        {
+            get
+            {
+                if (!_cachedPlayer)
+                {
+                    _cachedPlayer = Object.FindFirstObjectByType<Player>();
+                }
+
+                return _cachedPlayer;
+            }
+        }
+
         public static Enemy[] GetEnemiesInRadius(Vector2 position, float radius)
         {
             if (EnemyManager.Enemies == null || EnemyManager.Enemies.Count == 0) return new Enemy[0];
@@ -61,19 +76,22 @@ namespace Utilities
         
             for (int i = 0; i < enemies.Length; i++)
             {
-                if (enemies[i])
+                if (!enemies[i] || enemies[i].IsDead()) continue;
+
+                // Roll the crit exactly once per hit (CalculateDamage would roll its own)
+                float damage = playerBaseStats.Damage * baseStatsMod.damageMod;
+                bool isCrit = IsCriticalHit(playerBaseStats, baseStatsMod);
+
+                if (isCrit)
                 {
-                    float damage = CalculateDamage(playerBaseStats, baseStatsMod);
-                    bool isCrit = IsCriticalHit(playerBaseStats, baseStatsMod);
-                    
-                    if (isCrit)
-                    {
-                        damage *= playerBaseStats.CriticalDamage * baseStatsMod.criticalDamageMod;
-                    }
-                    
-                    enemies[i].TakeDamage(damage, isCrit);
-                    totalDamage += damage;
+                    damage *= playerBaseStats.CriticalDamage * baseStatsMod.criticalDamageMod;
                 }
+
+                enemies[i].TakeDamage(damage, isCrit);
+                totalDamage += damage;
+
+                Player player = CachedPlayer;
+                if (player) player.OnDamageDealt(damage, isCrit);
             }
         
             return totalDamage;
@@ -110,16 +128,13 @@ namespace Utilities
             return closest;
         }
 
+        /// <summary>
+        /// Non-critical damage. Crits are rolled once at hit time (DamageEnemy / DamageEnemies),
+        /// so they must not be applied here as well.
+        /// </summary>
         public static float CalculateDamage(BaseStats playerBaseStats, BaseStatsMod baseStatsMod, float extraMod = 1.0f)
         {
-            float baseDamage = playerBaseStats.Damage * baseStatsMod.damageMod;
-
-            if (IsCriticalHit(playerBaseStats, baseStatsMod))
-            {
-                baseDamage *= playerBaseStats.CriticalDamage * baseStatsMod.criticalDamageMod;
-            }
-
-            return baseDamage * extraMod;
+            return playerBaseStats.Damage * baseStatsMod.damageMod * extraMod;
         }
 
         public static bool IsCriticalHit(BaseStats playerBaseStats, BaseStatsMod baseStatsMod)
@@ -166,7 +181,7 @@ namespace Utilities
             enemy.TakeDamage(finalDamage, isCrit);
             
             // Track damage
-            Player player = Object.FindFirstObjectByType<Player>();
+            Player player = CachedPlayer;
             if (player) player.OnDamageDealt(finalDamage, isCrit);
         }
     }

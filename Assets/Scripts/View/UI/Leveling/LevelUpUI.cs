@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using PlayerDirectory;
 using PlayerDirectory.LevelingSystem;
@@ -29,6 +30,15 @@ namespace View.UI.Leveling
         [SerializeField] private TextMeshProUGUI levelText;
         [SerializeField] private TextMeshProUGUI choosePromptText;
 
+        [Header("Resume Slow-Motion")]
+        [Tooltip("Ease time back in after the menu closes so the player can re-orient.")]
+        [SerializeField] private bool slowMotionOnResume = true;
+        [SerializeField, Range(0.05f, 1f)] private float resumeStartTimeScale = 0.25f;
+        [Tooltip("Real-time seconds spent at the start time scale before ramping up.")]
+        [SerializeField, Min(0f)] private float resumeHoldDuration = 0.35f;
+        [Tooltip("Real-time seconds to ease from the start time scale back to normal speed.")]
+        [SerializeField, Min(0.01f)] private float resumeRampDuration = 0.9f;
+
         private Player _player;
         private LevelUpManager _levelUpManager;
         private List<ChoiceCard> _activeCards = new List<ChoiceCard>();
@@ -37,9 +47,14 @@ namespace View.UI.Leveling
         private int _skipCharges;
         private int _banishCharges;
         private object _selectedForBanish;
+        private Coroutine _resumeRoutine;
+        private float _defaultFixedDeltaTime;
+        private float _appliedTimeScale = 1f;
 
         private void Awake()
         {
+            _defaultFixedDeltaTime = Time.fixedDeltaTime;
+
             skipButton.onClick.AddListener(OnSkipClicked);
             banishButton.onClick.AddListener(OnBanishClicked);
             rerollButton.onClick.AddListener(OnRerollClicked);
@@ -61,6 +76,9 @@ namespace View.UI.Leveling
             ClearChoices();
             CreateChoiceCards(choices);
             UpdateUI();
+
+            // A new level-up can arrive while the previous one is still easing back in
+            StopResumeSlowMotion();
 
             levelUpPanel.SetActive(true);
             Time.timeScale = 0f;
@@ -213,8 +231,9 @@ namespace View.UI.Leveling
             }
             else
             {
-                // Confirm banish
-                _levelUpManager.BanishChoice(_selectedForBanish);
+                // Confirm banish. Only spend a charge once a real card has been picked
+                // (the placeholder object just marks "banish mode").
+                if (!_levelUpManager.BanishChoice(_selectedForBanish)) return;
                 _banishCharges--;
                 _player.PlayerBaseStats.Banish = Mathf.Max(0, _player.PlayerBaseStats.Banish - 1);
 
@@ -250,8 +269,78 @@ namespace View.UI.Leveling
         private void CloseLevelUpUI()
         {
             levelUpPanel.SetActive(false);
-            Time.timeScale = 1f;
             _selectedForBanish = null;
+
+            if (slowMotionOnResume)
+            {
+                StopResumeSlowMotion();
+                _resumeRoutine = StartCoroutine(ResumeSlowMotion());
+            }
+            else
+            {
+                Time.timeScale = 1f;
+            }
+        }
+
+        /// <summary>
+        /// Starts at resumeStartTimeScale, holds briefly, then smoothly eases back to 1.
+        /// Uses unscaled time so the duration is the same regardless of the current time scale.
+        /// </summary>
+        private IEnumerator ResumeSlowMotion()
+        {
+            SetResumeTimeScale(resumeStartTimeScale);
+
+            float elapsed = 0f;
+            float total = resumeHoldDuration + resumeRampDuration;
+
+            while (elapsed < total)
+            {
+                yield return null;
+
+                // Another system (pause menu, death screen, evolution, tutorial) took control of time
+                if (!Mathf.Approximately(Time.timeScale, _appliedTimeScale))
+                {
+                    Time.fixedDeltaTime = _defaultFixedDeltaTime;
+                    _resumeRoutine = null;
+                    yield break;
+                }
+
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01((elapsed - resumeHoldDuration) / resumeRampDuration);
+                float eased = t * t * (3f - 2f * t); // smoothstep
+                SetResumeTimeScale(Mathf.Lerp(resumeStartTimeScale, 1f, eased));
+            }
+
+            SetResumeTimeScale(1f);
+            _resumeRoutine = null;
+        }
+
+        private void SetResumeTimeScale(float scale)
+        {
+            _appliedTimeScale = scale;
+            Time.timeScale = scale;
+            // Keep physics stepping smoothly during slow motion (enemies move via Rigidbody2D)
+            Time.fixedDeltaTime = _defaultFixedDeltaTime * scale;
+        }
+
+        private void StopResumeSlowMotion()
+        {
+            if (_resumeRoutine != null)
+            {
+                StopCoroutine(_resumeRoutine);
+                _resumeRoutine = null;
+            }
+
+            Time.fixedDeltaTime = _defaultFixedDeltaTime;
+        }
+
+        private void OnDestroy()
+        {
+            // fixedDeltaTime is global and survives scene loads, so never leave it scaled down
+            if (_defaultFixedDeltaTime > 0f)
+            {
+                Time.fixedDeltaTime = _defaultFixedDeltaTime;
+            }
         }
 
         // Public getter for banish mode
